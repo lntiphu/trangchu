@@ -1,0 +1,15 @@
+﻿{
+  "name": "Money - Quản Lý Chi Tiêu",
+  "short_name": "Money",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
