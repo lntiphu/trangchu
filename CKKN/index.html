@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🌸 Sức Khoẻ Cá Nhân</title>
+  <!-- Google Fonts: Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css"/>
+  <script>
+    function goBackToHome() {
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ action: 'showWelcomeHubPage' }, '*');
+        }
+      } catch (e) {}
+
+      try {
+        if (window.parent && window.parent !== window && typeof window.parent.showWelcomeHubPage === 'function') {
+          window.parent.showWelcomeHubPage();
+          return;
+        }
+      } catch (e) {}
+
+      window.location.href = '../index.html';
+    }
+    window.goBackToHome = goBackToHome;
+  </script>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ══════════════════════════════════════
+       TAB 1 – CHU KỲ KINH NGUYỆT
+  ══════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-cycle">
+
+    <!-- Thống kê -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="val" id="c-total">0</div>
+        <div class="lbl">📋 Tổng chu kỳ</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="val" id="c-avg-cycle">–</div>
+        <div class="lbl">🔄 Chu kỳ TB (ngày)</div>
+      </div>
+      <div class="stat-card green">
+        <div class="val" id="c-avg-dur">–</div>
+        <div class="lbl">📆 Kỳ kinh TB (ngày)</div>
+      </div>
+    </div>
+
+    <!-- Dự đoán -->
+    <div class="predict-banner" id="c-predict" style="display:none">
+      <div class="pi">🔮</div>
+      <div>
+        <h3>Dự đoán chu kỳ tiếp theo</h3>
+        <p id="c-predict-text">–</p>
+      </div>
+    </div>
+
+     <!-- Danh sách Timeline -->
+     <div class="card">
+       <div class="list-header">
+         <h2>📋 Lịch Sử Chu Kỳ (Chi Tiết)</h2>
+         <p class="history-hint">5 bản ghi mỗi trang · Tìm theo tháng/năm</p>
+       </div>
+       <div class="search-row">
+         <input type="text" id="c-search" placeholder="🔍 Tìm theo tháng/năm..." oninput="handleCycleHistorySearch()"/>
+       </div>
+       <div class="item-list" id="c-list"></div>
+       <div class="history-pagination" id="c-history-pagination"></div>
+     </div>
+
+  </div><!-- /tab-cycle -->
+
+
+  <!-- ══════════════════════════════════════
+       TAB 2 – QUAN HỆ
+  ══════════════════════════════════════ -->
+  <div class="tab-content" id="tab-relation">
+
+    <!-- Thống kê -->
+    <div class="stats-row">
+      <div class="stat-card blue">
+        <div class="val" id="r-total">0</div>
+        <div class="lbl">💞 Tổng lần</div>
+      </div>
+      <div class="stat-card rose">
+        <div class="val" id="r-this-month">0</div>
+        <div class="lbl">📅 Tháng này</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="val" id="r-last">–</div>
+        <div class="lbl">⏰ Lần cuối</div>
+      </div>
+    </div>
+
+
+     <!-- Danh sách Timeline -->
+     <div class="card rose-card">
+       <div class="list-header">
+         <h2>📋 Lịch Sử Quan Hệ (Chi Tiết)</h2>
+         <p class="history-hint">Nhóm theo tháng · Chạm vào bản ghi để xem thêm</p>
+       </div>
+       <div class="search-row">
+         <input type="text" id="r-search" placeholder="🔍 Tìm kiếm..." oninput="renderRelations()"/>
+         <select id="r-month-filter" onchange="renderRelations()">
+           <option value="all">Tất cả tháng</option>
+         </select>
+       </div>
+       <div class="item-list" id="r-list"></div>
+     </div>
+
+  </div><!-- /tab-relation -->
+
+</div><!-- /container -->
+
+<!-- ══ BOTTOM NAVIGATION BAR ══ -->
+<nav class="ckkn-bottom-nav" aria-label="Thanh điều hướng">
+  <button type="button" class="tab-btn active" data-tab="cycle" onclick="switchTab('cycle')" aria-label="Chu Kỳ">
+    <span class="nav-icon">🩸</span>
+    <span class="nav-label">Chu Kỳ</span>
+  </button>
+  <button type="button" class="tab-btn" data-tab="relation" onclick="switchTab('relation')" aria-label="Quan Hệ">
+    <span class="nav-icon">💞</span>
+    <span class="nav-label">Quan Hệ</span>
+  </button>
+  <button type="button" class="ckkn-nav-add-btn" onclick="openAddPickerModal()" title="Thêm mới" aria-label="Thêm ghi nhận">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  </button>
+  <button type="button" class="nav-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại Trang chủ">
+    <span class="nav-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </span>
+    <span class="nav-label">Quay lại</span>
+  </button>
+</nav>
+
+<!-- ══ POPUP 1: LỰA CHỌN THÊM CHU KỲ HOẶC QUAN HỆ ══ -->
+<div class="ckkn-modal-overlay" id="modal-add-picker" onclick="if(event.target===this)closeAddPickerModal()">
+  <div class="ckkn-modal-sheet">
+    <div class="ckkn-drag-handle"></div>
+    <div class="ckkn-modal-header">
+      <h2>✨ Thêm Ghi Nhận Mới</h2>
+      <button type="button" class="ckkn-modal-close-btn" onclick="closeAddPickerModal()" title="Đóng">✕</button>
+    </div>
+    <div class="health-picker-options">
+      <div class="health-picker-option" onclick="selectAddOption('cycle')">
+        <div class="option-icon">🩸</div>
+        <div class="option-info">
+          <h4>Chu Kỳ Kinh Nguyệt</h4>
+          <p>Ghi nhận ngày bắt đầu, ngày kết thúc, triệu chứng &amp; tâm trạng</p>
+        </div>
+        <span class="option-arrow">›</span>
+      </div>
+      <div class="health-picker-option" onclick="selectAddOption('relation')">
+        <div class="option-icon">💞</div>
+        <div class="option-info">
+          <h4>Lần Quan Hệ</h4>
+          <p>Ghi nhận thời gian, biện pháp bảo vệ &amp; cảm xúc</p>
+        </div>
+        <span class="option-arrow">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ POPUP 2: FORM THÊM / CHỈNH SỬA CHU KỲ ══ -->
+<div class="ckkn-modal-overlay" id="modal-cycle" onclick="if(event.target===this)closeCycleModal()">
+  <div class="ckkn-modal-sheet">
+    <div class="ckkn-drag-handle"></div>
+    <div class="ckkn-modal-header">
+      <h2>🩸 <span id="c-form-title">Thêm Chu Kỳ Mới</span></h2>
+      <button type="button" class="ckkn-modal-close-btn" onclick="closeCycleModal()" title="Đóng">✕</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>📅 Ngày bắt đầu <span class="required">*</span></label>
+        <input type="date" id="c-start"/>
+      </div>
+      <div class="form-group">
+        <label>📅 Ngày kết thúc</label>
+        <input type="date" id="c-end"/>
+      </div>
+    </div>
+
+    <div class="form-group mt">
+      <label>🩸 Triệu chứng</label>
+      <div class="chip-group" id="c-symptoms"></div>
+    </div>
+
+    <div class="form-group mt">
+      <label>💢 Mức độ đau</label>
+      <div class="chip-group" id="c-pain"></div>
+    </div>
+
+    <div class="form-group mt">
+      <label>😊 Tâm trạng</label>
+      <div class="chip-group" id="c-mood"></div>
+    </div>
+
+    <div class="form-group full mt">
+      <label>📝 Ghi chú</label>
+      <textarea id="c-note" placeholder="Ghi thêm..."></textarea>
+    </div>
+
+    <div class="btn-row" style="margin-top: 16px;">
+      <button type="button" class="btn btn-secondary" onclick="closeCycleModal()">Hủy</button>
+      <button type="button" class="btn btn-pink" onclick="saveCycle()">💾 Lưu chu kỳ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ POPUP 3: FORM THÊM / CHỈNH SỬA LẦN QUAN HỆ ══ -->
+<div class="ckkn-modal-overlay" id="modal-relation" onclick="if(event.target===this)closeRelationModal()">
+  <div class="ckkn-modal-sheet">
+    <div class="ckkn-drag-handle"></div>
+    <div class="ckkn-modal-header">
+      <h2>💞 <span id="r-form-title">Thêm Lần Quan Hệ</span></h2>
+      <button type="button" class="ckkn-modal-close-btn" onclick="closeRelationModal()" title="Đóng">✕</button>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>📅 Ngày <span class="required">*</span></label>
+        <input type="date" id="r-date"/>
+      </div>
+      <div class="form-group">
+        <label>⏰ Giờ</label>
+        <input type="time" id="r-time"/>
+      </div>
+    </div>
+
+    <div class="form-group mt">
+      <label>🛡️ Có dùng biện pháp tránh thai?</label>
+      <div class="chip-group" id="r-protection"></div>
+    </div>
+
+    <div class="form-group mt">
+      <label>💊 Loại biện pháp tránh thai</label>
+      <div class="chip-group" id="r-method"></div>
+    </div>
+
+    <div class="form-group mt">
+      <label>😊 Cảm xúc</label>
+      <div class="chip-group" id="r-feeling"></div>
+    </div>
+
+    <div class="form-group full mt">
+      <label>📝 Ghi chú</label>
+      <textarea id="r-note" placeholder="Ghi thêm..."></textarea>
+    </div>
+
+    <div class="btn-row" style="margin-top: 16px;">
+      <button type="button" class="btn btn-secondary" onclick="closeRelationModal()">Hủy</button>
+      <button type="button" class="btn btn-rose" onclick="saveRelation()">💾 Lưu lần quan hệ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal xác nhận xóa -->
+<div class="overlay" id="del-modal">
+  <div class="modal">
+    <h3>🗑️ Xác Nhận Xóa</h3>
+    <p>Bạn có chắc muốn xóa mục này không? Hành động này không thể hoàn tác.</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger"    onclick="confirmDelete()">Xóa</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast thông báo -->
+<div id="toast"></div>
+
+<!-- JavaScript – theo đúng thứ tự phụ thuộc -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/health-db.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/cycle.js"></script>
+<script src="js/relation.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
