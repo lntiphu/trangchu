@@ -1,1 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Phú ơi làm đi - To-Do List</title>
+  
+  <!-- Google Fonts: Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
 
+  <!-- Lucide Icons & Canvas Confetti & Supabase JS -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Custom Modern CSS -->
+  <link rel="stylesheet" href="styles.css?v=2">
+  <script>
+    function goBackToHome() {
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ action: 'showWelcomeHubPage' }, '*');
+        }
+      } catch (e) {}
+
+      try {
+        if (window.parent && window.parent !== window && typeof window.parent.showWelcomeHubPage === 'function') {
+          window.parent.showWelcomeHubPage();
+          return;
+        }
+      } catch (e) {}
+
+      window.location.href = '../index.html';
+    }
+    window.goBackToHome = goBackToHome;
+  </script>
+</head>
+<body class="bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white pb-28 touch-manipulation relative overflow-x-hidden">
+
+  <!-- Ambient Luxury Background Glows -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="absolute -top-32 -left-32 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-32 w-80 h-80 bg-rose-500/10 dark:bg-rose-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-32 left-1/4 w-80 h-80 bg-emerald-500/10 dark:bg-emerald-600/15 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Mobile Main Content Area -->
+  <div class="max-w-md mx-auto px-4" style="padding-top: max(22px, env(safe-area-inset-top, 0px));">
+
+
+    <!-- 2-Card Summary Overview Strip -->
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <!-- 1. Cần làm -->
+      <div onclick="setFilterCategory('all')" id="stat-card-active" class="cursor-pointer p-2.5 rounded-2xl border transition-all active:scale-95" style="background: var(--qlct-card, #ffffff); border-color: rgba(52, 66, 55, 0.14);">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] font-bold" style="color: var(--qlct-muted, #6b786d);">Cần làm</span>
+          <span class="w-5 h-5 rounded-lg flex items-center justify-center text-[10px]" style="background: rgba(106, 123, 104, 0.15); color: var(--qlct-olive, #344237);">
+            <i data-lucide="list-todo" class="w-3 h-3"></i>
+          </span>
+        </div>
+        <div class="text-lg font-black" style="color: var(--qlct-olive, #344237);" id="stat-tasks-active">0</div>
+      </div>
+
+      <!-- 2. Đã xong (Tapped -> switches to History) -->
+      <div onclick="switchTab('history')" id="stat-card-done" class="cursor-pointer p-2.5 rounded-2xl border transition-all active:scale-95" style="background: var(--qlct-card, #ffffff); border-color: rgba(106, 123, 104, 0.25);">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[11px] font-bold" style="color: var(--qlct-sage, #6a7b68);">Đã xong</span>
+          <span class="w-5 h-5 rounded-lg flex items-center justify-center text-[10px]" style="background: rgba(106, 123, 104, 0.15); color: var(--qlct-sage, #6a7b68);">
+            <i data-lucide="check" class="w-3 h-3"></i>
+          </span>
+        </div>
+        <div class="text-lg font-black" style="color: var(--qlct-sage, #6a7b68);" id="stat-tasks-done">0</div>
+      </div>
+    </div>
+
+    <!-- Quick Filter Category Pills -->
+    <div id="filter-pills-bar" class="flex items-center gap-1.5 mb-3.5 overflow-x-auto no-scrollbar py-0.5">
+      <button type="button" onclick="setFilterCategory('all')" data-filter="all" class="task-filter-pill active px-3 py-1.5 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all">
+        Tất cả (<span id="pill-count-all">0</span>)
+      </button>
+      <button type="button" onclick="setFilterCategory('normal')" data-filter="normal" class="task-filter-pill px-3 py-1.5 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all">
+        🟢 Kế hoạch (<span id="pill-count-normal">0</span>)
+      </button>
+      <button type="button" onclick="setFilterCategory('nodate')" data-filter="nodate" class="task-filter-pill px-3 py-1.5 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all">
+        ⚪ Không hạn (<span id="pill-count-nodate">0</span>)
+      </button>
+    </div>
+
+    <!-- Expandable Search Input on Mobile -->
+    <div id="mobile-search-bar" class="mb-3 hidden transition-all">
+      <div class="relative flex items-center gap-2">
+        <div class="relative flex-1 flex items-center">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5"></i>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Tìm kiếm công việc..." 
+            class="w-full pl-10 pr-9 py-2.5 text-xs rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 shadow-xs"
+          >
+          <button id="clear-search-btn" class="hidden absolute right-3 p-1 text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 1: LUXURY MODERN TIMELINE MAIN VIEW -->
+    <main id="view-tasks" class="view-panel">
+      <!-- Modern Stream Timeline Container -->
+      <div id="timeline-container" class="space-y-6">
+        <!-- Timeline groups dynamically rendered with modern styling -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="tasks-empty-state" class="hidden py-16 text-center px-4">
+        <div class="w-16 h-16 rounded-3xl bg-gradient-to-tr from-brand-50 to-indigo-100 dark:from-brand-950 dark:to-indigo-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center mx-auto mb-3.5 shadow-sm ring-8 ring-brand-50/50 dark:ring-brand-950/20">
+          <i data-lucide="sparkles" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">Tuyệt vời! Không còn việc tồn đọng</h3>
+        <p class="text-xs text-slate-400 mt-1 max-w-xs mx-auto mb-4">Tất cả mục tiêu đã được giải quyết hoặc chưa thêm việc mới. Hãy bắt đầu lên kế hoạch ngay!</p>
+        <button onclick="openAddTaskModal()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white text-xs font-extrabold shadow-lg shadow-brand-500/25 active:scale-95 transition-all">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Thêm công việc mới</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- VIEW 2: COMPLETED HISTORY VIEW -->
+    <main id="view-history" class="view-panel hidden">
+      <div class="history-toolbar">
+        <div class="history-heading">
+          <button onclick="switchTab('tasks')" class="history-back-btn" title="Quay lại danh sách công việc" aria-label="Quay lại danh sách công việc">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div class="history-heading-icon" aria-hidden="true">
+            <i data-lucide="check-check"></i>
+          </div>
+          <div class="history-heading-copy">
+            <div class="history-eyebrow">HOÀN TẤT</div>
+            <h2>Lịch sử đã xong <span id="history-count-text" class="history-count-badge">0</span></h2>
+            <p>Chạm vào thời gian để chỉnh sửa</p>
+          </div>
+        </div>
+        <button id="clear-history-btn" class="history-clear-btn">
+          <i data-lucide="trash-2"></i>
+          <span>Xóa</span>
+        </button>
+      </div>
+
+      <div id="history-list" class="history-list">
+        <!-- Completed items rendered here -->
+      </div>
+
+      <!-- History Empty State -->
+      <div id="history-empty-state" class="hidden py-16 text-center px-4">
+        <div class="w-14 h-14 rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500 flex items-center justify-center mx-auto mb-2.5">
+          <i data-lucide="check-check" class="w-7 h-7"></i>
+        </div>
+        <p class="text-xs font-bold text-slate-600 dark:text-slate-300">Lịch sử hiện đang trống</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Các công việc sau khi hoàn thành sẽ tự động lưu lại tại đây.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== FIXED BOTTOM NAVIGATION BAR ==================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] safe-area-bottom">
+    <div class="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
+      <!-- 1. Công việc (Tasks Timeline) -->
+      <button type="button" id="bottom-nav-tasks" onclick="switchTab('tasks')" class="bottom-nav-item active flex-1 flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 active:scale-95 transition-all" title="Công việc">
+        <i data-lucide="list-todo" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Công việc</span>
+      </button>
+
+      <!-- 2. Lịch sử đã xong (History) -->
+      <button type="button" id="header-history-btn" class="bottom-nav-item relative flex-1 flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 active:scale-95 transition-all" title="Xem lịch sử đã xong">
+        <div class="relative">
+          <i data-lucide="history" class="w-5 h-5"></i>
+          <span id="header-badge-history" class="absolute -top-1.5 -right-2 px-1.5 py-0.2 text-[9px] font-extrabold rounded-full bg-emerald-500 text-white shadow-xs">0</span>
+        </div>
+        <span class="text-[10px] font-bold tracking-tight">Lịch sử</span>
+      </button>
+
+      <!-- 3. Thêm việc (+) (Center Add Button) -->
+      <div class="flex-1 flex justify-center -translate-y-3">
+        <button type="button" id="header-add-btn" onclick="openAddTaskModal()" class="w-[52px] h-[52px] rounded-full flex items-center justify-center text-white bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 shadow-lg shadow-brand-500/35 ring-4 ring-white dark:ring-slate-900 active:scale-90 transition-transform cursor-pointer" title="Thêm công việc mới" aria-label="Thêm công việc">
+          <i data-lucide="plus" class="w-6 h-6 stroke-[2.6]"></i>
+        </button>
+      </div>
+
+      <!-- 4. Tìm kiếm (Search) -->
+      <button type="button" id="search-toggle-btn" class="bottom-nav-item flex-1 flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 active:scale-95 transition-all" title="Tìm kiếm công việc">
+        <i data-lucide="search" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Tìm kiếm</span>
+      </button>
+
+      <!-- 5. Quay lại Trang chủ Hub (Back) -->
+      <button type="button" onclick="goBackToHome()" class="bottom-nav-item flex-1 flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 active:scale-95 transition-all" title="Quay lại Trang chủ" aria-label="Quay lại Trang chủ">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        <span class="text-[10px] font-bold tracking-tight">Quay lại</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==================== MOBILE BOTTOM SHEET & POPUPS ==================== -->
+
+  <!-- EDIT TASK / DUE TIME BOTTOM SHEET MODAL -->
+  <div id="task-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md hidden transition-opacity duration-300">
+    <div class="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-white dark:bg-slate-900 border-t sm:border border-slate-200/80 dark:border-slate-800 shadow-2xl p-5 transform transition-transform duration-300 ease-out translate-y-full sm:translate-y-0 sm:scale-95 modal-content max-h-[92vh] overflow-y-auto">
+      
+      <!-- Pull handle for mobile sheet -->
+      <div class="w-12 h-1.5 rounded-full bg-slate-300/80 dark:bg-slate-700 mx-auto mb-4 sm:hidden"></div>
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-md shadow-emerald-900/10" style="background: linear-gradient(135deg, var(--qlct-olive), var(--qlct-sage));">
+            <i data-lucide="check-square" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="modal-title" class="font-black text-sm tracking-tight" style="color: var(--qlct-text);">
+              Thêm công việc mới
+            </h3>
+            <p id="modal-subtitle" class="text-[11px] font-medium" style="color: var(--qlct-muted);">
+              Lên lịch và ghi chú việc cần làm
+            </p>
+          </div>
+        </div>
+        <button type="button" id="close-modal-btn" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 active:scale-90 transition-transform">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="task-form" class="space-y-3.5">
+        <input type="hidden" id="modal-task-id">
+
+        <!-- 1. Tiêu đề công việc -->
+        <div>
+          <label class="block text-[11px] font-extrabold uppercase tracking-wider mb-1.5" style="color: var(--qlct-muted);">
+            Tên công việc <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative flex items-center">
+            <i data-lucide="bookmark" class="w-4 h-4 absolute left-3.5 pointer-events-none" style="color: var(--qlct-muted);"></i>
+            <input 
+              type="text" 
+              id="modal-task-title" 
+              class="w-full pl-10 pr-3.5 py-3 text-sm font-bold rounded-2xl border outline-none transition-all"
+              placeholder="Nhập tên việc cần làm..."
+              required
+            >
+          </div>
+        </div>
+
+        <!-- 2. Thời gian hạn chót hoàn thành -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[11px] font-extrabold uppercase tracking-wider" style="color: var(--qlct-muted);">
+              Hạn hoàn thành
+            </label>
+            <!-- Toggle Không thời hạn -->
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-bold select-none px-2.5 py-1 rounded-xl border" style="background: var(--qlct-cream-subtle); border-color: rgba(52, 66, 55, 0.12); color: var(--qlct-olive);">
+              <input type="checkbox" id="modal-no-due-toggle" class="w-3.5 h-3.5 rounded text-emerald-700 accent-emerald-700">
+              <span>Không đặt hạn</span>
+            </label>
+          </div>
+
+          <div id="modal-due-container" class="transition-all">
+            <div class="relative flex items-center">
+              <i data-lucide="calendar-clock" class="w-4 h-4 absolute left-3.5 pointer-events-none" style="color: var(--qlct-muted);"></i>
+              <input 
+                type="datetime-local" 
+                id="modal-task-due" 
+                class="w-full pl-10 pr-3.5 py-2.5 text-xs font-bold rounded-2xl border outline-none transition-all"
+              >
+            </div>
+            
+            <!-- Quick Date Presets -->
+            <div class="grid grid-cols-2 gap-1.5 mt-2">
+              <button type="button" onclick="setQuickModalDate(0, 18, 0)" class="quick-preset-btn px-2.5 py-2 text-[11px] font-bold rounded-xl border transition-all text-center flex items-center justify-center gap-1 active:scale-95">
+                <span>🔴</span> Hôm nay 18:00
+              </button>
+              <button type="button" onclick="setQuickModalDate(0, 22, 0)" class="quick-preset-btn px-2.5 py-2 text-[11px] font-bold rounded-xl border transition-all text-center flex items-center justify-center gap-1 active:scale-95">
+                <span>🌙</span> Tối nay 22:00
+              </button>
+              <button type="button" onclick="setQuickModalDate(1, 9, 0)" class="quick-preset-btn px-2.5 py-2 text-[11px] font-bold rounded-xl border transition-all text-center flex items-center justify-center gap-1 active:scale-95">
+                <span>🟢</span> Sáng mai 09:00
+              </button>
+              <button type="button" onclick="setQuickModalDate(1, 18, 0)" class="quick-preset-btn px-2.5 py-2 text-[11px] font-bold rounded-xl border transition-all text-center flex items-center justify-center gap-1 active:scale-95">
+                <span>📅</span> Chiều mai 18:00
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Ghi chú thêm -->
+        <div>
+          <label class="block text-[11px] font-extrabold uppercase tracking-wider mb-1.5" style="color: var(--qlct-muted);">
+            Ghi chú chi tiết (tùy chọn)
+          </label>
+          <div class="relative">
+            <textarea 
+              id="modal-task-desc" 
+              rows="2" 
+              class="w-full px-3.5 py-2.5 text-xs rounded-2xl border outline-none resize-none leading-relaxed transition-all"
+              placeholder="Thêm mô tả, link hoặc lưu ý..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 4. Thêm hình ảnh đính kèm -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-[11px] font-extrabold uppercase tracking-wider" style="color: var(--qlct-muted);">
+              Hình ảnh đính kèm
+            </label>
+            <span class="text-[10px] font-medium" style="color: var(--qlct-muted);">Tùy chọn</span>
+          </div>
+
+          <input type="file" id="modal-task-image-input" accept="image/*" class="hidden">
+          <input type="hidden" id="modal-task-image-data">
+
+          <!-- Khung ảnh xem trước -->
+          <div id="modal-image-preview-container" class="hidden relative rounded-2xl overflow-hidden border border-slate-200 shadow-xs mb-2">
+            <img id="modal-image-preview" src="" alt="Ảnh đính kèm" class="w-full h-36 object-cover cursor-pointer" onclick="openImageViewer(this.src)">
+            <div class="absolute top-2 right-2 flex items-center gap-1.5">
+              <button type="button" id="modal-remove-image-btn" class="px-2.5 py-1.5 rounded-xl bg-rose-600/90 text-white text-[11px] font-bold shadow-lg active:scale-90 transition-transform flex items-center gap-1" title="Xóa ảnh này">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Xóa ảnh</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" id="modal-upload-image-btn" class="w-full py-2.5 px-3.5 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 hover:bg-slate-100 flex items-center justify-center gap-2 text-xs font-bold text-slate-700 active:scale-98 transition-all">
+            <i data-lucide="image-plus" class="w-4 h-4 text-emerald-600"></i>
+            <span>Chọn ảnh hoặc chụp ảnh</span>
+          </button>
+        </div>
+
+        <!-- 5. Action Buttons -->
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" id="cancel-modal-btn" class="flex-1 py-3 text-xs font-bold text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-2xl active:scale-95 transition-transform">
+            Hủy bỏ
+          </button>
+          <button type="submit" class="flex-1 py-3 text-xs font-extrabold text-white rounded-2xl shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-1.5" style="background: linear-gradient(135deg, var(--qlct-olive), var(--qlct-sage)); box-shadow: 0 6px 16px rgba(52, 66, 55, 0.2);">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Lưu Công Việc</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT COMPLETED TIME MODAL (For History Tab) -->
+  <div id="history-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
+    <div class="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-white dark:bg-slate-900 border-t sm:border border-slate-200 dark:border-slate-800 shadow-2xl p-5 transform transition-all translate-y-full sm:translate-y-0 sm:scale-95 history-modal-content">
+      <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mb-4 sm:hidden"></div>
+
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-extrabold text-slate-900 dark:text-white text-sm">Chỉnh Sửa Giờ Hoàn Thành</h3>
+        <button id="close-history-modal-btn" class="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="history-form" class="space-y-4">
+        <input type="hidden" id="history-task-id">
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">Công việc</label>
+          <div id="history-task-title" class="text-sm font-bold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+            --
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 mb-1">Thời điểm đã hoàn thành</label>
+          <input 
+            type="datetime-local" 
+            id="history-task-completed-at" 
+            class="w-full px-3.5 py-2.5 text-sm font-bold rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 outline-none focus:border-brand-500"
+            required
+          >
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" id="cancel-history-modal-btn" class="flex-1 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+            Hủy
+          </button>
+          <button type="submit" class="flex-1 py-2.5 text-xs font-bold bg-emerald-600 text-white rounded-2xl shadow-md shadow-emerald-600/25 active:scale-95 transition-transform">
+            Cập nhật giờ xong
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REMINDER ALERT POPUP -->
+  <div id="reminder-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
+    <div class="relative w-full max-w-xs rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-5 text-center transform transition-all scale-95 opacity-0 reminder-content">
+      <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto mb-2 animate-bounce">
+        <i data-lucide="alarm-clock" class="w-6 h-6"></i>
+      </div>
+      
+      <span class="inline-block text-[10px] font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-1" id="reminder-badge">
+        ⚠️ Gần Đến Hạn!
+      </span>
+      
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1 break-words" id="reminder-task-title">
+        Tiêu đề công việc
+      </h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4" id="reminder-due-text">
+        --:--
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button id="reminder-dismiss-btn" class="flex-1 py-2 text-xs font-bold rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          Đóng
+        </button>
+        <button id="reminder-done-btn" class="flex-1 py-2 text-xs font-bold rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20">
+          Xong luôn
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <div id="confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden transition-opacity">
+    <div class="relative w-full max-w-xs rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-5 text-center transform transition-all scale-95 opacity-0 confirm-content">
+      <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-1" id="confirm-modal-title">Xác nhận?</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4" id="confirm-modal-message">
+        Hành động này không thể hoàn tác.
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button id="confirm-cancel-btn" class="flex-1 py-2 text-xs font-bold rounded-2xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800">
+          Hủy
+        </button>
+        <button id="confirm-accept-btn" class="flex-1 py-2 text-xs font-bold rounded-2xl bg-rose-600 text-white shadow-md shadow-rose-600/25">
+          Đồng ý
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN IMAGE VIEWER MODAL (LIGHTBOX) -->
+  <div id="image-viewer-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/85 backdrop-blur-md hidden transition-opacity">
+    <div class="relative max-w-lg w-full flex flex-col items-center">
+      <button id="close-image-viewer-btn" class="absolute -top-10 right-0 p-2 rounded-full bg-white/20 text-white hover:bg-white/40 active:scale-90 transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div class="w-full max-h-[80vh] flex items-center justify-center overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-black/40">
+        <img id="image-viewer-img" src="" alt="Xem ảnh phóng to" class="max-w-full max-h-[75vh] object-contain rounded-xl">
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE TOAST CONTAINER -->
+  <div id="toast-container" class="fixed top-4 left-4 right-4 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
