@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Quản Lý Tiết Kiệm (Saver)</title>
+    <!-- Google Fonts: Be Vietnam Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <script>
+        function goBackToHome() {
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ action: 'showWelcomeHubPage' }, '*');
+                }
+            } catch (e) {}
+
+            try {
+                if (window.parent && window.parent !== window && typeof window.parent.showWelcomeHubPage === 'function') {
+                    window.parent.showWelcomeHubPage();
+                    return;
+                }
+            } catch (e) {}
+
+            window.location.href = '../index.html';
+        }
+        window.goBackToHome = goBackToHome;
+    </script>
+</head>
+<body>
+    <div class="saver-container">
+        <!-- Summary Grid -->
+        <div class="saver-summary-grid">
+            <div class="saver-sum-card card-momo">
+                <span class="saver-sum-label">Tiền MoMo</span>
+                <span class="saver-sum-val" id="saver-sum-momo">0 VNĐ</span>
+            </div>
+            <div class="saver-sum-card card-bank">
+                <span class="saver-sum-label">Ngân Hàng</span>
+                <span class="saver-sum-val" id="saver-sum-bank">0 VNĐ</span>
+            </div>
+            <div class="saver-sum-card card-target">
+                <span class="saver-sum-label">Mục Tiêu</span>
+                <span class="saver-sum-val" id="saver-sum-target">0 VNĐ</span>
+            </div>
+            <div class="saver-sum-card card-debt">
+                <span class="saver-sum-label">Thiếu Nợ</span>
+                <span class="saver-sum-val" id="saver-sum-debt">0 VNĐ</span>
+            </div>
+        </div>
+
+        <!-- Search Bar (hidden by default) -->
+        <div id="saver-search-bar" class="saver-search-bar" style="display: none;">
+            <div class="input-wrapper">
+                <i data-lucide="search" class="field-icon"></i>
+                <input type="text" id="saver-search-input" placeholder="Tìm kiếm mục tiêu..." oninput="filterSaverCards()">
+                <button type="button" class="search-clear-btn" onclick="clearSaverSearch()" style="display: none;" id="saver-search-clear">
+                    <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards View -->
+        <div id="saver-cards-container" class="saver-cards-list">
+            <!-- Dynamic Saver Cards -->
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar with Center Add Button and Search -->
+    <nav class="saver-bottom-nav">
+        <button type="button" class="saver-nav-search-btn" onclick="toggleSaverSearch()" title="Tìm kiếm" aria-label="Tìm kiếm">
+            <i data-lucide="search"></i>
+            <span>Tìm kiếm</span>
+        </button>
+        <button type="button" class="saver-add-center-btn" onclick="openAddSaverModal()" title="Thêm mục tiết kiệm" aria-label="Thêm mục tiết kiệm">
+            <i data-lucide="plus"></i>
+        </button>
+        <button type="button" class="saver-nav-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
+            <i data-lucide="arrow-left"></i>
+            <span>Quay lại</span>
+        </button>
+    </nav>
+
+    <!-- MODAL THÊM / SỬA MỤC TIẾT KIỆM -->
+    <div class="modal-overlay" id="add-saver-modal">
+        <div class="modal-sheet add-saver-sheet">
+            <div class="modal-drag-indicator"></div>
+            <div class="modal-header">
+                <h2 id="add-saver-modal-title">Thêm mục tiết kiệm</h2>
+                <button type="button" class="modal-close-btn" onclick="closeAddSaverModal()" title="Đóng"><i data-lucide="x"></i></button>
+            </div>
+            
+            <form id="add-saver-form" class="modal-form">
+                <input type="hidden" id="saver-item-id" value="">
+                
+                <div class="form-fields">
+                    <!-- Tên mục -->
+                    <div class="form-group">
+                        <label for="saver-input-title">Tên mục tiết kiệm</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="bookmark" class="field-icon"></i>
+                            <input type="text" id="saver-input-title" placeholder="VD: Mua xe, Quỹ dự phòng, Du lịch..." required>
+                        </div>
+                    </div>
+
+                    <!-- Tiền MoMo -->
+                    <div class="form-group">
+                        <label for="saver-input-momo">Tiền đang có ở MoMo (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="wallet" class="field-icon"></i>
+                            <input type="text" id="saver-input-momo" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <!-- Tiền Ngân hàng -->
+                    <div class="form-group">
+                        <label for="saver-input-bank">Tiền đang có ở NH (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="landmark" class="field-icon"></i>
+                            <input type="text" id="saver-input-bank" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <!-- Mục tiêu -->
+                    <div class="form-group">
+                        <label for="saver-input-target">Mục tiêu tiền (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="target" class="field-icon"></i>
+                            <input type="text" id="saver-input-target" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <!-- Thiếu nợ -->
+                    <div class="form-group">
+                        <label for="saver-input-debt">Tiền đang thiếu nợ (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="alert-circle" class="field-icon"></i>
+                            <input type="text" id="saver-input-debt" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions-row">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddSaverModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="check"></i> Lưu mục tiết kiệm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL ĐIỀU CHỈNH TĂNG / GIẢM TIỀN NHANH -->
+    <div class="modal-overlay" id="adjust-saver-amount-modal">
+        <div class="modal-sheet adjust-amount-sheet">
+            <div class="modal-drag-indicator"></div>
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 1.15rem; margin: 0;">Điều chỉnh số tiền</h2>
+                    <span id="adjust-modal-subtitle" style="font-size: 0.76rem; color: var(--text-secondary);">Mục: Quỹ phòng thân · MoMo</span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeAdjustAmountModal()" title="Đóng"><i data-lucide="x"></i></button>
+            </div>
+
+            <!-- Current Amount Indicator -->
+            <div class="adjust-current-box">
+                <span class="adjust-current-label">Số dư hiện tại</span>
+                <span class="adjust-current-val" id="adjust-current-val">0 VNĐ</span>
+            </div>
+
+            <!-- Quick Step Buttons -->
+            <div class="adjust-quick-section">
+                <div class="adjust-quick-title">Tăng nhanh (+)</div>
+                <div class="adjust-quick-buttons">
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(50000)">+50k</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(100000)">+100k</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(500000)">+500k</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(1000000)">+1Tr</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(5000000)">+5Tr</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(10000000)">+10Tr</button>
+                </div>
+            </div>
+
+            <div class="adjust-quick-section" style="margin-top: 10px;">
+                <div class="adjust-quick-title">Giảm nhanh (-)</div>
+                <div class="adjust-quick-buttons">
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-50000)">-50k</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-100000)">-100k</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-500000)">-500k</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-1000000)">-1Tr</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-5000000)">-5Tr</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-10000000)">-10Tr</button>
+                </div>
+            </div>
+
+            <!-- Custom Input Amount -->
+            <div style="margin-top: 16px;">
+                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block;">Nhập số tiền tùy chỉnh (VNĐ)</label>
+                <div class="input-wrapper" style="margin-bottom: 12px;">
+                    <i data-lucide="edit-3" class="field-icon"></i>
+                    <input type="text" id="adjust-custom-input" placeholder="0" inputmode="numeric" style="font-weight: 700; font-size: 1.05rem;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <button type="button" class="btn btn-primary" onclick="applyCustomAdjust('add')" style="background: #2e7d32; padding: 10px 6px; font-size: 0.78rem; justify-content: center;">
+                        <i data-lucide="plus"></i> Tăng (+)
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="applyCustomAdjust('sub')" style="background: #c62828; color: #fff; padding: 10px 6px; font-size: 0.78rem; justify-content: center;">
+                        <i data-lucide="minus"></i> Giảm (-)
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="applyCustomAdjust('set')" style="padding: 10px 6px; font-size: 0.78rem; justify-content: center;">
+                        <i data-lucide="check"></i> Đặt số này
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js?v=2"></script>
+</body>
+</html>
