@@ -1,1 +1,1069 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Money">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <title>Money - Quản Lý Chi Tiêu</title>
+    <!-- Preconnect & DNS-Prefetch for Fast Loading on Mobile Networks -->
+    <link rel="dns-prefetch" href="https://ghdydszifdaiphcjguri.supabase.co">
+    <link rel="preconnect" href="https://ghdydszifdaiphcjguri.supabase.co" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    
+    <!-- Google Fonts: Be Vietnam Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="main/css/styles.css?v=32">
+</head>
+<body>
+    <!-- Debug Console Overlay to catch local browser errors -->
+    <div id="debug-console" style="position: fixed; bottom: 0; left: 0; right: 0; max-height: 250px; overflow-y: auto; background: #3c0000; color: #fff; font-family: monospace; font-size: 13px; z-index: 100000; padding: 15px; border-top: 3px solid #ff453a; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); display: none;">
+        <strong style="color: #ff9f0a;">🔍 Money Debug Console (Phát hiện lỗi):</strong>
+        <pre id="debug-log" style="margin-top: 8px; white-space: pre-wrap; line-height: 1.4; color: #eee;"></pre>
+    </div>
+    <script>
+        (function() {
+            const consoleEl = document.getElementById('debug-console');
+            const logEl = document.getElementById('debug-log');
+            function showLog(msg) {
+                consoleEl.style.display = 'block';
+                logEl.textContent += msg + '\n';
+            }
+            window.onerror = function(message, source, lineno, colno, error) {
+                if (message === 'Script error.' && lineno === 0) {
+                    console.warn('CORS CDN Blocked - Running in offline fallback mode.');
+                    return true;
+                }
+                showLog('❌ LỖI: ' + message + '\nTại: ' + source + ' (Dòng ' + lineno + ', Cột ' + colno + ')');
+                return false;
+            };
+            window.onunhandledrejection = function(event) {
+                showLog('⚠️ HỨA BỊ TỪ CHỐI: ' + event.reason);
+            };
+        })();
+    </script>
+
+    <div class="app-container">
+        <!-- iOS Status Bar Background Spacer for viewport-fit=cover -->
+        <div class="ios-status-bar-spacer"></div>
+        <!-- HEADER -->
+        <header class="app-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div class="header-left">
+                <span class="date-today" id="current-date">Thứ Ba, 21 Tháng 7</span>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                    <img src="assets/logo.png" alt="Money Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                    <h1 class="header-title" style="font-size: 1.6rem; font-weight: 800; margin: 0;">Money</h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="btn-open-hub-header" class="header-icon-btn" aria-label="Mở trang chủ chọn chức năng" title="Trang chủ chức năng" onclick="showWelcomeHubPage()" style="margin-right: 4px;">
+                    <i data-lucide="layout-grid"></i>
+                </button>
+                <button id="btn-open-spending-analysis" class="header-icon-btn" aria-label="Phân tích dữ liệu sử dụng tiền" title="Phân tích dữ liệu sử dụng tiền">
+                    <i data-lucide="pie-chart"></i>
+                </button>
+                <button id="btn-open-saver-modal" class="header-icon-btn" aria-label="Xem Biểu Đồ Tiết Kiệm" title="Saver - Tiết Kiệm" onclick="openSaverModal()" style="margin-left: 6px;">
+                    <i data-lucide="piggy-bank"></i>
+                </button>
+                <button id="btn-logout" class="header-icon-btn" aria-label="Đăng xuất" title="Đăng xuất" style="margin-left: 6px; display: none;">
+                    <i data-lucide="log-out"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT PANELS (Tabs) -->
+        <main class="app-main">
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-panel active">
+                <!-- Summary Cards Row -->
+                <div class="summary-cards">
+                    <div class="card card-today">
+                        <div class="card-icon"><img src="assets/calendar.png" alt="Lịch" style="width: 18px; height: 18px; object-fit: contain;"></div>
+                        <span class="card-label">Hôm nay</span>
+                        <h2 class="card-amount" id="sum-today">0 VNĐ</h2>
+                    </div>
+                    <div class="card card-week">
+                        <div class="card-icon"><i data-lucide="trending-up"></i></div>
+                        <span class="card-label">Tuần này</span>
+                        <h2 class="card-amount" id="sum-week">0 VNĐ</h2>
+                    </div>
+                    <div class="card card-month">
+                        <div class="card-icon"><i data-lucide="credit-card"></i></div>
+                        <span class="card-label">Tháng này</span>
+                        <h2 class="card-amount" id="sum-month">0 VNĐ</h2>
+                    </div>
+                </div>
+
+
+
+                <!-- Monthly Spending Calendar -->
+                <div class="section-card spending-calendar-card">
+                    <div class="dashboard-calendar-header">
+                        <div class="calendar-title-block">
+                            <span class="calendar-year-label" id="dashboard-calendar-year-label">2026</span>
+                            <span class="calendar-month-label" id="dashboard-calendar-month-title">Tháng 7</span>
+                        </div>
+                        <div class="calendar-nav-controls">
+                            <button class="calendar-nav-btn" id="btn-dashboard-prev-month" aria-label="Tháng trước"><i data-lucide="chevron-left"></i></button>
+                            <button class="calendar-nav-btn" id="btn-dashboard-next-month" aria-label="Tháng sau"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-month-summary dashboard-calendar-summary">
+                        <span>Tổng chi trong tháng</span>
+                        <strong id="dashboard-calendar-month-total">0 VNĐ</strong>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                        <div>T2</div><div>T3</div><div>T4</div>
+                        <div>T5</div><div>T6</div><div>T7</div><div>CN</div>
+                    </div>
+                    <div class="calendar-days-grid dashboard-calendar-grid" id="dashboard-calendar-days-grid">
+                        <!-- Dynamic monthly calendar -->
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- TAB 2: HISTORY (TRANSACTIONS) -->
+            <section id="tab-history" class="tab-panel">
+                <div class="history-controls">
+                    <div class="search-bar">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Tìm kiếm chi tiêu...">
+                    </div>
+                </div>
+
+                <div class="spending-list" id="history-spendings-list">
+                    <!-- Dynamic history content -->
+                </div>
+            </section>
+
+
+        </main>
+
+        <!-- SPENDING ANALYSIS PAGE -->
+        <div class="analysis-page" id="spending-analysis-page" aria-hidden="true">
+            <header class="analysis-page-header">
+                <button class="analysis-back-btn" id="btn-close-spending-analysis" aria-label="Quay lại tổng quan">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="analysis-page-title">
+                    <h2>Toàn cảnh tài chính</h2>
+                </div>
+                <div class="analysis-header-icon"><i data-lucide="bar-chart-3"></i></div>
+            </header>
+
+            <div class="analysis-page-scroll">
+                <div class="analysis-period-card">
+                    <div>
+                        <span class="analysis-overline">KHOẢNG THỜI GIAN</span>
+                        <strong id="analysis-period-label">Tháng 9, 2026</strong>
+                    </div>
+                    <div class="analysis-period-actions">
+                        <button id="btn-analysis-prev-month" aria-label="Tháng phân tích trước"><i data-lucide="chevron-left"></i></button>
+                        <button id="btn-analysis-next-month" aria-label="Tháng phân tích sau"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="analysis-kpi-grid">
+                    <div class="analysis-kpi-card analysis-kpi-total">
+                        <span>TỔNG CHI</span>
+                        <strong id="analysis-total-amount">0 VNĐ</strong>
+                        <small>trong tháng</small>
+                    </div>
+                    <div class="analysis-kpi-card">
+                        <span>TRUNG BÌNH / NGÀY</span>
+                        <strong id="analysis-daily-average">0 VNĐ</strong>
+                        <small>ngày có chi tiêu</small>
+                    </div>
+                    <div class="analysis-kpi-card">
+                        <span>NGÀY CAO NHẤT</span>
+                        <strong id="analysis-top-day">--</strong>
+                        <small id="analysis-top-day-amount">0 VNĐ</small>
+                    </div>
+                    <div class="analysis-kpi-card">
+                        <span>SỐ KHOẢN CHI</span>
+                        <strong id="analysis-transaction-count">0</strong>
+                        <small>giao dịch</small>
+                    </div>
+                </div>
+
+                <section class="analysis-section-card analysis-comparison-card">
+                    <div class="analysis-section-heading">
+                        <div>
+                            <span class="analysis-overline">SO SÁNH THEO THÁNG</span>
+                            <h3>Các tháng trong năm <span id="analysis-month-comparison-year">2026</span></h3>
+                        </div>
+                        <i data-lucide="bar-chart-3"></i>
+                    </div>
+                    <div class="analysis-comparison-summary">
+                        <div class="analysis-comparison-stat">
+                            <span>THÁNG ĐANG XEM</span>
+                            <strong id="analysis-selected-month-total">0 VNĐ</strong>
+                        </div>
+                        <div class="analysis-comparison-stat">
+                            <span>SO VỚI THÁNG TRƯỚC</span>
+                            <strong id="analysis-month-change">--</strong>
+                            <small id="analysis-month-change-detail">Chưa có dữ liệu</small>
+                        </div>
+                    </div>
+                    <div id="analysis-month-comparison" class="analysis-comparison-bars"></div>
+                </section>
+
+                <section class="analysis-section-card analysis-comparison-card">
+                    <div class="analysis-section-heading">
+                        <div>
+                            <span class="analysis-overline">SO SÁNH THEO NĂM</span>
+                            <h3>Các năm đã ghi nhận</h3>
+                        </div>
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                    <div class="analysis-comparison-summary">
+                        <div class="analysis-comparison-stat">
+                            <span>NĂM ĐANG XEM</span>
+                            <strong id="analysis-selected-year-total">0 VNĐ</strong>
+                        </div>
+                        <div class="analysis-comparison-stat">
+                            <span>SO VỚI NĂM TRƯỚC</span>
+                            <strong id="analysis-year-change">--</strong>
+                            <small id="analysis-year-change-detail">Chưa có dữ liệu</small>
+                        </div>
+                    </div>
+                    <div id="analysis-year-comparison" class="analysis-comparison-bars"></div>
+                </section>
+
+                <section class="analysis-section-card">
+                    <div class="analysis-section-heading">
+                        <div>
+                            <span class="analysis-overline">CƠ CẤU CHI TIÊU</span>
+                            <h3>Tiền đang đi đâu?</h3>
+                        </div>
+                        <i data-lucide="pie-chart"></i>
+                    </div>
+                    <div class="analysis-chart-container">
+                        <canvas id="analysisCategoryChart"></canvas>
+                    </div>
+                    <div id="analysis-category-breakdown-legend" class="analysis-legend"></div>
+                </section>
+
+                <section class="analysis-section-card">
+                    <div class="analysis-section-heading">
+                        <div>
+                            <span class="analysis-overline">NHỊP CHI TIÊU</span>
+                            <h3>Những ngày chi nhiều nhất</h3>
+                        </div>
+                        <i data-lucide="calendar-range"></i>
+                    </div>
+                    <div id="analysis-daily-insights" class="analysis-daily-insights"></div>
+                </section>
+
+                <section class="analysis-insight-card">
+                    <div class="analysis-insight-icon"><i data-lucide="sparkles"></i></div>
+                    <div>
+                        <span class="analysis-overline">NHẬN XÉT TỰ ĐỘNG</span>
+                        <h3>Điểm đáng chú ý</h3>
+                        <div id="analysis-insights-list" class="analysis-insights-list"></div>
+                    </div>
+                </section>
+
+                <section class="analysis-section-card analysis-top-expenses-card">
+                    <div class="analysis-section-heading">
+                        <div>
+                            <span class="analysis-overline">CHI TIÊU NỔI BẬT</span>
+                            <h3>Các khoản lớn nhất</h3>
+                        </div>
+                        <i data-lucide="arrow-up-right"></i>
+                    </div>
+                    <div id="analysis-top-expenses" class="analysis-top-expenses"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <nav class="app-nav">
+            <button class="nav-item active" data-tab="dashboard">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Tổng quan</span>
+            </button>
+            <button class="nav-item" data-tab="history">
+                <i data-lucide="receipt"></i>
+                <span>Lịch sử</span>
+            </button>
+            <!-- Center Add button -->
+            <button class="nav-item-add" id="btn-open-add-modal" aria-label="Thêm chi tiêu">
+                <i data-lucide="plus"></i>
+            </button>
+            <button class="nav-item" id="btn-open-analysis-nav" aria-label="Phân tích tài chính" title="Phân tích" onclick="openSpendingAnalysisPage()">
+                <i data-lucide="pie-chart"></i>
+                <span>Phân tích</span>
+            </button>
+            <button class="nav-item" id="btn-open-hub-nav" aria-label="Quay lại" title="Quay lại" onclick="showWelcomeHubPage()">
+                <i data-lucide="arrow-left"></i>
+                <span>Quay lại</span>
+            </button>
+            <!-- Giữ lại các ID cũ để bảo đảm tương thích ngược 100% với mã nguồn JS có sẵn -->
+            <button id="btn-open-ckkn-modal" style="display: none;" aria-hidden="true"></button>
+            <button id="btn-open-todo-modal" style="display: none;" aria-hidden="true"></button>
+        </nav>
+
+    <!-- BOTTOM SHEET MODAL (ADD EXPENSE) -->
+    <div class="modal-overlay" id="add-expense-modal">
+        <div class="modal-sheet expense-entry-sheet">
+            <div class="modal-drag-indicator"></div>
+            <div class="modal-header expense-entry-header">
+                <div class="modal-title-group">
+                    <span class="modal-eyebrow">GIAO DỊCH MỚI</span>
+                    <h2>Thêm khoản chi</h2>
+                    <p>Ghi lại khoản chi để theo dõi dễ dàng hơn</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-modal"><i data-lucide="x"></i></button>
+            </div>
+            
+            <form id="add-expense-form" class="modal-form expense-entry-form">
+                <div class="amount-card">
+                    <div class="amount-card-top">
+                        <span class="amount-card-label">Số tiền chi</span>
+                        <span class="amount-card-chip"><i data-lucide="wallet"></i> VNĐ</span>
+                    </div>
+                    <div class="amount-input-container">
+                        <input type="text" id="expense-amount" placeholder="0" inputmode="numeric" required aria-label="Số tiền chi">
+                        <span class="currency-suffix">VNĐ</span>
+                    </div>
+                    <span class="amount-helper"><i data-lucide="info"></i> Nhập số tiền bạn đã chi</span>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-heading">
+                        <span>Thông tin khoản chi</span>
+                        <small>3 mục</small>
+                    </div>
+                    <div class="form-fields">
+                    <div class="form-group">
+                        <label for="expense-title">Nội dung chi tiêu</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="tag" class="field-icon"></i>
+                            <input type="text" id="expense-title" placeholder="Ăn sáng, mua đồ, xăng xe..." required>
+                        </div>
+                    </div>
+
+                    <!-- Category / Classification -->
+                    <div class="form-group">
+                        <label for="expense-category">Phân loại</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="layout-grid" class="field-icon"></i>
+                            <select id="expense-category">
+                                <option value="Ăn uống">🍔 Ăn uống</option>
+                                <option value="Mua sắm">🛒 Mua sắm</option>
+                                <option value="Di chuyển">🚗 Di chuyển</option>
+                                <option value="Giải trí">🍿 Giải trí</option>
+                                <option value="Sinh hoạt">💡 Sinh hoạt</option>
+                                <option value="Chi phí hàng tháng">📌 Chi phí hàng tháng</option>
+                                <option value="Y tế & Sức khỏe">🏥 Y tế & Sức khỏe</option>
+                                <option value="Quà tặng & Hiếu hỷ">🎁 Quà tặng & Hiếu hỷ</option>
+                                <option value="Viễn thông">📱 Viễn thông</option>
+                                <option value="Sửa chữa & Bảo trì">🔧 Sửa chữa & Bảo trì</option>
+                                <option value="Cá nhân">👤 Cá nhân</option>
+                                <option value="Khác" selected>📝 Khác</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="form-group">
+                        <label for="expense-date">Ngày chi tiêu</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="calendar" class="field-icon"></i>
+                            <input type="date" id="expense-date" required>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons - nằm ngoài vùng cuộn để luôn hiển thị -->
+                <div class="form-actions-row">
+                    <button type="button" class="btn btn-secondary btn-cancel" id="btn-cancel-add">
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-submit">
+                        <i data-lucide="check"></i> Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DETAIL / EDIT VIEW MODAL -->
+    <div class="modal-overlay" id="detail-expense-modal">
+        <div class="modal-sheet expense-entry-sheet">
+            <div class="modal-drag-indicator"></div>
+            <div class="modal-header expense-entry-header">
+                <div class="modal-title-group">
+                    <span class="modal-eyebrow">CHI TIẾT GIAO DỊCH</span>
+                    <h2>Chỉnh sửa khoản chi</h2>
+                    <p>Cập nhật lại thông tin nếu khoản chi thay đổi</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-detail"><i data-lucide="x"></i></button>
+            </div>
+            <div class="detail-body expense-entry-form">
+                <div class="amount-card">
+                    <div class="amount-card-top">
+                        <span class="amount-card-label">Số tiền chi</span>
+                        <span class="amount-card-chip"><i data-lucide="wallet"></i> VNĐ</span>
+                    </div>
+                    <div class="amount-input-container">
+                        <input type="text" id="detail-amount-input" placeholder="0" inputmode="numeric" required aria-label="Số tiền chi">
+                        <span class="currency-suffix">VNĐ</span>
+                    </div>
+                    <span class="amount-helper"><i data-lucide="edit-3"></i> Chạm vào số tiền để cập nhật</span>
+                </div>
+                
+                <div class="form-section">
+                    <div class="form-section-heading">
+                        <span>Thông tin khoản chi</span>
+                        <small>2 mục</small>
+                    </div>
+                    <div class="detail-info-list">
+                    <div class="form-group">
+                        <label for="detail-title-input">Nội dung</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="tag" class="field-icon"></i>
+                            <input type="text" id="detail-title-input" placeholder="Nội dung chi tiêu" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="detail-category-select">Phân loại</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="layout-grid" class="field-icon"></i>
+                            <select id="detail-category-select">
+                                <option value="Ăn uống">🍔 Ăn uống</option>
+                                <option value="Mua sắm">🛒 Mua sắm</option>
+                                <option value="Di chuyển">🚗 Di chuyển</option>
+                                <option value="Giải trí">🍿 Giải trí</option>
+                                <option value="Sinh hoạt">💡 Sinh hoạt</option>
+                                <option value="Chi phí hàng tháng">📌 Chi phí hàng tháng</option>
+                                <option value="Y tế & Sức khỏe">🏥 Y tế & Sức khỏe</option>
+                                <option value="Quà tặng & Hiếu hỷ">🎁 Quà tặng & Hiếu hỷ</option>
+                                <option value="Viễn thông">📱 Viễn thông</option>
+                                <option value="Sửa chữa & Bảo trì">🔧 Sửa chữa & Bảo trì</option>
+                                <option value="Cá nhân">👤 Cá nhân</option>
+                                <option value="Khác">📝 Khác</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="detail-info-item">
+                        <span class="info-label"><i data-lucide="calendar-days"></i> Thời gian</span>
+                        <span class="info-value" id="detail-date"></span>
+                    </div>
+                    </div>
+                </div>
+
+                <div class="detail-actions">
+                    <button class="btn btn-primary" id="btn-save-edit-expense">
+                        <i data-lucide="check"></i> Lưu thay đổi
+                    </button>
+                    <button class="btn btn-danger" id="btn-delete-expense">
+                        <i data-lucide="trash-2"></i> Xóa khoản chi này
+                    </button>
+                </div>
+            </div><!-- End detail-body -->
+        </div><!-- End modal-sheet -->
+    </div><!-- End #detail-expense-modal -->
+
+    <!-- CALENDAR VIEW MODAL -->
+    <div class="modal-overlay" id="calendar-expense-modal">
+        <div class="modal-sheet calendar-modal-sheet">
+
+            <!-- ===== VIEW 1: LƯỚI LỊCH ===== -->
+            <div id="calendar-grid-view">
+                <!-- Header: Tháng + Năm bên trái, Điều hướng + X bên phải -->
+                <div class="calendar-header-row">
+                    <div class="calendar-title-block">
+                        <span class="calendar-year-label" id="calendar-year-label">2026</span>
+                        <span class="calendar-month-label" id="calendar-month-title">Tháng 7</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div class="calendar-nav-controls">
+                            <button class="calendar-nav-btn" id="btn-prev-month"><i data-lucide="chevron-left"></i></button>
+                            <button class="calendar-nav-btn" id="btn-next-month"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                        <button class="modal-close-btn" id="btn-close-calendar" style="margin-left: 4px;"><i data-lucide="x"></i></button>
+                    </div>
+                </div>
+
+                <!-- Tổng chi tháng -->
+                <div class="calendar-month-summary">
+                    <span>Tổng chi tháng này</span>
+                    <strong id="calendar-month-total">0 VNĐ</strong>
+                </div>
+
+                <!-- Thứ trong tuần -->
+                <div class="calendar-weekdays">
+                    <div>T2</div><div>T3</div><div>T4</div>
+                    <div>T5</div><div>T6</div><div>T7</div><div>CN</div>
+                </div>
+
+                <!-- Lưới ngày -->
+                <div class="calendar-days-grid" id="calendar-days-grid">
+                    <!-- Dynamic Days -->
+                </div>
+            </div>
+
+            <!-- ===== VIEW 2: CHI TIẾT NGÀY ===== -->
+            <div id="calendar-day-detail" style="display: none;">
+                <!-- Header ngày -->
+                <div class="calendar-header-row">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="calendar-title-block">
+                            <span class="calendar-year-label">Chi tiêu trong ngày</span>
+                            <span class="calendar-month-label" id="cal-day-detail-title">22/07/26</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" onclick="closeCalendarModal()"><i data-lucide="x"></i></button>
+                </div>
+
+                <!-- Tổng ngày -->
+                <div class="calendar-month-summary" style="margin-top: 14px;">
+                    <span>Tổng chi trong ngày</span>
+                    <strong id="cal-day-detail-total" style="color: #ff9f0a;">0 VNĐ</strong>
+                </div>
+
+                <!-- Danh sách chi tiêu ngày -->
+                <div id="cal-day-expense-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px; max-height: 340px; overflow-y: auto;">
+                    <!-- Dynamic -->
+                </div>
+            </div>
+
+        </div>
+    </div><!-- End #calendar-expense-modal -->
+
+    <!-- CKKN (SỨC KHỎE CÁ NHÂN) FULL-SCREEN PAGE -->
+    <div class="modal-overlay ckkn-page-modal" id="ckkn-modal" aria-hidden="true">
+        <div class="modal-sheet ckkn-page-sheet" role="dialog" aria-modal="true" aria-label="Sức khỏe cá nhân">
+            <div class="ckkn-page-header">
+                <button class="modal-close-btn ckkn-back-btn" id="btn-close-ckkn-modal" aria-label="Quay lại tổng quan">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="ckkn-page-title">
+                    <span>CHỨC NĂNG BỔ SUNG</span>
+                    <h2>Sức khỏe cá nhân</h2>
+                    <p>Theo dõi chu kỳ và quan hệ riêng tư</p>
+                </div>
+                <div class="ckkn-page-title-spacer" aria-hidden="true"></div>
+            </div>
+            <div class="ckkn-frame-wrap">
+                <iframe id="ckkn-feature-host" src="CKKN/index.html" title="Sức khỏe cá nhân" loading="eager"></iframe>
+            </div>
+        </div>
+    </div><!-- End #ckkn-modal -->
+
+    <!-- TODO LIST FULL-SCREEN PAGE -->
+    <div class="modal-overlay todo-page-modal" id="todo-modal" aria-hidden="true">
+        <div class="modal-sheet todo-page-sheet" role="dialog" aria-modal="true" aria-label="Danh sách công việc">
+            <div class="ckkn-page-header todo-page-header">
+                <button class="modal-close-btn ckkn-back-btn" id="btn-close-todo-modal" aria-label="Quay lại tổng quan">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="ckkn-page-title todo-page-title">
+                    <span>CHỨC NĂNG BỔ SUNG</span>
+                    <h2>Danh sách công việc</h2>
+                    <p>Lên kế hoạch và theo dõi việc cần làm</p>
+                </div>
+                <div class="ckkn-page-title-spacer" aria-hidden="true"></div>
+            </div>
+            <div class="ckkn-frame-wrap todo-frame-wrap">
+                <div id="todo-feature-host" class="feature-host" aria-label="Nội dung danh sách công việc"></div>
+            </div>
+        </div>
+    </div><!-- End #todo-modal -->
+
+    <!-- SAVER (QUẢN LÝ TIẾT KIỆM) FULL-SCREEN PAGE -->
+    <div class="modal-overlay" id="saver-page-modal" aria-hidden="true">
+        <div class="modal-sheet saver-modal-sheet">
+            <!-- Header của Saver -->
+            <div class="saver-header-row">
+                <div class="saver-title-block">
+                    <div class="saver-badge-icon">
+                        <i data-lucide="piggy-bank"></i>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="btn btn-primary btn-add-saver" id="btn-open-add-saver" aria-label="Thêm mục tiết kiệm" title="Thêm mục tiết kiệm" onclick="openAddSaverModal()">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button class="modal-close-btn saver-back-btn" id="btn-close-saver" aria-label="Quay lại" title="Quay lại" onclick="closeSaverModal()"><i data-lucide="arrow-left"></i></button>
+                </div>
+            </div>
+
+            <!-- Tổng kết tiến độ Saver -->
+            <div class="saver-summary-grid">
+                <div class="saver-sum-card card-momo">
+                    <span class="saver-sum-label">💰 Tổng MoMo</span>
+                    <strong class="saver-sum-val" id="saver-sum-momo">0 VNĐ</strong>
+                </div>
+                <div class="saver-sum-card card-bank">
+                    <span class="saver-sum-label">🏦 Tổng ngân hàng</span>
+                    <strong class="saver-sum-val" id="saver-sum-bank">0 VNĐ</strong>
+                </div>
+                <div class="saver-sum-card card-target">
+                    <span class="saver-sum-label">🎯 Tổng mục tiêu</span>
+                    <strong class="saver-sum-val" id="saver-sum-target">0 VNĐ</strong>
+                </div>
+                <div class="saver-sum-card card-debt">
+                    <span class="saver-sum-label">⚠️ Tổng thiếu nợ</span>
+                    <strong class="saver-sum-val" id="saver-sum-debt">0 VNĐ</strong>
+                </div>
+            </div>
+
+            <!-- BẢNG BIỂU ĐỒ TIẾT KIỆM 5 CỘT -->
+            <div class="saver-table-responsive-wrapper">
+                <table class="saver-table" id="saver-table">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 130px; text-align: left;">Tên tiết kiệm</th>
+                            <th style="min-width: 110px; text-align: right;">MoMo</th>
+                            <th style="min-width: 110px; text-align: right;">Ngân hàng</th>
+                            <th style="min-width: 110px; text-align: right;">Mục tiêu</th>
+                            <th style="min-width: 110px; text-align: right;">Thiếu nợ</th>
+                            <th style="min-width: 80px; text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="saver-table-body">
+                        <!-- Dynamic Saver Rows -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div><!-- End #saver-page-modal -->
+
+    <!-- MODAL THÊM / SỬA MỤC TIẾT KIỆM -->
+    <div class="modal-overlay" id="add-saver-modal">
+        <div class="modal-sheet add-saver-sheet">
+            <div class="modal-drag-indicator"></div>
+            <div class="modal-header">
+                <h2 id="add-saver-modal-title">Thêm mục tiết kiệm</h2>
+                <button class="modal-close-btn" onclick="closeAddSaverModal()"><i data-lucide="x"></i></button>
+            </div>
+            
+            <form id="add-saver-form" class="modal-form">
+                <input type="hidden" id="saver-item-id" value="">
+                
+                <div class="form-fields">
+                    <!-- Tên mục -->
+                    <div class="form-group">
+                        <label for="saver-input-title">Tên mục tiết kiệm</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="bookmark" class="field-icon"></i>
+                            <input type="text" id="saver-input-title" placeholder="VD: Mua xe, Quỹ dự phòng, Du lịch..." required>
+                        </div>
+                    </div>
+
+                    <!-- Tiền MoMo -->
+                    <div class="form-group">
+                        <label for="saver-input-momo">Tiền đang có ở MoMo (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="wallet" class="field-icon"></i>
+                            <input type="text" id="saver-input-momo" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <!-- Tiền Ngân hàng -->
+                    <div class="form-group">
+                        <label for="saver-input-bank">Tiền đang có ở NH (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="landmark" class="field-icon"></i>
+                            <input type="text" id="saver-input-bank" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <!-- Mục tiêu -->
+                    <div class="form-group">
+                        <label for="saver-input-target">Mục tiêu tiền (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="target" class="field-icon"></i>
+                            <input type="text" id="saver-input-target" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <!-- Thiếu nợ -->
+                    <div class="form-group">
+                        <label for="saver-input-debt">Tiền đang thiếu nợ (VNĐ)</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="alert-circle" class="field-icon"></i>
+                            <input type="text" id="saver-input-debt" placeholder="0" inputmode="numeric">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions-row" style="margin-top: 18px;">
+                    <button type="button" class="btn btn-secondary btn-cancel" onclick="closeAddSaverModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary btn-submit">
+                        <i data-lucide="check"></i> Lưu mục tiết kiệm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div><!-- End #add-saver-modal -->
+
+    <!-- MODAL ĐIỀU CHỈNH TĂNG / GIẢM TIỀN NHANH -->
+    <div class="modal-overlay" id="adjust-saver-amount-modal">
+        <div class="modal-sheet adjust-amount-sheet">
+            <div class="modal-drag-indicator"></div>
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 1.15rem; margin: 0;">Điều chỉnh số tiền</h2>
+                    <span id="adjust-modal-subtitle" style="font-size: 0.76rem; color: var(--text-secondary);">Mục: Quỹ phòng thân · MoMo</span>
+                </div>
+                <button class="modal-close-btn" onclick="closeAdjustAmountModal()"><i data-lucide="x"></i></button>
+            </div>
+
+            <!-- Current Amount Indicator -->
+            <div class="adjust-current-box">
+                <span class="adjust-current-label">Số dư hiện tại</span>
+                <span class="adjust-current-val" id="adjust-current-val">0 VNĐ</span>
+            </div>
+
+            <!-- Quick Step Buttons -->
+            <div class="adjust-quick-section">
+                <div class="adjust-quick-title">Tăng nhanh (+)</div>
+                <div class="adjust-quick-buttons">
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(50000)">+50k</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(100000)">+100k</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(500000)">+500k</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(1000000)">+1Tr</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(5000000)">+5Tr</button>
+                    <button type="button" class="btn-quick-adjust plus" onclick="quickAdjustAmount(10000000)">+10Tr</button>
+                </div>
+            </div>
+
+            <div class="adjust-quick-section" style="margin-top: 10px;">
+                <div class="adjust-quick-title">Giảm nhanh (-)</div>
+                <div class="adjust-quick-buttons">
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-50000)">-50k</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-100000)">-100k</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-500000)">-500k</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-1000000)">-1Tr</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-5000000)">-5Tr</button>
+                    <button type="button" class="btn-quick-adjust minus" onclick="quickAdjustAmount(-10000000)">-10Tr</button>
+                </div>
+            </div>
+
+            <!-- Custom Input Amount -->
+            <div style="margin-top: 16px;">
+                <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block;">Nhập số tiền tùy chỉnh (VNĐ)</label>
+                <div class="input-wrapper" style="margin-bottom: 12px;">
+                    <i data-lucide="edit-3" class="field-icon"></i>
+                    <input type="text" id="adjust-custom-input" placeholder="0" inputmode="numeric" style="font-weight: 700; font-size: 1.05rem;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <button type="button" class="btn btn-primary" onclick="applyCustomAdjust('add')" style="background: #2e7d32; padding: 10px 6px; font-size: 0.78rem;">
+                        <i data-lucide="plus"></i> Tăng (+)
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="applyCustomAdjust('sub')" style="background: #c62828; padding: 10px 6px; font-size: 0.78rem;">
+                        <i data-lucide="minus"></i> Giảm (-)
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="applyCustomAdjust('set')" style="padding: 10px 6px; font-size: 0.78rem;">
+                        <i data-lucide="check"></i> Đặt số này
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div><!-- End #adjust-saver-amount-modal -->
+
+    <!-- NOTES (GHI CHÚ) FULL-SCREEN PAGE -->
+    <div class="modal-overlay notes-page-modal" id="notes-modal" aria-hidden="true">
+        <div class="modal-sheet notes-page-sheet" role="dialog" aria-modal="true" aria-label="Ghi chú cá nhân">
+            <!-- Header của Notes -->
+            <div class="notes-page-header">
+                <button class="modal-close-btn notes-back-btn" id="btn-close-notes-modal" aria-label="Quay lại danh mục chức năng" title="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="notes-page-title">
+                    <span>CHỨC NĂNG BỔ SUNG</span>
+                    <h2>Ghi chú cá nhân</h2>
+                    <p>Lưu lại các thông tin và nội dung cần ghi nhớ</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="btn btn-primary btn-add-note-toggle" id="btn-toggle-add-note" aria-label="Thêm ghi chú" title="Thêm ghi chú mới">
+                        <i data-lucide="plus"></i>
+                        <span>Thêm mới</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes Main Scroll Area -->
+            <div class="notes-page-scroll">
+                <!-- FORM NHẬP GHI CHÚ (2 BOX: TÊN GHI CHÚ VÀ MÔ TẢ GHI CHÚ) -->
+                <div class="notes-editor-card" id="notes-editor-card">
+                    <div class="notes-editor-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="notes-badge-icon">
+                                <i data-lucide="edit-3"></i>
+                            </div>
+                            <div>
+                                <h3 id="notes-form-heading">Ghi chú mới</h3>
+                                <span class="notes-form-sub">Nhập tên và mô tả chi tiết</span>
+                            </div>
+                        </div>
+                        <button type="button" class="notes-collapse-btn" id="btn-cancel-note-form" title="Đóng ô nhập" style="display: none;">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
+                    <form id="notes-form" class="notes-form">
+                        <input type="hidden" id="note-id" value="">
+                        
+                        <!-- Box 1: Tên ghi chú -->
+                        <div class="form-group notes-form-group">
+                            <label for="note-title-input">
+                                <i data-lucide="bookmark" class="note-label-icon"></i>
+                                Tên ghi chú <span class="required-mark">*</span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="note-title-input" 
+                                    placeholder="Nhập tên hoặc tiêu đề ghi chú..." 
+                                    required 
+                                    autocomplete="off"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Box 2: Mô tả ghi chú -->
+                        <div class="form-group notes-form-group">
+                            <label for="note-content-input">
+                                <i data-lucide="align-left" class="note-label-icon"></i>
+                                Mô tả ghi chú
+                            </label>
+                            <div class="input-wrapper">
+                                <textarea 
+                                    id="note-content-input" 
+                                    placeholder="Nhập nội dung, chi tiết thông tin cần ghi nhớ..." 
+                                    rows="4"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="notes-form-actions">
+                            <button type="button" class="btn btn-secondary" id="btn-reset-note-form">
+                                <i data-lucide="rotate-ccw"></i> Đặt lại
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btn-save-note">
+                                <i data-lucide="check"></i> <span id="btn-save-note-text">Lưu ghi chú</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- CONTROLS & SEARCH GHI CHÚ -->
+                <div class="notes-list-header">
+                    <div class="notes-count-info">
+                        <span class="notes-section-title">Danh sách ghi chú</span>
+                        <span class="notes-counter-badge" id="notes-counter-badge">0 ghi chú</span>
+                    </div>
+                    <div class="notes-search-wrapper">
+                        <i data-lucide="search" class="notes-search-icon"></i>
+                        <input type="text" id="notes-search-input" placeholder="Tìm theo tên hoặc mô tả...">
+                    </div>
+                </div>
+
+                <!-- DANH SÁCH CÁC THẺ GHI CHÚ -->
+                <div class="notes-cards-container" id="notes-cards-container">
+                    <!-- Dynamic Note Cards rendered here -->
+                </div>
+            </div>
+        </div>
+    </div><!-- End #notes-modal -->
+
+    <!-- STANDALONE MODULE FRAME CONTAINER (ISOLATED RUNTIME INSIDE PHONE VIEW) -->
+    <div id="module-host-container" class="module-host-container" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 9990; background: var(--bg-cream); overflow: auto;">
+        <iframe id="module-frame" src="about:blank" style="width: 100%; height: 100%; border: none; outline: none; display: block;" title="Mô-đun chức năng"></iframe>
+    </div>
+
+    <!-- TRANG CHÍNH: XIN CHÀO & CHỌN TÍNH NĂNG (NẰM TRONG KHUNG ĐIỆN THOẠI) -->
+    <section class="welcome-hub-page" id="welcome-hub-page" aria-label="Trang chủ chọn tính năng">
+        <!-- Header Trang Chào -->
+        <div class="welcome-hub-header">
+            <div class="welcome-hub-brand-row">
+                <button id="btn-welcome-logout" class="welcome-hub-logout-btn" title="Đăng xuất" aria-label="Đăng xuất" onclick="handleLogout()">
+                    <i data-lucide="power"></i>
+                </button>
+            </div>
+
+            <div class="welcome-hub-hero">
+                <span class="welcome-hub-date" id="welcome-current-date">Thứ Tư, 30 Tháng 9</span>
+                <h2 class="welcome-hub-greeting">Xin chào 👋</h2>
+                <p class="welcome-hub-question">Hôm nay bạn muốn sử dụng tính năng nào?</p>
+            </div>
+        </div>
+
+        <!-- Danh sách 5 tính năng chính -->
+        <div class="welcome-hub-cards">
+            <!-- 1. Thu Chi -->
+            <button type="button" class="welcome-card welcome-card-thuchi" id="welcome-opt-thuchi" onclick="navigateToFeature('thuchi')">
+                <div class="welcome-card-icon-wrap icon-thuchi">
+                    <i data-lucide="wallet"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Thu chi</span>
+                    </div>
+                    <p class="welcome-card-desc">Nhập thu chi theo ngày, tra cứu lịch sử giao dịch và phân tích tài chính</p>
+                </div>
+                <div class="welcome-card-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </button>
+
+            <!-- 2. Tiết Kiệm -->
+            <button type="button" class="welcome-card welcome-card-tietkiem" id="welcome-opt-tietkiem" onclick="navigateToFeature('tietkiem')">
+                <div class="welcome-card-icon-wrap icon-tietkiem">
+                    <i data-lucide="piggy-bank"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Tiết kiệm</span>
+                    </div>
+                    <p class="welcome-card-desc">Theo dõi các quỹ tiết kiệm MoMo, ngân hàng, mục tiêu tích lũy và dư nợ</p>
+                </div>
+                <div class="welcome-card-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </button>
+
+            <!-- 3. Sức Khỏe -->
+            <button type="button" class="welcome-card welcome-card-suckhoe" id="welcome-opt-suckhoe" onclick="navigateToFeature('suckhoe')">
+                <div class="welcome-card-icon-wrap icon-suckhoe">
+                    <i data-lucide="heart-pulse"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Sức khỏe</span>
+                    </div>
+                    <p class="welcome-card-desc">Theo dõi chu kỳ kinh nguyệt và ghi chép nhật ký quan hệ riêng tư</p>
+                </div>
+                <div class="welcome-card-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </button>
+
+            <!-- 4. Công Việc -->
+            <button type="button" class="welcome-card welcome-card-congviec" id="welcome-opt-congviec" onclick="navigateToFeature('congviec')">
+                <div class="welcome-card-icon-wrap icon-congviec">
+                    <i data-lucide="list-checks"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Công việc</span>
+                    </div>
+                    <p class="welcome-card-desc">Lên danh sách việc cần làm, đặt thời hạn và quản lý tiến độ công việc</p>
+                </div>
+                <div class="welcome-card-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </button>
+
+            <!-- 5. Ghi Chú -->
+            <button type="button" class="welcome-card welcome-card-ghichu" id="welcome-opt-ghichu" onclick="navigateToFeature('ghichu')">
+                <div class="welcome-card-icon-wrap icon-ghichu">
+                    <i data-lucide="sticky-note"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Ghi chú</span>
+                    </div>
+                    <p class="welcome-card-desc">Lưu trữ tên ghi chú và mô tả thông tin quan trọng, đồng bộ Supabase</p>
+                </div>
+                <div class="welcome-card-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </button>
+        </div>
+    </section>
+
+    </div> <!-- End app-container -->
+
+    <!-- META / INSTAGRAM STYLE LOGIN SCREEN OVERLAY -->
+    <div id="login-screen" class="login-screen-overlay">
+        <div class="login-card-container">
+            <!-- Web App Brand Logo -->
+            <div class="meta-logo-wrapper">
+                <div class="app-logo-badge">
+                    <img src="assets/logo.png" alt="Money Logo" class="app-logo-img">
+                </div>
+                <h1 class="login-brand-title">Money</h1>
+                <p class="login-subtitle">Quản lý chi tiêu cá nhân thông minh</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="login-form" autocomplete="on">
+                <div class="login-input-group">
+                    <input 
+                        type="email" 
+                        id="login-email" 
+                        class="meta-input" 
+                        placeholder="Username, email or mobile number" 
+                        required 
+                        autocomplete="username"
+                        spellcheck="false"
+                    >
+                </div>
+                
+                <div class="login-input-group">
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        class="meta-input" 
+                        placeholder="Password" 
+                        required 
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <!-- Error Banner -->
+                <div id="login-error-msg" class="login-error-msg" style="display: none;"></div>
+
+                <!-- Meta Blue Pill Button -->
+                <button type="submit" id="btn-login-submit" class="meta-btn-primary">
+                    <span id="btn-login-text">Log in</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            darkMode: 'class',
+            corePlugins: { preflight: false }
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="main/js/chart-config.js?v=26" defer></script>
+    <script src="main/js/app.js?v=35" defer></script>
+    <script src="main/js/notes.js?v=1" defer></script>
+    <script src="main/js/feature-integration.js?v=3" defer></script>
+</body>
+</html>
