@@ -44,11 +44,12 @@
                     console.warn('CORS CDN Blocked - Running in offline fallback mode.');
                     return true;
                 }
-                showLog('❌ LỖI: ' + message + '\nTại: ' + source + ' (Dòng ' + lineno + ', Cột ' + colno + ')');
+                showLog('❌ LỖI: ' + message + '\nTại: ' + source + ' (Dòng ' + lineno + ', Cột ' + colno + ')' + (error && error.stack ? '\n' + error.stack : ''));
                 return false;
             };
             window.onunhandledrejection = function(event) {
-                showLog('⚠️ HỨA BỊ TỪ CHỐI: ' + event.reason);
+                const reason = event.reason;
+                showLog('⚠️ HỨA BỊ TỪ CHỐI: ' + (reason && reason.stack ? reason.stack : reason));
             };
         })();
     </script>
@@ -1062,7 +1063,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=36" defer></script>
+    <script src="main/js/app.js?v=37" defer></script>
     <script src="main/js/notes.js?v=2" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
