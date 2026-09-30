@@ -1749,6 +1749,7 @@ function closeCategoryExpensesPopup() {
 function renderHistoryList() {
 
     const historyListContainer = document.getElementById('history-spendings-list');
+    if (!historyListContainer) return;
     historyListContainer.innerHTML = '';
 
     // Lọc dữ liệu theo Từ khóa tìm kiếm
