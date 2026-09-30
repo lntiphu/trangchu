@@ -276,6 +276,8 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-        window.QLCTFeatureIntegration.preload();
+        // Để giao diện chính render trước; tải trước Todo khi main thread rảnh.
+        const schedulePreload = window.requestIdleCallback || (callback => setTimeout(callback, 1200));
+        schedulePreload(() => window.QLCTFeatureIntegration.preload());
     });
 })();

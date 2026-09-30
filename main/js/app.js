@@ -729,8 +729,8 @@ function switchTab(tabId) {
     }
     window.scrollTo(0, 0);
 
-    // Cập nhật lại UI cụ thể khi chuyển tab (ví dụ: Biểu đồ)
-    if (tabId === 'dashboard') {
+    // Chỉ render biểu đồ khi trang phân tích đang hiển thị.
+    if (tabId === 'dashboard' && isElementActive('spending-analysis-page')) {
         renderDashboardCharts();
     } else if (tabId === 'history') {
         renderHistoryList();
@@ -1013,13 +1013,12 @@ function closeCalendarModal(fromHistory = false) {
     if (modalEl) modalEl.classList.remove('active');
     if (!fromHistory) leaveAppView();
 
-    // Reset về view lưới sau khi đóng
-    setTimeout(() => {
-        const gridView = document.getElementById('calendar-grid-view');
-        const detailView = document.getElementById('calendar-day-detail');
-        if (gridView) gridView.style.display = 'block';
-        if (detailView) detailView.style.display = 'none';
-    }, 350); // Đợi animation đóng xong
+    // Reset ngay khi đóng để không chạy timer/layout update sau khi người dùng
+    // đã quay về màn hình trước.
+    const gridView = document.getElementById('calendar-grid-view');
+    const detailView = document.getElementById('calendar-day-detail');
+    if (gridView) gridView.style.display = 'block';
+    if (detailView) detailView.style.display = 'none';
 }
 
 
@@ -1310,11 +1309,13 @@ function updateUI() {
     calculateAndRenderSummaries();
     renderDashboardCalendar();
 
-
-    
-    if (state.currentTab === 'dashboard') {
+    // Đồng bộ chart Dashboard khi dữ liệu đổi; cập nhật trang phân tích
+    // khi đang mở để tránh render lặp lại trên mọi lần quay về.
+    if (isElementActive('spending-analysis-page') || state.currentTab === 'dashboard') {
         renderDashboardCharts();
-    } else if (state.currentTab === 'history') {
+    }
+
+    if (state.currentTab === 'history') {
         renderHistoryList();
     }
 }
