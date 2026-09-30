@@ -310,25 +310,25 @@
                         <div class="saver-card-field">
                             <span class="saver-field-label">MOMO</span>
                             <button type="button" class="saver-field-value val-momo" onclick="openAdjustAmountModal('${item.id}', 'momo')" title="Bấm để điều chỉnh">
-                                ${formatCurrency(momo)}
+                                <span>${formatCurrency(momo)}</span>
                             </button>
                         </div>
                         <div class="saver-card-field">
                             <span class="saver-field-label">NGÂN HÀNG</span>
                             <button type="button" class="saver-field-value val-bank" onclick="openAdjustAmountModal('${item.id}', 'bank')" title="Bấm để điều chỉnh">
-                                ${formatCurrency(bank)}
+                                <span>${formatCurrency(bank)}</span>
                             </button>
                         </div>
                         <div class="saver-card-field">
                             <span class="saver-field-label">MỤC TIÊU</span>
                             <button type="button" class="saver-field-value val-target" onclick="openAdjustAmountModal('${item.id}', 'target')" title="Bấm để điều chỉnh">
-                                ${formatCurrency(target)}
+                                <span>${formatCurrency(target)}</span>
                             </button>
                         </div>
                         <div class="saver-card-field">
                             <span class="saver-field-label">THIẾU NỢ</span>
                             <button type="button" class="saver-field-value ${debt > 0 ? 'val-debt-has' : 'val-debt-zero'}" onclick="openAdjustAmountModal('${item.id}', 'debt')" title="Bấm để điều chỉnh">
-                                ${formatCurrency(debt)}
+                                <span>${formatCurrency(debt)}</span>
                             </button>
                         </div>
                     </div>
