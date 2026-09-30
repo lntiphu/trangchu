@@ -750,8 +750,10 @@ function openAddModal() {
 }
 
 function closeAddModal(fromHistory = false) {
-    document.getElementById('add-expense-modal').classList.remove('active');
-    document.getElementById('add-expense-form').reset();
+    const modal = document.getElementById('add-expense-modal');
+    if (modal) modal.classList.remove('active');
+    const form = document.getElementById('add-expense-form');
+    if (form) form.reset();
     if (!fromHistory) leaveAppView();
 }
 
@@ -821,7 +823,7 @@ function openDetailModal(expenseId) {
     saveBtn.onclick = () => saveEditedExpense(exp.id);
 
     const detailModal = document.getElementById('detail-expense-modal');
-    if (!detailModal.classList.contains('active')) {
+    if (detailModal && !detailModal.classList.contains('active')) {
         detailModal.classList.add('active');
         pushAppView('detail-expense-modal');
     }
@@ -883,7 +885,8 @@ function saveEditedExpense(id) {
 }
 
 function closeDetailModal(fromHistory = false) {
-    document.getElementById('detail-expense-modal').classList.remove('active');
+    const modal = document.getElementById('detail-expense-modal');
+    if (modal) modal.classList.remove('active');
     if (!fromHistory) leaveAppView();
 }
 
