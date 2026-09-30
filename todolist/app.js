@@ -647,6 +647,7 @@ function renderCurrentView() {
 function renderTimelineTasks() {
   const container = document.getElementById('timeline-container');
   const emptyState = document.getElementById('tasks-empty-state');
+  if (!container) return;
   
   let activeTasks = state.tasks.filter(t => !t.completed);
 
@@ -667,11 +668,11 @@ function renderTimelineTasks() {
 
   if (activeTasks.length === 0) {
     container.innerHTML = '';
-    emptyState.classList.remove('hidden');
+    if (emptyState) emptyState.classList.remove('hidden');
     return;
   }
 
-  emptyState.classList.add('hidden');
+  if (emptyState) emptyState.classList.add('hidden');
 
   const groups = {
     urgent: { 
@@ -817,17 +818,18 @@ function renderTimelineTasks() {
 function renderHistory() {
   const container = document.getElementById('history-list');
   const emptyState = document.getElementById('history-empty-state');
+  if (!container) return;
   
   const completed = state.tasks.filter(t => t.completed);
   completed.sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0));
 
   if (completed.length === 0) {
     container.innerHTML = '';
-    emptyState.classList.remove('hidden');
+    if (emptyState) emptyState.classList.remove('hidden');
     return;
   }
 
-  emptyState.classList.add('hidden');
+  if (emptyState) emptyState.classList.add('hidden');
   container.innerHTML = completed.map(task => {
     const doneTime = task.completedAt ? formatFullDateTime(task.completedAt) : 'Đã xong';
 
