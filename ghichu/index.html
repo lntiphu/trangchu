@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ghi Chú Cá Nhân</title>
+    <!-- Google Fonts: Be Vietnam Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=2">
+    <script>
+        function goBackToHome() {
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ action: 'showWelcomeHubPage' }, '*');
+                }
+            } catch (e) {}
+
+            try {
+                if (window.parent && window.parent !== window && typeof window.parent.showWelcomeHubPage === 'function') {
+                    window.parent.showWelcomeHubPage();
+                    return;
+                }
+            } catch (e) {}
+
+            window.location.href = '../index.html';
+        }
+        window.goBackToHome = goBackToHome;
+    </script>
+</head>
+<body>
+    <div class="notes-container">
+        <!-- Controls & Search -->
+        <div class="notes-list-header">
+            <div class="notes-count-info">
+                <span class="notes-section-title">Danh sách ghi chú</span>
+                <span class="notes-counter-badge" id="notes-counter-badge">0 ghi chú</span>
+            </div>
+            <div class="notes-search-wrapper" id="notes-search-wrapper">
+                <i data-lucide="search" class="notes-search-icon"></i>
+                <input type="text" id="notes-search-input" placeholder="Tìm theo tên hoặc mô tả...">
+            </div>
+        </div>
+
+        <!-- Danh sách thẻ ghi chú -->
+        <div class="notes-cards-container" id="notes-cards-container">
+            <!-- Dynamic Note Cards -->
+        </div>
+    </div>
+
+    <!-- POPUP MODAL THÊM / CHỈNH SỬA GHI CHÚ -->
+    <div class="notes-modal-overlay" id="notes-modal-overlay">
+        <div class="notes-modal-sheet" id="notes-modal-sheet">
+            <div class="notes-drag-handle"></div>
+            <div class="notes-modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="notes-badge-icon">
+                        <i data-lucide="edit-3"></i>
+                    </div>
+                    <div>
+                        <h3 id="notes-form-heading">Ghi chú mới</h3>
+                        <span class="notes-form-sub">Nhập tên và mô tả chi tiết</span>
+                    </div>
+                </div>
+                <button type="button" class="notes-modal-close-btn" id="btn-close-note-modal" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <form id="notes-form" class="notes-form">
+                <input type="hidden" id="note-id" value="">
+                
+                <!-- Box 1: Tên ghi chú -->
+                <div class="form-group notes-form-group">
+                    <label for="note-title-input">
+                        <i data-lucide="bookmark" class="note-label-icon"></i>
+                        Tên ghi chú <span class="required-mark">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="note-title-input" 
+                            placeholder="Nhập tên hoặc tiêu đề ghi chú..." 
+                            required 
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+
+                <!-- Box 2: Mô tả ghi chú -->
+                <div class="form-group notes-form-group">
+                    <label for="note-content-input">
+                        <i data-lucide="align-left" class="note-label-icon"></i>
+                        Mô tả ghi chú
+                    </label>
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="note-content-input" 
+                            placeholder="Nhập nội dung, chi tiết thông tin cần ghi nhớ..." 
+                            rows="5"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="notes-form-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-note-form">
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-note">
+                        <i data-lucide="check"></i> <span id="btn-save-note-text">Lưu ghi chú</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIXED BOTTOM NAVIGATION BAR -->
+    <nav class="notes-bottom-nav" aria-label="Thanh điều hướng">
+        <button type="button" class="notes-nav-item" id="btn-nav-search" title="Tìm kiếm ghi chú" aria-label="Tìm kiếm">
+            <i data-lucide="search"></i>
+            <span>Tìm kiếm</span>
+        </button>
+        <button type="button" class="notes-nav-add-btn" id="btn-toggle-add-note" title="Thêm ghi chú mới" aria-label="Thêm ghi chú">
+            <i data-lucide="plus"></i>
+        </button>
+        <button type="button" class="notes-nav-item" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
+            <i data-lucide="arrow-left"></i>
+            <span>Quay lại</span>
+        </button>
+    </nav>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js?v=1"></script>
+</body>
+</html>
