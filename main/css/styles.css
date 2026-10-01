@@ -3626,10 +3626,13 @@ html, body {
 #login-screen .login-footer { width: 100%; margin-top: 24px; text-align: center; }
 
 @media (max-width: 700px) {
-    #login-screen.login-screen-overlay { padding: 14px; align-items: stretch; }
-    #login-screen .login-layout { min-height: calc(100vh - 28px); grid-template-columns: 1fr; border-radius: 24px; }
-    #login-screen .login-showcase { display: none; }
-    #login-screen .login-card-container { padding: 42px 26px 28px; }
+    #login-screen.login-screen-overlay { padding: 14px; align-items: flex-start; }
+    #login-screen .login-layout { min-height: auto; grid-template-columns: 1fr; border-radius: 24px; margin: 10px 0; }
+    #login-screen .login-showcase { display: flex; min-height: auto; padding: 32px 26px 28px; }
+    #login-screen .showcase-copy { max-width: none; margin: 0; padding: 0; }
+    #login-screen .showcase-copy h1 { margin: 0 0 14px; font-size: clamp(2.45rem, 11vw, 3.5rem); letter-spacing: -1.8px; }
+    #login-screen .showcase-copy p { max-width: none; font-size: .82rem; line-height: 1.55; }
+    #login-screen .login-card-container { padding: 34px 26px 32px; justify-content: flex-start; }
     #login-screen .login-heading { margin-bottom: 30px; text-align: center; }
 }
 
