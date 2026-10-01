@@ -1,15 +1,15 @@
 ﻿{
-  "name": "Money - Quản Lý Chi Tiêu",
-  "short_name": "Money",
+  "name": "Trang chủ - Làm chủ mọi thứ",
+  "short_name": "Làm chủ mọi thứ",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "apple-touch-icon.png",
+      "src": "assets/logo-chu-dong.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }

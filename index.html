@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Money">
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="Làm chủ mọi thứ">
+    <link rel="icon" type="image/svg+xml" href="assets/logo-chu-dong.svg">
+    <link rel="apple-touch-icon" href="assets/logo-chu-dong.svg">
     <link rel="manifest" href="manifest.json">
-    <title>Money - Quản Lý Chi Tiêu</title>
+    <title>Trang chủ - Làm chủ mọi thứ</title>
     <!-- Preconnect & DNS-Prefetch for Fast Loading on Mobile Networks -->
     <link rel="dns-prefetch" href="https://ghdydszifdaiphcjguri.supabase.co">
     <link rel="preconnect" href="https://ghdydszifdaiphcjguri.supabase.co" crossorigin>
@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=32">
+    <link rel="stylesheet" href="main/css/styles.css?v=33">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -62,8 +62,8 @@
             <div class="header-left">
                 <span class="date-today" id="current-date">Thứ Ba, 21 Tháng 7</span>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <img src="assets/logo.png" alt="Money Logo" style="width: 32px; height: 32px; object-fit: contain;">
-                    <h1 class="header-title" style="font-size: 1.6rem; font-weight: 800; margin: 0;">Money</h1>
+                    <img src="assets/logo-chu-dong.svg" alt="Logo Làm chủ mọi thứ" style="width: 32px; height: 32px; object-fit: contain;">
+                    <h1 class="header-title" style="font-size: 1.6rem; font-weight: 800; margin: 0;">Làm chủ mọi thứ</h1>
                 </div>
             </div>
             <div class="header-right">
@@ -1001,26 +1001,33 @@
 
     </div> <!-- End app-container -->
 
-    <!-- META / INSTAGRAM STYLE LOGIN SCREEN OVERLAY -->
+    <!-- LOGIN SCREEN OVERLAY -->
     <div id="login-screen" class="login-screen-overlay">
-        <div class="login-card-container">
-            <!-- Web App Brand Logo -->
-            <div class="meta-logo-wrapper">
-                <div class="app-logo-badge">
-                    <img src="assets/logo.png" alt="Money Logo" class="app-logo-img">
+        <div class="login-layout">
+            <aside class="login-showcase" aria-label="Giới thiệu Trang chủ">
+                <div class="showcase-glow showcase-glow-one"></div>
+                <div class="showcase-glow showcase-glow-two"></div>
+                <div class="showcase-copy">
+                    <h1>Chủ động với<br><em>mọi thứ.</em></h1>
+                    <p>Theo dõi, sắp xếp và hiểu rõ thói quen trong một không gian thật gọn gàng.</p>
                 </div>
-                <h1 class="login-brand-title">Money</h1>
-                <p class="login-subtitle">Quản lý chi tiêu cá nhân thông minh</p>
-            </div>
+            </aside>
+
+            <main class="login-card-container">
+                <div class="login-heading">
+                    <span class="login-eyebrow">Chào mừng trở lại</span>
+                    <h2 class="login-brand-title">Đăng nhập</h2>
+                </div>
 
             <!-- Login Form -->
             <form id="login-form" class="login-form" autocomplete="on">
                 <div class="login-input-group">
+                    <label for="login-email">Email</label>
                     <input 
                         type="email" 
                         id="login-email" 
                         class="meta-input" 
-                        placeholder="Username, email or mobile number" 
+                        placeholder="Nhập email của bạn" 
                         required 
                         autocomplete="username"
                         spellcheck="false"
@@ -1028,11 +1035,12 @@
                 </div>
                 
                 <div class="login-input-group">
+                    <label for="login-password">Mật khẩu</label>
                     <input 
                         type="password" 
                         id="login-password" 
                         class="meta-input" 
-                        placeholder="Password" 
+                        placeholder="Nhập mật khẩu" 
                         required 
                         autocomplete="current-password"
                     >
@@ -1041,11 +1049,13 @@
                 <!-- Error Banner -->
                 <div id="login-error-msg" class="login-error-msg" style="display: none;"></div>
 
-                <!-- Meta Blue Pill Button -->
                 <button type="submit" id="btn-login-submit" class="meta-btn-primary">
-                    <span id="btn-login-text">Log in</span>
+                    <span id="btn-login-text">Vào Trang chủ</span>
+                    <i data-lucide="arrow-right"></i>
                 </button>
             </form>
+                <p class="login-footer">Dữ liệu của bạn được đồng bộ an toàn và riêng tư.</p>
+            </main>
         </div>
     </div>
 
