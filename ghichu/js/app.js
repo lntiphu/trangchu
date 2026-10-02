@@ -36,10 +36,11 @@
     function initSupabase() {
         if (typeof supabase !== 'undefined' && supabase.createClient) {
             try {
-                notesClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                notesClient = window.__QLCT_SUPABASE_CLIENT || supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
                     auth: { persistSession: true, autoRefreshToken: true },
                     realtime: { timeout: 5000 }
                 });
+                window.__QLCT_SUPABASE_CLIENT = notesClient;
             } catch (err) {
                 console.warn('[Ghi Chú] Lỗi tạo Supabase client:', err);
             }
