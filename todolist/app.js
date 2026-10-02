@@ -55,8 +55,46 @@ function getRelativeDateTime(dayOffset, hours, minutes) {
   const d = new Date();
   d.setDate(d.getDate() + dayOffset);
   d.setHours(hours, minutes, 0, 0);
+  return formatLocalDateTimeValue(d);
+}
+
+// datetime-local biểu diễn giờ địa phương, còn Supabase timestamptz cần một
+// thời điểm có múi giờ. Luôn đổi qua lại ở biên LocalStorage/Supabase để giờ
+// người dùng chọn không bị lệch sau khi đóng và mở lại ứng dụng.
+function formatLocalDateTimeValue(date) {
   const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function localDateTimeToIso(value) {
+  if (!value) return null;
+  const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!match) return value;
+
+  const [, year, month, day, hour, minute] = match;
+  const localDate = new Date(
+    Number(year), Number(month) - 1, Number(day),
+    Number(hour), Number(minute), 0, 0
+  );
+  return Number.isNaN(localDate.getTime()) ? value : localDate.toISOString();
+}
+
+function cloudDateTimeToLocal(value) {
+  if (!value) return '';
+
+  const raw = String(value);
+  // Hỗ trợ dữ liệu cũ nếu cột trả về chuỗi không có timezone.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(raw) && !/[zZ]|[+-]\d{2}:?\d{2}$/.test(raw)) {
+    return raw.slice(0, 16);
+  }
+
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? '' : formatLocalDateTimeValue(date);
+}
+
+function normalizeTaskDateTime(task) {
+  if (!task || !task.dueDate) return task;
+  return { ...task, dueDate: cloudDateTimeToLocal(task.dueDate) };
 }
 
 // App State
@@ -78,7 +116,8 @@ async function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      state.tasks = JSON.parse(raw);
+      const parsedTasks = JSON.parse(raw);
+      state.tasks = Array.isArray(parsedTasks) ? parsedTasks.map(normalizeTaskDateTime) : [];
     } else {
       state.tasks = [];
     }
@@ -141,7 +180,7 @@ async function syncWithSupabase(showManualToast = false) {
         id: String(item.id),
         title: item.title || '',
         description: item.description || '',
-        dueDate: item.due_date || item.dueDate || '',
+        dueDate: cloudDateTimeToLocal(item.due_date || item.dueDate || ''),
         image: item.image || null,
         completed: Boolean(item.completed),
         completedAt: item.completed_at || item.completedAt || null,
@@ -176,7 +215,7 @@ async function pushLocalTasksToCloud(tasksToPush = state.tasks) {
       user_id: currentUserId,
       title: t.title,
       description: t.description || '',
-      due_date: t.dueDate || null,
+      due_date: localDateTimeToIso(t.dueDate),
       image: t.image || null,
       completed: Boolean(t.completed),
       completed_at: t.completedAt || null,
