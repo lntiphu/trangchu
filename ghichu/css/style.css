@@ -27,7 +27,7 @@ body {
     color: var(--text-primary);
     width: 100%;
     min-height: 100vh;
-    padding: max(16px, env(safe-area-inset-top)) 16px calc(76px + env(safe-area-inset-bottom));
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(82px + env(safe-area-inset-bottom));
 }
 
 .notes-container {
@@ -123,7 +123,8 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 64px;
+    height: auto;
+    min-height: 72px;
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -131,8 +132,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 0 16px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding: 8px 16px max(10px, env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
     z-index: 999;
     box-shadow: 0 -4px 20px rgba(52, 66, 55, 0.06);
 }
