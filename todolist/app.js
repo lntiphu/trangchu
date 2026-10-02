@@ -97,6 +97,39 @@ function normalizeTaskDateTime(task) {
   return { ...task, dueDate: cloudDateTimeToLocal(task.dueDate) };
 }
 
+function setModalDueValue(value) {
+  const hiddenInput = document.getElementById('modal-task-due');
+  const dateInput = document.getElementById('modal-task-due-date');
+  const timeInput = document.getElementById('modal-task-due-time');
+  const normalized = value ? cloudDateTimeToLocal(value) : '';
+
+  if (hiddenInput) hiddenInput.value = normalized;
+  if (dateInput) dateInput.value = normalized.slice(0, 10);
+  if (timeInput) timeInput.value = normalized.slice(11, 16);
+}
+
+function getModalDueValue() {
+  const dateInput = document.getElementById('modal-task-due-date');
+  const timeInput = document.getElementById('modal-task-due-time');
+  const date = dateInput?.value || '';
+  const time = timeInput?.value.trim() || '';
+
+  if (!date || !time) return '';
+  if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+    if (timeInput) {
+      timeInput.setCustomValidity('Vui lòng nhập giờ theo định dạng 24h, ví dụ 22:30.');
+      timeInput.reportValidity();
+    }
+    return '';
+  }
+
+  if (timeInput) timeInput.setCustomValidity('');
+  const value = `${date}T${time}`;
+  const hiddenInput = document.getElementById('modal-task-due');
+  if (hiddenInput) hiddenInput.value = value;
+  return value;
+}
+
 // App State
 const state = {
   tasks: [],
@@ -945,7 +978,7 @@ function openAddTaskModal() {
 
   if (noDueToggle) noDueToggle.checked = false;
   if (dueContainer) dueContainer.classList.remove('opacity-40', 'pointer-events-none');
-  if (dueInput) dueInput.value = getRelativeDateTime(0, 18, 0);
+  setModalDueValue(getRelativeDateTime(0, 18, 0));
   
   const titleEl = document.getElementById('modal-title');
   const subEl = document.getElementById('modal-subtitle');
@@ -992,11 +1025,11 @@ function openEditTaskModal(id) {
   if (!task.dueDate) {
     if (noDueToggle) noDueToggle.checked = true;
     if (dueContainer) dueContainer.classList.add('opacity-40', 'pointer-events-none');
-    if (dueInput) dueInput.value = '';
+    setModalDueValue('');
   } else {
     if (noDueToggle) noDueToggle.checked = false;
     if (dueContainer) dueContainer.classList.remove('opacity-40', 'pointer-events-none');
-    if (dueInput) dueInput.value = task.dueDate;
+    setModalDueValue(task.dueDate);
   }
 
   const titleEl = document.getElementById('modal-title');
@@ -1046,11 +1079,11 @@ function setQuickModalDate(dayOffset, hour, minute) {
 
   if (noDueToggle) noDueToggle.checked = false;
   if (dueContainer) dueContainer.classList.remove('opacity-40', 'pointer-events-none');
-  if (dueInput) dueInput.value = getRelativeDateTime(dayOffset, hour, minute);
+  setModalDueValue(getRelativeDateTime(dayOffset, hour, minute));
 }
 
 function clearModalDate() {
-  document.getElementById('modal-task-due').value = '';
+  setModalDueValue('');
 }
 
 function triggerReminderPopup(task, isOverdue = false) {
@@ -1238,9 +1271,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const noDueToggle = document.getElementById('modal-no-due-toggle');
     const isNoDue = noDueToggle && noDueToggle.checked;
-    const due = isNoDue ? '' : (document.getElementById('modal-task-due') ? document.getElementById('modal-task-due').value : '');
+    const due = isNoDue ? '' : getModalDueValue();
 
     if (!title.trim()) return;
+    if (!isNoDue && !due) return;
 
     if (id) {
       const task = state.tasks.find(t => t.id === id);
@@ -1330,7 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const dueInput = document.getElementById('modal-task-due');
       if (e.target.checked) {
         if (dueContainer) dueContainer.classList.add('opacity-40', 'pointer-events-none');
-        if (dueInput) dueInput.value = '';
+        setModalDueValue('');
       } else {
         if (dueContainer) dueContainer.classList.remove('opacity-40', 'pointer-events-none');
         if (dueInput && !dueInput.value) dueInput.value = getRelativeDateTime(0, 18, 0);

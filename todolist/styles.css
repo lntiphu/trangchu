@@ -665,6 +665,46 @@ body > div.max-w-md {
   filter: sepia(0.2) saturate(0.6);
 }
 
+.todo-date-time-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+  gap: 8px;
+}
+
+.todo-date-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.todo-date-time-field > span {
+  color: var(--qlct-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.todo-date-time-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid rgba(52, 66, 55, 0.14);
+  border-radius: 14px;
+  background: #fffdfb;
+  color: var(--qlct-text);
+  font-size: 13px;
+  font-weight: 800;
+  outline: none;
+}
+
+.todo-date-time-field input:focus {
+  border-color: var(--qlct-sage);
+  box-shadow: 0 0 0 3px rgba(106, 123, 104, 0.14);
+}
+
 /* ========================================================================== 
    HISTORY VIEW – completed work with a lighter, editorial card layout
    ========================================================================== */
