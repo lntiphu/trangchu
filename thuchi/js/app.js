@@ -24,6 +24,11 @@ let analysisMonth = new Date().getMonth();
 let currentAdjustingSaverId = null;
 let currentAdjustingField = null;
 
+// Khi chạy trong PWA, dùng chung Supabase client của trang cha để tránh
+// tạo nhiều GoTrueClient với cùng một storage key. Khi mở standalone,
+// fallback về chính cửa sổ hiện tại.
+const clientOwner = window.parent && window.parent !== window ? window.parent : window;
+
 function goBackToHome() {
     try {
         if (window.parent && window.parent !== window) {
@@ -2100,10 +2105,11 @@ function initSupabase() {
     if (!state.supabaseUrl || !state.supabaseKey) return;
     
     try {
-        supabaseClient = supabase.createClient(state.supabaseUrl, state.supabaseKey, {
+        supabaseClient = clientOwner.__QLCT_SUPABASE_CLIENT || supabase.createClient(state.supabaseUrl, state.supabaseKey, {
             auth: { persistSession: true, autoRefreshToken: true },
             realtime: { timeout: 5000 }
         });
+        clientOwner.__QLCT_SUPABASE_CLIENT = supabaseClient;
         
         // Đăng ký Event Listeners cho Login Form và Logout Button
         const loginForm = document.getElementById('login-form');
