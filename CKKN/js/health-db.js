@@ -117,7 +117,9 @@ async function initHealthDatabase() {
   }
 
   try {
-    healthSupabaseClient = supabase.createClient(HEALTH_SUPABASE_URL, HEALTH_SUPABASE_KEY);
+    const clientOwner = window.parent && window.parent !== window ? window.parent : window;
+    healthSupabaseClient = clientOwner.__QLCT_SUPABASE_CLIENT || supabase.createClient(HEALTH_SUPABASE_URL, HEALTH_SUPABASE_KEY);
+    clientOwner.__QLCT_SUPABASE_CLIENT = healthSupabaseClient;
     const { data: { session } } = await healthSupabaseClient.auth.getSession();
     healthUserId = session?.user?.id || null;
 
