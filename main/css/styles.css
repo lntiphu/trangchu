@@ -5056,3 +5056,11 @@ html, body {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* Các trang tích hợp dùng chính vùng đáy của modal; nav bên trong tự chừa
+   safe-area. Không cộng safe-area thêm lần nữa ở sheet bao ngoài. */
+#ckkn-modal.ckkn-page-modal .ckkn-page-sheet,
+#todo-modal.todo-page-modal .todo-page-sheet {
+    box-sizing: border-box !important;
+    padding-bottom: 0 !important;
+}
