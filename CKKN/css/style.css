@@ -465,8 +465,10 @@ body {
 .form-group.full { grid-column: 1 / -1; }
 .form-group.mt   { margin-top: 12px; }
 
-label { font-size: .80rem; font-weight: 600; color: #666; }
-label .required { color: var(--red); }
+label,
+.form-label { font-size: .80rem; font-weight: 600; color: #666; }
+label .required,
+.form-label .required { color: var(--red); }
 
 input[type="date"],
 input[type="text"],
