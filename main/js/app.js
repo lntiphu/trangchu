@@ -2188,7 +2188,7 @@ async function handleLogin(e) {
 
     if (errorMsgEl) errorMsgEl.style.display = 'none';
     if (submitBtn) submitBtn.disabled = true;
-    if (btnText) btnText.textContent = "Logging in...";
+    if (btnText) btnText.textContent = "Đang đăng nhập...";
 
     try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -2253,10 +2253,11 @@ function initSupabase() {
     if (!state.supabaseUrl || !state.supabaseKey) return;
     
     try {
-        supabaseClient = supabase.createClient(state.supabaseUrl, state.supabaseKey, {
+        supabaseClient = window.__QLCT_SUPABASE_CLIENT || supabase.createClient(state.supabaseUrl, state.supabaseKey, {
             auth: { persistSession: true, autoRefreshToken: true },
             realtime: { timeout: 5000 }
         });
+        window.__QLCT_SUPABASE_CLIENT = supabaseClient;
         
         // Đăng ký Event Listeners cho Login Form và Logout Button
         const loginForm = document.getElementById('login-form');
