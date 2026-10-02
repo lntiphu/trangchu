@@ -602,7 +602,7 @@ body > div.max-w-md {
 #task-modal textarea,
 #history-modal input:not([type="hidden"]),
 #mobile-search-bar input,
-#search-input {
+#todo-search-input {
   color: var(--qlct-text) !important;
   -webkit-text-fill-color: var(--qlct-text) !important;
   caret-color: var(--qlct-olive) !important;
@@ -625,7 +625,7 @@ body > div.max-w-md {
 #task-modal input::placeholder,
 #task-modal textarea::placeholder,
 #history-modal input::placeholder,
-#search-input::placeholder {
+#todo-search-input::placeholder {
   color: #7b877e !important;
   -webkit-text-fill-color: #7b877e !important;
   opacity: 1 !important;

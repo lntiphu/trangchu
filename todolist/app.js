@@ -27,7 +27,8 @@ let supabaseClient = null;
 let currentUserId = null;
 if (typeof supabase !== 'undefined' && supabase.createClient) {
   try {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    supabaseClient = window.__QLCT_SUPABASE_CLIENT || supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.__QLCT_SUPABASE_CLIENT = supabaseClient;
   } catch (e) {
     console.warn('Supabase initialization failed:', e);
   }
@@ -369,7 +370,7 @@ function setFilterCategory(cat) {
 
 function toggleSearchBar() {
   const searchBar = document.getElementById('mobile-search-bar');
-  const searchInput = document.getElementById('search-input');
+  const searchInput = document.getElementById('todo-search-input');
   if (!searchBar) return;
   searchBar.classList.toggle('hidden');
   if (!searchBar.classList.contains('hidden') && searchInput) {
@@ -1414,8 +1415,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Search Toggle for mobile
   const searchToggleBtn = document.getElementById('search-toggle-btn');
   const searchBar = document.getElementById('mobile-search-bar');
-  const searchInput = document.getElementById('search-input');
-  const clearSearchBtn = document.getElementById('clear-search-btn');
+  const searchInput = document.getElementById('todo-search-input');
+  const clearSearchBtn = document.getElementById('todo-clear-search-btn');
 
   searchToggleBtn.addEventListener('click', () => {
     searchBar.classList.toggle('hidden');

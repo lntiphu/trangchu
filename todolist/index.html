@@ -122,11 +122,11 @@
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5"></i>
           <input 
             type="text" 
-            id="search-input" 
+            id="todo-search-input" 
             placeholder="Tìm kiếm công việc..." 
             class="w-full pl-10 pr-9 py-2.5 text-xs rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 shadow-xs"
           >
-          <button id="clear-search-btn" class="hidden absolute right-3 p-1 text-slate-400 hover:text-slate-600">
+          <button id="todo-clear-search-btn" class="hidden absolute right-3 p-1 text-slate-400 hover:text-slate-600">
             <i data-lucide="x" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -264,7 +264,7 @@
 
         <!-- 1. Tiêu đề công việc -->
         <div>
-          <label class="block text-[11px] font-extrabold uppercase tracking-wider mb-1.5" style="color: var(--qlct-muted);">
+          <label for="modal-task-title" class="block text-[11px] font-extrabold uppercase tracking-wider mb-1.5" style="color: var(--qlct-muted);">
             Tên công việc <span class="text-rose-500">*</span>
           </label>
           <div class="relative flex items-center">
@@ -282,7 +282,7 @@
         <!-- 2. Thời gian hạn chót hoàn thành -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-[11px] font-extrabold uppercase tracking-wider" style="color: var(--qlct-muted);">
+            <label for="modal-task-due-date" class="block text-[11px] font-extrabold uppercase tracking-wider" style="color: var(--qlct-muted);">
               Hạn hoàn thành
             </label>
             <!-- Toggle Không thời hạn -->
@@ -325,7 +325,7 @@
 
         <!-- 3. Ghi chú thêm -->
         <div>
-          <label class="block text-[11px] font-extrabold uppercase tracking-wider mb-1.5" style="color: var(--qlct-muted);">
+          <label for="modal-task-desc" class="block text-[11px] font-extrabold uppercase tracking-wider mb-1.5" style="color: var(--qlct-muted);">
             Ghi chú chi tiết (tùy chọn)
           </label>
           <div class="relative">
@@ -341,7 +341,7 @@
         <!-- 4. Thêm hình ảnh đính kèm -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-[11px] font-extrabold uppercase tracking-wider" style="color: var(--qlct-muted);">
+            <label for="modal-upload-image-btn" class="block text-[11px] font-extrabold uppercase tracking-wider" style="color: var(--qlct-muted);">
               Hình ảnh đính kèm
             </label>
             <span class="text-[10px] font-medium" style="color: var(--qlct-muted);">Tùy chọn</span>
@@ -397,14 +397,14 @@
         <input type="hidden" id="history-task-id">
 
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 mb-1">Công việc</label>
+          <div class="block text-[11px] font-bold text-slate-500 mb-1">Công việc</div>
           <div id="history-task-title" class="text-sm font-bold text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800/80 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
             --
           </div>
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 mb-1">Thời điểm đã hoàn thành</label>
+          <label for="history-task-completed-at" class="block text-[11px] font-bold text-slate-500 mb-1">Thời điểm đã hoàn thành</label>
           <input 
             type="datetime-local" 
             id="history-task-completed-at" 
