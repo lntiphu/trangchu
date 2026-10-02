@@ -376,7 +376,7 @@ body {
   color: var(--qlct-text) !important;
   scrollbar-width: none;
   min-height: 100vh;
-  padding-bottom: calc(115px + env(safe-area-inset-bottom, 24px)) !important;
+  padding-bottom: calc(82px + env(safe-area-inset-bottom, 24px)) !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch !important;
@@ -1369,5 +1369,20 @@ main.view-panel {
   #task-modal .modal-content {
     border-radius: 28px !important;
   }
+}
+
+/* Bottom nav: safe-area chỉ được cộng một lần và luôn nằm sát đáy khung. */
+.todo-bottom-nav {
+  box-sizing: border-box !important;
+  height: auto !important;
+  min-height: 72px !important;
+  padding: 8px 10px max(10px, env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.todo-bottom-nav > div {
+  width: 100% !important;
+  max-width: none !important;
+  height: 52px !important;
+  padding: 0 4px !important;
 }
 

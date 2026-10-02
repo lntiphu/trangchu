@@ -1370,8 +1370,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCurrentView();
   });
 
-  // Theme
-  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  // Theme (màn hình tích hợp không còn nút đổi theme riêng)
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 
   // Close modals on overlay backdrop click
   ['task-modal', 'history-modal', 'reminder-modal', 'confirm-modal', 'image-viewer-modal'].forEach(id => {
