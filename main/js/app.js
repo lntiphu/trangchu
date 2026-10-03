@@ -7,6 +7,7 @@
 const state = {
     expenses: [],
     savers: [],
+    supportEntries: [],
     currentUserId: null,
     currentTab: 'dashboard',
     searchQuery: '',
@@ -103,6 +104,14 @@ function closeActiveAppView(fromHistory = false) {
     }
     if (isElementActive('todo-modal')) {
         closeTodoModal(true, true);
+        return;
+    }
+    if (isElementActive('support-entry-modal')) {
+        closeSupportEntryModal(true, true);
+        return;
+    }
+    if (isElementActive('support-modal')) {
+        closeSupportModal(true, true);
         return;
     }
 
@@ -469,6 +478,56 @@ function registerEventListeners() {
         todoModal.addEventListener('click', event => {
             if (event.target.id === 'todo-modal') closeTodoModal();
         });
+    }
+
+    // Mở / Đóng modal Hỗ trợ (tính năng thứ 6)
+    const btnOpenSupport = document.getElementById('welcome-opt-hotro');
+    if (btnOpenSupport) {
+        btnOpenSupport.addEventListener('click', openSupportModal);
+    }
+    const btnCloseSupport = document.getElementById('btn-close-support-modal');
+    if (btnCloseSupport) {
+        btnCloseSupport.addEventListener('click', closeSupportModal);
+    }
+    // Tìm kiếm trong trang Hỗ trợ
+    const supportSearchInput = document.getElementById('support-search-input');
+    const btnClearSupportSearch = document.getElementById('btn-clear-support-search');
+    if (supportSearchInput) {
+        supportSearchInput.addEventListener('input', () => {
+            if (btnClearSupportSearch) btnClearSupportSearch.hidden = !supportSearchInput.value;
+            renderSupportEntries();
+        });
+    }
+    if (btnClearSupportSearch && supportSearchInput) {
+        btnClearSupportSearch.addEventListener('click', event => {
+            event.preventDefault();
+            supportSearchInput.value = '';
+            btnClearSupportSearch.hidden = true;
+            renderSupportEntries();
+            supportSearchInput.focus();
+        });
+    }
+    const btnAddSupportEntry = document.getElementById('btn-add-support-entry');
+    if (btnAddSupportEntry) {
+        btnAddSupportEntry.addEventListener('click', openSupportEntryModal);
+    }
+    const btnCloseSupportEntry = document.getElementById('btn-close-support-entry-modal');
+    if (btnCloseSupportEntry) {
+        btnCloseSupportEntry.addEventListener('click', closeSupportEntryModal);
+    }
+    const btnCancelSupportEntry = document.getElementById('btn-cancel-support-entry');
+    if (btnCancelSupportEntry) {
+        btnCancelSupportEntry.addEventListener('click', closeSupportEntryModal);
+    }
+    const supportEntryModal = document.getElementById('support-entry-modal');
+    if (supportEntryModal) {
+        supportEntryModal.addEventListener('click', event => {
+            if (event.target.id === 'support-entry-modal') closeSupportEntryModal();
+        });
+    }
+    const supportEntryForm = document.getElementById('support-entry-form');
+    if (supportEntryForm) {
+        supportEntryForm.addEventListener('submit', handleSupportEntrySubmit);
     }
 
     // Mở / Đóng Modal 5 Options Hub
@@ -1972,6 +2031,8 @@ function showWelcomeHubPage({ fromHistory = false } = {}) {
         'saver-page-modal',
         'ckkn-modal',
         'todo-modal',
+        'support-entry-modal',
+        'support-modal',
         'notes-modal',
         'spending-analysis-page',
         'add-expense-modal',
@@ -1996,6 +2057,255 @@ function hideWelcomeHubPage() {
         welcomeEl.setAttribute('aria-hidden', 'true');
     }
 }
+
+function openSupportModal() {
+    const modal = document.getElementById('support-modal');
+    if (!modal) return;
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    pushAppView('support-modal');
+    fetchSupportEntries();
+    createLucideIcons();
+}
+
+function closeSupportModal(returnToHub = true, fromHistory = false) {
+    const modal = document.getElementById('support-modal');
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    if (returnToHub && !fromHistory) leaveAppView();
+}
+
+// Chuẩn hóa chuỗi để tìm kiếm không phân biệt dấu / hoa thường
+function normalizeSupportText(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase();
+}
+
+// Ghi text vào ô và tô sáng đoạn khớp từ khóa (an toàn, không dùng innerHTML)
+function fillSupportCell(cell, text, query) {
+    const source = String(text || '');
+    if (!query) {
+        cell.textContent = source;
+        return;
+    }
+    // Chuẩn hóa từng ký tự riêng để map ngược đúng vị trí trong chuỗi gốc.
+    const chars = Array.from(source);
+    const normChars = chars.map(ch => normalizeSupportText(ch));
+    const normJoined = normChars.join('');
+    const starts = [];
+    let pos = normJoined.indexOf(query);
+    while (pos !== -1) {
+        starts.push(pos);
+        pos = normJoined.indexOf(query, pos + query.length);
+    }
+    if (!starts.length) {
+        cell.textContent = source;
+        return;
+    }
+
+    // Map vị trí trong chuỗi chuẩn hóa -> chỉ số ký tự gốc
+    const offsetToChar = [];
+    normChars.forEach((n, i) => { for (let k = 0; k < n.length; k++) offsetToChar.push(i); });
+
+    let cursor = 0;
+    starts.forEach(start => {
+        const from = offsetToChar[start];
+        const to = offsetToChar[start + query.length - 1] + 1;
+        if (from < cursor) return;
+        if (from > cursor) cell.appendChild(document.createTextNode(chars.slice(cursor, from).join('')));
+        const mark = document.createElement('mark');
+        mark.textContent = chars.slice(from, to).join('');
+        cell.appendChild(mark);
+        cursor = to;
+    });
+    if (cursor < chars.length) cell.appendChild(document.createTextNode(chars.slice(cursor).join('')));
+}
+
+function renderSupportEntries() {
+    const tbody = document.getElementById('support-table-body');
+    const countEl = document.getElementById('support-entry-count');
+    if (!tbody) return;
+
+    tbody.replaceChildren();
+    const allEntries = state.supportEntries || [];
+    const rawQuery = document.getElementById('support-search-input')?.value.trim() || '';
+    const query = normalizeSupportText(rawQuery);
+    const entries = query
+        ? allEntries.filter(entry =>
+            normalizeSupportText(entry.title).includes(query) ||
+            normalizeSupportText(entry.content).includes(query))
+        : allEntries;
+
+    if (countEl) {
+        countEl.textContent = query ? `${entries.length}/${allEntries.length}` : String(allEntries.length);
+    }
+
+    if (!entries.length) {
+        const row = document.createElement('tr');
+        row.className = 'support-empty-row';
+        const cell = document.createElement('td');
+        cell.colSpan = 4;
+        const isSearching = Boolean(query) && allEntries.length > 0;
+        cell.innerHTML = `
+            <div class="support-empty-state">
+                <span class="support-empty-icon"><i data-lucide="${isSearching ? 'search-x' : 'inbox'}"></i></span>
+                <strong>${isSearching ? 'Không tìm thấy kết quả' : 'Chưa có thông tin'}</strong>
+                <p>${isSearching ? 'Thử từ khóa khác nhé.' : 'Bấm nút “+” ở góc trên để thêm “Cần này” và “Đi đây”.'}</p>
+            </div>`;
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        createLucideIcons();
+        return;
+    }
+
+    entries.forEach((entry, index) => {
+        const row = document.createElement('tr');
+
+        const indexCell = document.createElement('td');
+        indexCell.className = 'support-col-index';
+        indexCell.textContent = String(index + 1);
+
+        // Mỗi dòng: title = "Cần này", content = "Đi đây"
+        const needCell = document.createElement('td');
+        needCell.className = 'support-cell-need';
+        needCell.dataset.label = 'Cần này';
+        fillSupportCell(needCell, entry.title, query);
+
+        const goCell = document.createElement('td');
+        goCell.className = 'support-cell-go';
+        goCell.dataset.label = 'Đi đây';
+        fillSupportCell(goCell, entry.content, query);
+
+        const actionCell = document.createElement('td');
+        actionCell.className = 'support-col-action';
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'support-row-delete';
+        deleteBtn.title = 'Xóa';
+        deleteBtn.setAttribute('aria-label', 'Xóa dòng này');
+        deleteBtn.innerHTML = '<i data-lucide="trash-2"></i>';
+        deleteBtn.addEventListener('click', () => deleteSupportEntry(entry.id));
+        actionCell.appendChild(deleteBtn);
+
+        row.append(indexCell, needCell, goCell, actionCell);
+        tbody.appendChild(row);
+    });
+
+    createLucideIcons();
+}
+
+async function deleteSupportEntry(id) {
+    if (!id || !supabaseClient || !state.currentUserId) return;
+    if (!confirm('Xóa dòng hỗ trợ này?')) return;
+
+    const { error } = await supabaseClient
+        .from('support_entries')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', state.currentUserId);
+
+    if (error) {
+        console.error('Không thể xóa nội dung hỗ trợ:', error);
+        alert('Không thể xóa thông tin hỗ trợ.');
+        return;
+    }
+
+    state.supportEntries = state.supportEntries.filter(entry => entry.id !== id);
+    renderSupportEntries();
+}
+
+async function fetchSupportEntries() {
+    if (!supabaseClient || !state.currentUserId) {
+        state.supportEntries = [];
+        renderSupportEntries();
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('support_entries')
+        .select('id,box_key,title,content,created_at,updated_at')
+        .eq('user_id', state.currentUserId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.warn('Không thể tải nội dung hỗ trợ:', error.message);
+        state.supportEntries = [];
+    } else {
+        state.supportEntries = data || [];
+    }
+    renderSupportEntries();
+}
+
+function openSupportEntryModal() {
+    const modal = document.getElementById('support-entry-modal');
+    const form = document.getElementById('support-entry-form');
+    if (!modal || !form) return;
+
+    form.reset();
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    pushAppView('support-entry-modal');
+    document.getElementById('support-entry-need')?.focus();
+    createLucideIcons();
+}
+
+function closeSupportEntryModal(returnToSupport = true, fromHistory = false) {
+    const modal = document.getElementById('support-entry-modal');
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    if (returnToSupport && !fromHistory) leaveAppView();
+}
+
+async function handleSupportEntrySubmit(event) {
+    event.preventDefault();
+
+    if (!supabaseClient || !state.currentUserId) {
+        showLoginScreen();
+        return;
+    }
+
+    const need = document.getElementById('support-entry-need')?.value.trim();
+    const go = document.getElementById('support-entry-go')?.value.trim();
+    const submitButton = document.querySelector('#support-entry-form button[type="submit"]');
+
+    if (!need || !go) return;
+    if (submitButton) submitButton.disabled = true;
+
+    const { data, error } = await supabaseClient
+        .from('support_entries')
+        .insert({
+            user_id: state.currentUserId,
+            box_key: 'can_nay',
+            title: need,
+            content: go
+        })
+        .select('id,box_key,title,content,created_at,updated_at')
+        .single();
+
+    if (submitButton) submitButton.disabled = false;
+
+    if (error) {
+        console.error('Không thể lưu nội dung hỗ trợ:', error);
+        alert('Không thể lưu thông tin hỗ trợ. Vui lòng kiểm tra bảng support_entries trong Supabase.');
+        return;
+    }
+
+    state.supportEntries.unshift(data);
+    renderSupportEntries();
+    closeSupportEntryModal();
+}
+
+window.openSupportModal = openSupportModal;
+window.closeSupportModal = closeSupportModal;
 
 function navigateToFeature(featureName) {
     const moduleMap = {
@@ -2091,12 +2401,15 @@ function setCurrentSupabaseUser(user) {
     if (nextUserId) {
         loadExpenseDataForCurrentUser();
         loadSaverData();
+        fetchSupportEntries();
         if (window.NotesModule && typeof window.NotesModule.setCurrentUser === 'function') {
             window.NotesModule.setCurrentUser(nextUserId);
         }
     } else {
         state.expenses = [];
         state.savers = [];
+        state.supportEntries = [];
+        renderSupportEntries();
         updateUI();
         renderSaverTable();
         if (window.NotesModule && typeof window.NotesModule.setCurrentUser === 'function') {
