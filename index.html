@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=35">
+    <link rel="stylesheet" href="main/css/styles.css?v=37">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -590,6 +590,105 @@
         </div>
     </div><!-- End #todo-modal -->
 
+    <!-- SUPPORT (HỖ TRỢ) FULL-SCREEN PAGE – TÍNH NĂNG THỨ 6 -->
+    <div class="modal-overlay support-page-modal" id="support-modal" aria-hidden="true">
+        <div class="modal-sheet support-page-sheet" role="dialog" aria-modal="true" aria-labelledby="support-modal-title">
+            <div class="ckkn-page-header support-page-header">
+                <button class="modal-close-btn ckkn-back-btn" id="btn-close-support-modal" aria-label="Quay lại tổng quan" title="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="ckkn-page-title">
+                    <span>TRUNG TÂM HỖ TRỢ</span>
+                    <h2 id="support-modal-title">Hỗ trợ</h2>
+                    <p>Cần gì – đi đâu, tra cứu nhanh</p>
+                </div>
+                <button type="button" class="support-add-btn" id="btn-add-support-entry" aria-label="Thêm mới" title="Thêm mới">
+                    <i data-lucide="plus"></i>
+                </button>
+            </div>
+
+            <!-- Thanh tìm kiếm + số lượng -->
+            <div class="support-toolbar">
+                <label class="support-search" for="support-search-input">
+                    <i data-lucide="search"></i>
+                    <input type="search" id="support-search-input" placeholder="Tìm “Cần này” hoặc “Đi đây”..." autocomplete="off" enterkeyhint="search">
+                    <button type="button" class="support-search-clear" id="btn-clear-support-search" aria-label="Xóa tìm kiếm" hidden>
+                        <i data-lucide="x"></i>
+                    </button>
+                </label>
+                <div class="support-count" title="Số mục">
+                    <strong id="support-entry-count">0</strong>
+                    <span>mục</span>
+                </div>
+            </div>
+
+            <!-- Bảng view -->
+            <div class="support-table-card">
+                <table class="support-table" aria-label="Danh sách hỗ trợ">
+                    <thead>
+                        <tr>
+                            <th class="support-col-index">#</th>
+                            <th>
+                                <span class="support-th-label support-th-need">
+                                    <i data-lucide="help-circle"></i> Cần này
+                                </span>
+                            </th>
+                            <th>
+                                <span class="support-th-label support-th-go">
+                                    <i data-lucide="compass"></i> Đi đây
+                                </span>
+                            </th>
+                            <th class="support-col-action" aria-label="Thao tác"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="support-table-body" aria-live="polite"></tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- End #support-modal -->
+
+    <!-- FORM THÊM THÔNG TIN CHO MODAL HỖ TRỢ -->
+    <div class="modal-overlay support-entry-form-overlay" id="support-entry-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet" role="dialog" aria-modal="true" aria-labelledby="support-entry-form-title">
+            <div class="support-modal-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow">NỘI DUNG HỖ TRỢ</span>
+                    <h2 id="support-entry-form-title">Thêm mới</h2>
+                    <p>Nhập “Cần này” và “Đi đây” để thêm vào bảng.</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-support-entry-modal" aria-label="Đóng form thêm thông tin" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <form id="support-entry-form" class="support-entry-form">
+                <div class="support-form-grid">
+                    <div class="support-form-field support-field-need">
+                        <label for="support-entry-need">
+                            <span class="support-field-icon"><i data-lucide="help-circle"></i></span>
+                            Cần này
+                        </label>
+                        <textarea id="support-entry-need" rows="4" maxlength="1000" placeholder="Bạn cần gì?" required></textarea>
+                    </div>
+                    <div class="support-form-field support-field-go">
+                        <label for="support-entry-go">
+                            <span class="support-field-icon"><i data-lucide="compass"></i></span>
+                            Đi đây
+                        </label>
+                        <textarea id="support-entry-go" rows="4" maxlength="3000" placeholder="Đi đâu / liên hệ ai?" required></textarea>
+                    </div>
+                </div>
+                <div class="support-entry-form-actions">
+                    <button type="button" class="support-cancel-btn" id="btn-cancel-support-entry">Hủy</button>
+                    <button type="submit" class="support-save-btn">
+                        <i data-lucide="check"></i>
+                        <span>Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div><!-- End #support-entry-modal -->
+
     <!-- SAVER (QUẢN LÝ TIẾT KIỆM) FULL-SCREEN PAGE -->
     <div class="modal-overlay" id="saver-page-modal" aria-hidden="true">
         <div class="modal-sheet saver-modal-sheet">
@@ -915,7 +1014,7 @@
             </div>
         </div>
 
-        <!-- Danh sách 5 tính năng chính -->
+        <!-- Danh sách 6 tính năng chính -->
         <div class="welcome-hub-cards">
             <!-- 1. Thu Chi -->
             <button type="button" class="welcome-card welcome-card-thuchi" id="welcome-opt-thuchi" onclick="navigateToFeature('thuchi')">
@@ -996,6 +1095,22 @@
                     <i data-lucide="chevron-right"></i>
                 </div>
             </button>
+
+            <!-- 6. Hỗ trợ -->
+            <button type="button" class="welcome-card welcome-card-hotro" id="welcome-opt-hotro">
+                <div class="welcome-card-icon-wrap icon-hotro">
+                    <i data-lucide="life-buoy"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Hỗ trợ</span>
+                    </div>
+                    <p class="welcome-card-desc">Xem thông tin hướng dẫn và nội dung hỗ trợ khi cần</p>
+                </div>
+                <div class="welcome-card-arrow">
+                    <i data-lucide="chevron-right"></i>
+                </div>
+            </button>
         </div>
     </section>
 
@@ -1065,7 +1180,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=37" defer></script>
+    <script src="main/js/app.js?v=39" defer></script>
     <script src="main/js/notes.js?v=2" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
