@@ -539,7 +539,9 @@ function registerEventListeners() {
     }
     const btnAddSupportEntry = document.getElementById('btn-add-support-entry');
     if (btnAddSupportEntry) {
-        btnAddSupportEntry.addEventListener('click', openSupportEntryModal);
+        // Không truyền PointerEvent vào hàm mở form; nếu không event sẽ bị dùng
+        // nhầm làm id và Supabase báo lỗi UUID "[object PointerEvent]" khi lưu.
+        btnAddSupportEntry.addEventListener('click', () => openSupportEntryModal());
     }
     const btnEditSupportEntry = document.getElementById('btn-edit-support-entry');
     if (btnEditSupportEntry) {
@@ -2427,6 +2429,8 @@ async function fetchSupportEntries() {
 }
 
 function openSupportEntryModal(entryId = null) {
+    // Chặn event object lọt vào state khi hàm được gọi từ click handler cũ.
+    if (entryId !== null && typeof entryId !== 'string') entryId = null;
     const modal = document.getElementById('support-entry-modal');
     const form = document.getElementById('support-entry-form');
     if (!modal || !form) return;
