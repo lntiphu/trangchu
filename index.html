@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=37">
+    <link rel="stylesheet" href="main/css/styles.css?v=39">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -592,19 +592,22 @@
 
     <!-- SUPPORT (HỖ TRỢ) FULL-SCREEN PAGE – TÍNH NĂNG THỨ 6 -->
     <div class="modal-overlay support-page-modal" id="support-modal" aria-hidden="true">
-        <div class="modal-sheet support-page-sheet" role="dialog" aria-modal="true" aria-labelledby="support-modal-title">
+        <div class="modal-sheet support-page-sheet" role="dialog" aria-modal="true" aria-label="Hỗ trợ">
             <div class="ckkn-page-header support-page-header">
                 <button class="modal-close-btn ckkn-back-btn" id="btn-close-support-modal" aria-label="Quay lại tổng quan" title="Quay lại">
                     <i data-lucide="arrow-left"></i>
                 </button>
-                <div class="ckkn-page-title">
-                    <span>TRUNG TÂM HỖ TRỢ</span>
-                    <h2 id="support-modal-title">Hỗ trợ</h2>
-                    <p>Cần gì – đi đâu, tra cứu nhanh</p>
+                <div class="support-header-actions" aria-label="Thao tác hỗ trợ">
+                    <button type="button" class="support-action-btn support-add-btn" id="btn-add-support-entry" aria-label="Thêm mới" title="Thêm mới">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button type="button" class="support-action-btn support-edit-btn" id="btn-edit-support-entry" aria-label="Chọn mục để chỉnh sửa" title="Chỉnh sửa">
+                        <i data-lucide="pencil"></i>
+                    </button>
+                    <button type="button" class="support-action-btn support-delete-btn" id="btn-delete-support-entry" aria-label="Chọn mục để xóa" title="Xóa">
+                        <i data-lucide="trash-2"></i>
+                    </button>
                 </div>
-                <button type="button" class="support-add-btn" id="btn-add-support-entry" aria-label="Thêm mới" title="Thêm mới">
-                    <i data-lucide="plus"></i>
-                </button>
             </div>
 
             <!-- Thanh tìm kiếm + số lượng -->
@@ -621,6 +624,7 @@
                     <span>mục</span>
                 </div>
             </div>
+            <p class="support-storage-notice" id="support-storage-notice" role="status" aria-live="polite" hidden></p>
 
             <!-- Bảng view -->
             <div class="support-table-card">
@@ -638,7 +642,6 @@
                                     <i data-lucide="compass"></i> Đi đây
                                 </span>
                             </th>
-                            <th class="support-col-action" aria-label="Thao tác"></th>
                         </tr>
                     </thead>
                     <tbody id="support-table-body" aria-live="polite"></tbody>
@@ -678,6 +681,7 @@
                         <textarea id="support-entry-go" rows="4" maxlength="3000" placeholder="Đi đâu / liên hệ ai?" required></textarea>
                     </div>
                 </div>
+                <p class="support-entry-form-error" id="support-entry-form-error" role="alert" hidden></p>
                 <div class="support-entry-form-actions">
                     <button type="button" class="support-cancel-btn" id="btn-cancel-support-entry">Hủy</button>
                     <button type="submit" class="support-save-btn">
@@ -1180,7 +1184,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=39" defer></script>
+    <script src="main/js/app.js?v=41" defer></script>
     <script src="main/js/notes.js?v=2" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
