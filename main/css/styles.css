@@ -4470,6 +4470,9 @@ html, body {
 .welcome-card-hotro::before { background: #6A7B68; }
 .icon-hotro { background: rgba(106, 123, 104, 0.16); color: #526451; }
 
+.welcome-card-wishlist::before { background: #bf6f86; }
+.icon-wishlist { background: rgba(191, 111, 134, 0.15); color: #ad5673; }
+
 .welcome-card-body {
     flex: 1;
     min-width: 0;
@@ -4535,7 +4538,8 @@ html, body {
 /* ==========================================================================
    SUPPORT (HỖ TRỢ) – tính năng thứ 6, trang toàn màn hình như modal 1–5
    ========================================================================== */
-#support-modal.support-page-modal {
+#support-modal.support-page-modal,
+#wishlist-modal.support-page-modal {
     position: absolute !important;
     inset: 0 !important;
     align-items: stretch !important;
@@ -4547,7 +4551,8 @@ html, body {
     z-index: 9998;
 }
 
-#support-modal .support-page-sheet {
+#support-modal .support-page-sheet,
+#wishlist-modal .support-page-sheet {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -4566,19 +4571,22 @@ html, body {
     transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1);
 }
 
-#support-modal .support-page-header {
+#support-modal .support-page-header,
+#wishlist-modal .support-page-header {
     display: flex;
     justify-content: space-between;
     gap: 8px;
 }
 
-#support-modal.active .support-page-sheet {
+#support-modal.active .support-page-sheet,
+#wishlist-modal.active .support-page-sheet {
     transform: translateX(0);
 }
 
 /* Khung iPhone 15 Pro giả lập trên desktop: chừa Dynamic Island */
 @media (min-width: 480px) {
-    #support-modal .support-page-sheet { padding-top: 44px; }
+    #support-modal .support-page-sheet,
+    #wishlist-modal .support-page-sheet { padding-top: 44px; }
 }
 
 /* Nhóm thao tác ở góc phải header: thêm / sửa / xóa */
@@ -5006,8 +5014,224 @@ html, body {
 .support-save-btn { flex: 1.35; background: var(--accent-olive, #344237); color: #fffdfa; }
 .support-save-btn:disabled { opacity: 0.6; cursor: wait; }
 
+/* ========================================================================
+   WISHLIST (TÍNH NĂNG THỨ 7) – cùng ngôn ngữ giao diện với Hỗ trợ
+   ======================================================================== */
+#wishlist-modal .wishlist-page-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-right: auto;
+    padding: 0 4px;
+}
+
+#wishlist-modal .wishlist-page-title span {
+    color: #ad5673;
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+#wishlist-modal .wishlist-page-title h2 {
+    margin: 3px 0 0;
+    color: var(--accent-olive, #344237);
+    font-size: 1.18rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+#wishlist-modal .wishlist-add-btn {
+    background: linear-gradient(135deg, #d88da3 0%, #b85f7c 100%);
+    box-shadow: 0 6px 14px rgba(184, 95, 124, 0.3);
+}
+
+#wishlist-modal .wishlist-edit-btn {
+    background: #6a7b68;
+    box-shadow: 0 6px 14px rgba(106, 123, 104, 0.28);
+}
+
+#wishlist-modal .wishlist-delete-btn {
+    background: #b85c55;
+    box-shadow: 0 6px 14px rgba(184, 92, 85, 0.28);
+}
+
+#wishlist-modal .wishlist-edit-btn[aria-pressed="true"] {
+    outline: 3px solid rgba(52, 66, 55, 0.18);
+    outline-offset: 2px;
+}
+
+#wishlist-modal .wishlist-delete-btn[aria-pressed="true"] {
+    outline: 3px solid rgba(184, 92, 85, 0.2);
+    outline-offset: 2px;
+}
+
+.wishlist-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex: 0 0 auto;
+    min-height: 36px;
+    margin: 2px 2px 10px;
+    color: var(--text-secondary, #6b786d);
+    font-size: 0.68rem;
+    line-height: 1.35;
+}
+
+.wishlist-toolbar > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.wishlist-toolbar > span i {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    color: #ad5673;
+}
+
+.wishlist-toolbar strong {
+    flex: 0 0 auto;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(191, 111, 134, 0.12);
+    color: #ad5673;
+    font-size: 0.65rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.wishlist-table-card { border-color: rgba(173, 86, 115, 0.13); }
+
+.wishlist-table thead th:first-child { width: 64px; text-align: center; }
+.wishlist-table thead th:nth-child(2) { width: auto; }
+
+.wishlist-table tbody td { padding-top: 13px; padding-bottom: 13px; }
+.wishlist-table tbody tr { transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease; }
+.wishlist-table tbody tr[draggable="true"] { cursor: grab; }
+.wishlist-table tbody tr[draggable="true"]:active { cursor: grabbing; }
+
+.wishlist-rank-cell {
+    position: relative;
+    width: 64px;
+    padding-right: 4px !important;
+    padding-left: 4px !important;
+    text-align: center;
+    vertical-align: middle !important;
+}
+
+.wishlist-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    background: rgba(191, 111, 134, 0.12);
+    color: #ad5673;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.wishlist-drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: 2px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-tertiary, #929e94);
+    cursor: grab;
+    touch-action: none;
+    vertical-align: middle;
+}
+
+.wishlist-drag-handle:hover,
+.wishlist-drag-handle:focus-visible {
+    background: rgba(191, 111, 134, 0.12);
+    color: #ad5673;
+    outline: none;
+}
+
+.wishlist-drag-handle:active { cursor: grabbing; }
+.wishlist-drag-handle i { width: 15px; height: 15px; }
+
+.wishlist-dragging {
+    opacity: 0.52;
+    box-shadow: inset 4px 0 0 #ad5673;
+}
+
+.wishlist-drag-over td { background: rgba(191, 111, 134, 0.1) !important; }
+.wishlist-title-cell { color: #6f3b50 !important; }
+.wishlist-row-select { margin-left: 2px; margin-right: 0; }
+
+#wishlist-entry-modal.wishlist-entry-form-overlay {
+    z-index: 100011;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(35, 44, 37, 0.28);
+}
+
+#wishlist-entry-modal .support-entry-form-sheet {
+    width: min(100%, 390px);
+    max-height: min(82vh, 620px);
+    padding: 12px 18px 18px;
+    border: 1px solid rgba(52, 66, 55, 0.1);
+    border-radius: 28px;
+    box-shadow: 0 18px 55px rgba(35, 44, 37, 0.25);
+    transform: translateY(18px) scale(0.96);
+    transition: transform 0.25s cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+#wishlist-entry-modal.active .support-entry-form-sheet { transform: translateY(0) scale(1); }
+
+.wishlist-form-field { background: rgba(191, 111, 134, 0.055); }
+.wishlist-form-field .support-field-icon { background: rgba(191, 111, 134, 0.16); color: #ad5673; }
+
+.wishlist-form-field input {
+    width: 100%;
+    border: 1px solid rgba(173, 86, 115, 0.16);
+    border-radius: 13px;
+    outline: none;
+    background: #fffdfa;
+    color: var(--text-primary, #232c25);
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.4;
+    box-sizing: border-box;
+}
+
+.wishlist-form-field input {
+    height: 44px;
+    padding: 0 12px;
+}
+
+.wishlist-form-field input:focus {
+    border-color: #ad5673;
+    box-shadow: 0 0 0 3px rgba(191, 111, 134, 0.13);
+}
+
 @media (max-width: 479px) {
-    #support-modal .support-page-sheet {
+    #wishlist-modal .wishlist-page-title h2 { font-size: 1.04rem; }
+    .wishlist-toolbar { font-size: 0.63rem; }
+    .wishlist-table thead th:first-child,
+    .wishlist-rank-cell { width: 58px; }
+    .wishlist-table thead th:nth-child(2) { width: auto; }
+    .wishlist-drag-handle { margin-left: 0; }
+}
+
+@media (max-width: 479px) {
+    #support-modal .support-page-sheet,
+    #wishlist-modal .support-page-sheet {
         padding: max(12px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
     }
     .support-page-header .support-action-btn { width: 34px; height: 34px; }
