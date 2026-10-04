@@ -8,6 +8,9 @@ const state = {
     expenses: [],
     savers: [],
     supportEntries: [],
+    supportStorageMode: 'supabase',
+    supportSelectionMode: null,
+    supportEditingEntryId: null,
     currentUserId: null,
     currentTab: 'dashboard',
     searchQuery: '',
@@ -510,6 +513,14 @@ function registerEventListeners() {
     const btnAddSupportEntry = document.getElementById('btn-add-support-entry');
     if (btnAddSupportEntry) {
         btnAddSupportEntry.addEventListener('click', openSupportEntryModal);
+    }
+    const btnEditSupportEntry = document.getElementById('btn-edit-support-entry');
+    if (btnEditSupportEntry) {
+        btnEditSupportEntry.addEventListener('click', () => setSupportSelectionMode('edit'));
+    }
+    const btnDeleteSupportEntry = document.getElementById('btn-delete-support-entry');
+    if (btnDeleteSupportEntry) {
+        btnDeleteSupportEntry.addEventListener('click', () => setSupportSelectionMode('delete'));
     }
     const btnCloseSupportEntry = document.getElementById('btn-close-support-entry-modal');
     if (btnCloseSupportEntry) {
@@ -2064,6 +2075,9 @@ function openSupportModal() {
 
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
+    state.supportSelectionMode = null;
+    document.getElementById('btn-edit-support-entry')?.setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-delete-support-entry')?.setAttribute('aria-pressed', 'false');
     pushAppView('support-modal');
     fetchSupportEntries();
     createLucideIcons();
@@ -2075,6 +2089,9 @@ function closeSupportModal(returnToHub = true, fromHistory = false) {
 
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
+    state.supportSelectionMode = null;
+    document.getElementById('btn-edit-support-entry')?.setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-delete-support-entry')?.setAttribute('aria-pressed', 'false');
     if (returnToHub && !fromHistory) leaveAppView();
 }
 
@@ -2151,7 +2168,7 @@ function renderSupportEntries() {
         const row = document.createElement('tr');
         row.className = 'support-empty-row';
         const cell = document.createElement('td');
-        cell.colSpan = 4;
+        cell.colSpan = 3;
         const isSearching = Boolean(query) && allEntries.length > 0;
         cell.innerHTML = `
             <div class="support-empty-state">
@@ -2170,7 +2187,19 @@ function renderSupportEntries() {
 
         const indexCell = document.createElement('td');
         indexCell.className = 'support-col-index';
-        indexCell.textContent = String(index + 1);
+        if (state.supportSelectionMode) {
+            const selectButton = document.createElement('button');
+            selectButton.type = 'button';
+            selectButton.className = 'support-row-select';
+            selectButton.title = state.supportSelectionMode === 'edit' ? 'Chỉnh sửa mục này' : 'Xóa mục này';
+            selectButton.setAttribute('aria-label', selectButton.title);
+            selectButton.addEventListener('click', () => handleSupportEntrySelection(entry.id));
+            indexCell.appendChild(selectButton);
+        } else {
+            const rowNumber = document.createElement('span');
+            rowNumber.textContent = String(index + 1);
+            indexCell.appendChild(rowNumber);
+        }
 
         // Mỗi dòng: title = "Cần này", content = "Đi đây"
         const needCell = document.createElement('td');
@@ -2183,27 +2212,45 @@ function renderSupportEntries() {
         goCell.dataset.label = 'Đi đây';
         fillSupportCell(goCell, entry.content, query);
 
-        const actionCell = document.createElement('td');
-        actionCell.className = 'support-col-action';
-        const deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.className = 'support-row-delete';
-        deleteBtn.title = 'Xóa';
-        deleteBtn.setAttribute('aria-label', 'Xóa dòng này');
-        deleteBtn.innerHTML = '<i data-lucide="trash-2"></i>';
-        deleteBtn.addEventListener('click', () => deleteSupportEntry(entry.id));
-        actionCell.appendChild(deleteBtn);
-
-        row.append(indexCell, needCell, goCell, actionCell);
+        row.append(indexCell, needCell, goCell);
         tbody.appendChild(row);
     });
 
     createLucideIcons();
 }
 
+function setSupportSelectionMode(mode) {
+    state.supportSelectionMode = state.supportSelectionMode === mode ? null : mode;
+    const editButton = document.getElementById('btn-edit-support-entry');
+    const deleteButton = document.getElementById('btn-delete-support-entry');
+    if (editButton) editButton.setAttribute('aria-pressed', state.supportSelectionMode === 'edit' ? 'true' : 'false');
+    if (deleteButton) deleteButton.setAttribute('aria-pressed', state.supportSelectionMode === 'delete' ? 'true' : 'false');
+    renderSupportEntries();
+}
+
+function handleSupportEntrySelection(id) {
+    if (!id || !state.supportSelectionMode) return;
+    if (state.supportSelectionMode === 'edit') {
+        openSupportEntryModal(id);
+    } else {
+        deleteSupportEntry(id);
+    }
+}
+
 async function deleteSupportEntry(id) {
-    if (!id || !supabaseClient || !state.currentUserId) return;
+    if (!id) return;
     if (!confirm('Xóa dòng hỗ trợ này?')) return;
+
+    if (state.supportStorageMode === 'local') {
+        const entries = loadLocalSupportEntries().filter(entry => entry.id !== id);
+        saveLocalSupportEntries(entries);
+        state.supportEntries = entries;
+        state.supportSelectionMode = null;
+        renderSupportEntries();
+        return;
+    }
+
+    if (!supabaseClient || !state.currentUserId) return;
 
     const { error } = await supabaseClient
         .from('support_entries')
@@ -2218,12 +2265,59 @@ async function deleteSupportEntry(id) {
     }
 
     state.supportEntries = state.supportEntries.filter(entry => entry.id !== id);
+    state.supportSelectionMode = null;
     renderSupportEntries();
+}
+
+function isMissingSupportEntriesTable(error) {
+    const code = String(error?.code || '');
+    const message = String(error?.message || '').toLowerCase();
+    return code === 'PGRST205'
+        || code === '42P01'
+        || message.includes("could not find the table 'public.support_entries'")
+        || message.includes('relation "support_entries" does not exist');
+}
+
+function getSupportLocalStorageKey() {
+    return state.currentUserId
+        ? `qlct_support_entries_${state.currentUserId}`
+        : 'qlct_support_entries';
+}
+
+function loadLocalSupportEntries() {
+    try {
+        const raw = localStorage.getItem(getSupportLocalStorageKey());
+        const entries = raw ? JSON.parse(raw) : [];
+        return Array.isArray(entries) ? entries : [];
+    } catch (error) {
+        console.warn('Không thể đọc dữ liệu hỗ trợ tạm:', error);
+        return [];
+    }
+}
+
+function saveLocalSupportEntries(entries) {
+    localStorage.setItem(getSupportLocalStorageKey(), JSON.stringify(entries));
+}
+
+function setSupportStorageNotice(message = '') {
+    const notice = document.getElementById('support-storage-notice');
+    if (!notice) return;
+    notice.textContent = message;
+    notice.hidden = !message;
+}
+
+function setSupportEntryFormError(message = '') {
+    const errorEl = document.getElementById('support-entry-form-error');
+    if (!errorEl) return;
+    errorEl.textContent = message;
+    errorEl.hidden = !message;
 }
 
 async function fetchSupportEntries() {
     if (!supabaseClient || !state.currentUserId) {
-        state.supportEntries = [];
+        state.supportStorageMode = 'local';
+        state.supportEntries = loadLocalSupportEntries();
+        setSupportStorageNotice('Chưa có phiên Supabase. Nội dung sẽ được lưu tạm trên thiết bị này.');
         renderSupportEntries();
         return;
     }
@@ -2235,20 +2329,45 @@ async function fetchSupportEntries() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.warn('Không thể tải nội dung hỗ trợ:', error.message);
-        state.supportEntries = [];
+        if (isMissingSupportEntriesTable(error)) {
+            state.supportStorageMode = 'local';
+            state.supportEntries = loadLocalSupportEntries();
+            setSupportStorageNotice('Chưa có bảng support_entries. Nội dung mới sẽ được lưu tạm trên thiết bị; hãy chạy file supabase_support.sql để đồng bộ Supabase.');
+        } else {
+            console.error('Không thể tải nội dung hỗ trợ:', error);
+            state.supportEntries = [];
+            setSupportStorageNotice('Không thể tải hỗ trợ: ' + (error.message || 'Lỗi Supabase.'));
+        }
     } else {
+        state.supportStorageMode = 'supabase';
         state.supportEntries = data || [];
+        setSupportStorageNotice('');
     }
     renderSupportEntries();
 }
 
-function openSupportEntryModal() {
+function openSupportEntryModal(entryId = null) {
     const modal = document.getElementById('support-entry-modal');
     const form = document.getElementById('support-entry-form');
     if (!modal || !form) return;
 
     form.reset();
+    setSupportEntryFormError('');
+    state.supportEditingEntryId = entryId;
+    state.supportSelectionMode = null;
+
+    const titleEl = document.getElementById('support-entry-form-title');
+    const submitText = document.querySelector('#support-entry-form button[type="submit"] span');
+    const editingEntry = entryId
+        ? state.supportEntries.find(entry => entry.id === entryId)
+        : null;
+    if (editingEntry) {
+        document.getElementById('support-entry-need').value = editingEntry.title || '';
+        document.getElementById('support-entry-go').value = editingEntry.content || '';
+    }
+    if (titleEl) titleEl.textContent = editingEntry ? 'Chỉnh sửa' : 'Thêm mới';
+    if (submitText) submitText.textContent = editingEntry ? 'Cập nhật' : 'Lưu';
+
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
     pushAppView('support-entry-modal');
@@ -2262,6 +2381,7 @@ function closeSupportEntryModal(returnToSupport = true, fromHistory = false) {
 
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
+    state.supportEditingEntryId = null;
     if (returnToSupport && !fromHistory) leaveAppView();
 }
 
@@ -2278,28 +2398,105 @@ async function handleSupportEntrySubmit(event) {
     const submitButton = document.querySelector('#support-entry-form button[type="submit"]');
 
     if (!need || !go) return;
+    setSupportEntryFormError('');
     if (submitButton) submitButton.disabled = true;
 
-    const { data, error } = await supabaseClient
-        .from('support_entries')
-        .insert({
-            user_id: state.currentUserId,
-            box_key: 'can_nay',
-            title: need,
-            content: go
-        })
+    if (state.supportStorageMode === 'local') {
+        const now = new Date().toISOString();
+        const editingId = state.supportEditingEntryId;
+        const localEntries = loadLocalSupportEntries();
+        if (editingId) {
+            const entryIndex = localEntries.findIndex(entry => entry.id === editingId);
+            if (entryIndex >= 0) {
+                localEntries[entryIndex] = {
+                    ...localEntries[entryIndex],
+                    title: need,
+                    content: go,
+                    updated_at: now
+                };
+            }
+        } else {
+            localEntries.unshift({
+                id: `local-${Date.now()}`,
+                box_key: 'can_nay',
+                title: need,
+                content: go,
+                created_at: now,
+                updated_at: now
+            });
+        }
+        saveLocalSupportEntries(localEntries);
+        state.supportEntries = localEntries;
+        renderSupportEntries();
+        if (submitButton) submitButton.disabled = false;
+        closeSupportEntryModal();
+        return;
+    }
+
+    const editingId = state.supportEditingEntryId;
+    const supportQuery = editingId
+        ? supabaseClient
+            .from('support_entries')
+            .update({ title: need, content: go, updated_at: new Date().toISOString() })
+            .eq('id', editingId)
+            .eq('user_id', state.currentUserId)
+        : supabaseClient
+            .from('support_entries')
+            .insert({
+                user_id: state.currentUserId,
+                box_key: 'can_nay',
+                title: need,
+                content: go
+            });
+
+    const { data, error } = await supportQuery
         .select('id,box_key,title,content,created_at,updated_at')
         .single();
 
     if (submitButton) submitButton.disabled = false;
 
     if (error) {
-        console.error('Không thể lưu nội dung hỗ trợ:', error);
-        alert('Không thể lưu thông tin hỗ trợ. Vui lòng kiểm tra bảng support_entries trong Supabase.');
+        if (isMissingSupportEntriesTable(error)) {
+            state.supportStorageMode = 'local';
+            const now = new Date().toISOString();
+            const localEntries = loadLocalSupportEntries();
+            const fallbackIndex = state.supportEditingEntryId
+                ? localEntries.findIndex(entry => entry.id === state.supportEditingEntryId)
+                : -1;
+            if (fallbackIndex >= 0) {
+                localEntries[fallbackIndex] = {
+                    ...localEntries[fallbackIndex],
+                    title: need,
+                    content: go,
+                    updated_at: now
+                };
+            } else {
+                localEntries.unshift({
+                    id: `local-${Date.now()}`,
+                    box_key: 'can_nay',
+                    title: need,
+                    content: go,
+                    created_at: now,
+                    updated_at: now
+                });
+            }
+            saveLocalSupportEntries(localEntries);
+            state.supportEntries = localEntries;
+            renderSupportEntries();
+            setSupportStorageNotice('Bảng support_entries chưa được tạo. Đã lưu tạm trên thiết bị; hãy chạy file supabase_support.sql để đồng bộ Supabase.');
+            closeSupportEntryModal();
+        } else {
+            console.error('Không thể lưu nội dung hỗ trợ:', error);
+            setSupportEntryFormError(`${error.code || 'SUPABASE'}: ${error.message || 'Không thể lưu thông tin hỗ trợ.'}`);
+        }
         return;
     }
 
-    state.supportEntries.unshift(data);
+    if (editingId) {
+        state.supportEntries = state.supportEntries.map(entry => entry.id === editingId ? data : entry);
+    } else {
+        state.supportEntries.unshift(data);
+    }
     renderSupportEntries();
     closeSupportEntryModal();
 }
@@ -2409,6 +2606,8 @@ function setCurrentSupabaseUser(user) {
         state.expenses = [];
         state.savers = [];
         state.supportEntries = [];
+        state.supportStorageMode = 'local';
+        setSupportStorageNotice('');
         renderSupportEntries();
         updateUI();
         renderSaverTable();
