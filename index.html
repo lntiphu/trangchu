@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=42">
+    <link rel="stylesheet" href="main/css/styles.css?v=44">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -764,6 +764,78 @@
         </div>
     </div><!-- End #wishlist-entry-modal -->
 
+    <!-- DANH SÁCH (TÍNH NĂNG THỨ 8) -->
+    <div class="modal-overlay support-page-modal list-page-modal" id="list-modal" aria-hidden="true">
+        <div class="modal-sheet support-page-sheet list-page-sheet" role="dialog" aria-modal="true" aria-label="Danh sách">
+            <div class="ckkn-page-header support-page-header list-page-header">
+                <button class="modal-close-btn ckkn-back-btn" id="btn-close-list-modal" aria-label="Quay lại tổng quan" title="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="list-page-title">
+                    <span>CHỦ ĐỀ CỦA BẠN</span>
+                    <h2>Danh sách</h2>
+                </div>
+                <div class="support-header-actions" aria-label="Thao tác Danh sách">
+                    <button type="button" class="support-action-btn list-add-btn" id="btn-add-list-entry" aria-label="Thêm mục danh sách" title="Thêm">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button type="button" class="support-action-btn list-edit-btn" id="btn-edit-list-entry" aria-label="Chọn mục để chỉnh sửa" title="Chỉnh sửa">
+                        <i data-lucide="pencil"></i>
+                    </button>
+                    <button type="button" class="support-action-btn list-delete-btn" id="btn-delete-list-entry" aria-label="Chọn mục để xóa" title="Xóa">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="list-toolbar">
+                <span><i data-lucide="layers-3"></i> Mở chủ đề để xem các mục con</span>
+                <strong id="list-topic-count">0 chủ đề</strong>
+            </div>
+            <p class="support-storage-notice" id="list-storage-notice" role="status" aria-live="polite" hidden></p>
+            <div class="list-topics-list" id="list-topics-list" aria-live="polite"></div>
+        </div>
+    </div><!-- End #list-modal -->
+
+    <!-- FORM THÊM / SỬA DANH SÁCH -->
+    <div class="modal-overlay support-entry-form-overlay list-entry-form-overlay" id="list-entry-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet" role="dialog" aria-modal="true" aria-labelledby="list-entry-form-title">
+            <div class="support-modal-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow">DANH SÁCH CỦA BẠN</span>
+                    <h2 id="list-entry-form-title">Thêm mục</h2>
+                    <p id="list-entry-form-description">Chọn chủ đề hoặc tạo chủ đề mới.</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-list-entry-modal" aria-label="Đóng form Danh sách" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="list-entry-form" class="support-entry-form">
+                <div class="support-form-field list-form-field list-topic-choice-field">
+                    <label id="list-entry-topic-label" for="list-entry-topic-select"><span class="support-field-icon"><i data-lucide="folder"></i></span>Chủ đề</label>
+                    <div class="list-topic-choice-row">
+                        <select id="list-entry-topic-select" required></select>
+                        <button type="button" class="list-create-topic-btn" id="btn-create-list-topic" aria-label="Tạo chủ đề mới" title="Tạo chủ đề mới">
+                            <i data-lucide="plus"></i>
+                        </button>
+                    </div>
+                    <div class="list-inline-new-topic" id="list-new-topic-field" hidden>
+                        <label for="list-entry-new-topic">Tên chủ đề mới</label>
+                        <input type="text" id="list-entry-new-topic" maxlength="120" placeholder="Ví dụ: Anime">
+                    </div>
+                </div>
+                <div class="support-form-field list-form-field list-item-field" id="list-item-field">
+                    <label for="list-entry-item"><span class="support-field-icon"><i data-lucide="list"></i></span>Mục con</label>
+                    <input type="text" id="list-entry-item" maxlength="180" placeholder="Ví dụ: One Piece" required>
+                </div>
+                <p class="support-entry-form-error" id="list-entry-form-error" role="alert" hidden></p>
+                <div class="support-entry-form-actions">
+                    <button type="button" class="support-cancel-btn" id="btn-cancel-list-entry">Hủy</button>
+                    <button type="submit" class="support-save-btn"><i data-lucide="check"></i><span>Lưu</span></button>
+                </div>
+            </form>
+        </div>
+    </div><!-- End #list-entry-modal -->
+
     <!-- SAVER (QUẢN LÝ TIẾT KIỆM) FULL-SCREEN PAGE -->
     <div class="modal-overlay" id="saver-page-modal" aria-hidden="true">
         <div class="modal-sheet saver-modal-sheet">
@@ -1089,7 +1161,7 @@
             </div>
         </div>
 
-        <!-- Danh sách 7 tính năng chính -->
+        <!-- Danh sách 8 tính năng chính -->
         <div class="welcome-hub-cards">
             <!-- 1. Thu Chi -->
             <button type="button" class="welcome-card welcome-card-thuchi" id="welcome-opt-thuchi" onclick="navigateToFeature('thuchi')">
@@ -1200,6 +1272,20 @@
                 </div>
                 <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
             </button>
+
+            <!-- 8. Danh sách -->
+            <button type="button" class="welcome-card welcome-card-list" id="welcome-opt-list">
+                <div class="welcome-card-icon-wrap icon-list">
+                    <i data-lucide="layers-3"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Danh sách</span>
+                    </div>
+                    <p class="welcome-card-desc">Gom các mục con theo từng chủ đề riêng</p>
+                </div>
+                <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
+            </button>
         </div>
     </section>
 
@@ -1269,7 +1355,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=44" defer></script>
+    <script src="main/js/app.js?v=46" defer></script>
     <script src="main/js/notes.js?v=2" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
