@@ -4566,6 +4566,12 @@ html, body {
     transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1);
 }
 
+#support-modal .support-page-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
 #support-modal.active .support-page-sheet {
     transform: translateX(0);
 }
@@ -4575,8 +4581,16 @@ html, body {
     #support-modal .support-page-sheet { padding-top: 44px; }
 }
 
-/* Nút + ở góc phải header (thay cho spacer) */
-.support-page-header .support-add-btn {
+/* Nhóm thao tác ở góc phải header: thêm / sửa / xóa */
+.support-header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.support-page-header .support-action-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -4592,8 +4606,13 @@ html, body {
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.support-page-header .support-add-btn i { width: 20px; height: 20px; stroke-width: 2.6; }
-.support-page-header .support-add-btn:active { transform: scale(0.92); }
+.support-page-header .support-action-btn i { width: 18px; height: 18px; stroke-width: 2.6; }
+.support-page-header .support-action-btn:active { transform: scale(0.92); }
+.support-page-header .support-add-btn { background: linear-gradient(135deg, #dc8b78 0%, #c96f5d 100%); }
+.support-page-header .support-edit-btn { background: #6a7b68; box-shadow: 0 6px 14px rgba(106, 123, 104, 0.28); }
+.support-page-header .support-delete-btn { background: #b85c55; box-shadow: 0 6px 14px rgba(184, 92, 85, 0.28); }
+.support-page-header .support-edit-btn[aria-pressed="true"],
+.support-page-header .support-delete-btn[aria-pressed="true"] { outline: 3px solid rgba(52, 66, 55, 0.18); outline-offset: 2px; }
 
 /* Thanh tìm kiếm + số lượng */
 .support-toolbar {
@@ -4602,6 +4621,18 @@ html, body {
     gap: 8px;
     flex-shrink: 0;
     margin-bottom: 12px;
+}
+
+.support-storage-notice {
+    flex-shrink: 0;
+    margin: -3px 0 12px;
+    padding: 9px 11px;
+    border: 1px solid rgba(200, 155, 103, 0.28);
+    border-radius: 12px;
+    background: rgba(200, 155, 103, 0.12);
+    color: #815b2e;
+    font-size: 0.7rem;
+    line-height: 1.45;
 }
 
 .support-search {
@@ -4721,7 +4752,6 @@ html, body {
 .support-th-go i { color: #c8dcc4; }
 
 .support-table .support-col-index { width: 30px; text-align: center; }
-.support-table .support-col-action { width: 40px; text-align: center; }
 
 .support-table tbody td {
     padding: 11px 8px;
@@ -4740,9 +4770,31 @@ html, body {
 .support-table tbody td.support-col-index {
     color: var(--text-tertiary, #929e94);
     font-weight: 700;
+    white-space: nowrap;
 }
 
-.support-table tbody td.support-col-action { padding: 6px 4px; vertical-align: middle; }
+.support-row-select {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-right: 3px;
+    padding: 0;
+    border: 2px solid #6a7b68;
+    border-radius: 50%;
+    background: #fffdfa;
+    color: #fffdfa;
+    vertical-align: -4px;
+    cursor: pointer;
+}
+
+.support-row-select:hover,
+.support-row-select:focus-visible {
+    background: #6a7b68;
+    box-shadow: 0 0 0 3px rgba(106, 123, 104, 0.15);
+    outline: none;
+}
 
 .support-cell-need {
     color: var(--accent-olive, #344237) !important;
@@ -4755,24 +4807,6 @@ html, body {
     background: rgba(220, 139, 120, 0.28);
     color: inherit;
 }
-
-.support-row-delete {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border: 0;
-    border-radius: 10px;
-    background: transparent;
-    color: var(--text-tertiary, #929e94);
-    cursor: pointer;
-    transition: background 0.18s ease, color 0.18s ease;
-}
-
-.support-row-delete i { width: 15px; height: 15px; }
-.support-row-delete:hover,
-.support-row-delete:active { background: rgba(220, 139, 120, 0.15); color: #c96f5d; }
 
 /* Trạng thái trống */
 .support-empty-state {
@@ -4880,6 +4914,16 @@ html, body {
 
 .support-form-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
 
+.support-entry-form-error {
+    margin: -3px 0 0;
+    padding: 9px 11px;
+    border-radius: 12px;
+    background: rgba(212, 91, 80, 0.1);
+    color: #a13e36;
+    font-size: 0.7rem;
+    line-height: 1.45;
+}
+
 .support-form-field {
     display: flex;
     flex-direction: column;
@@ -4966,7 +5010,8 @@ html, body {
     #support-modal .support-page-sheet {
         padding: max(12px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom));
     }
-    .support-page-header .support-add-btn { width: 34px; height: 34px; }
+    .support-page-header .support-action-btn { width: 34px; height: 34px; }
+    .support-page-header .support-action-btn i { width: 16px; height: 16px; }
 }
 
 .welcome-hub-footer {
