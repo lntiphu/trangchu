@@ -2181,6 +2181,10 @@ function normalizeSupportText(value) {
         .toLowerCase();
 }
 
+function normalizeDuplicateText(value) {
+    return normalizeSupportText(value).replace(/\s+/g, ' ').trim();
+}
+
 // Ghi text vào ô và tô sáng đoạn khớp từ khóa (an toàn, không dùng innerHTML)
 function fillSupportCell(cell, text, query) {
     const source = String(text || '');
@@ -2474,6 +2478,14 @@ async function handleSupportEntrySubmit(event) {
     const submitButton = document.querySelector('#support-entry-form button[type="submit"]');
 
     if (!need || !go) return;
+    const duplicateSupportEntry = state.supportEntries.some(entry =>
+        entry.id !== state.supportEditingEntryId
+        && normalizeDuplicateText(entry.title) === normalizeDuplicateText(need)
+        && normalizeDuplicateText(entry.content) === normalizeDuplicateText(go));
+    if (duplicateSupportEntry) {
+        setSupportEntryFormError('Thông tin này đã tồn tại. Vui lòng nhập nội dung khác.');
+        return;
+    }
     setSupportEntryFormError('');
     if (submitButton) submitButton.disabled = true;
 
@@ -2532,6 +2544,10 @@ async function handleSupportEntrySubmit(event) {
     if (submitButton) submitButton.disabled = false;
 
     if (error) {
+        if (String(error.code || '') === '23505') {
+            setSupportEntryFormError('Thông tin này đã tồn tại. Vui lòng nhập nội dung khác.');
+            return;
+        }
         if (isMissingSupportEntriesTable(error)) {
             state.supportStorageMode = 'local';
             const now = new Date().toISOString();
@@ -2939,6 +2955,13 @@ async function handleWishlistEntrySubmit(event) {
     const title = document.getElementById('wishlist-entry-title')?.value.trim();
     const submitButton = document.querySelector('#wishlist-entry-form button[type="submit"]');
     if (!title) return;
+    const duplicateWishlist = state.wishlistEntries.some(entry =>
+        entry.id !== state.wishlistEditingEntryId
+        && normalizeDuplicateText(entry.title) === normalizeDuplicateText(title));
+    if (duplicateWishlist) {
+        setWishlistFormError('Wishlist này đã tồn tại. Vui lòng nhập tên khác.');
+        return;
+    }
     setWishlistFormError('');
     if (submitButton) submitButton.disabled = true;
 
@@ -2955,6 +2978,10 @@ async function handleWishlistEntrySubmit(event) {
     const { data, error } = await query.select('id,title,display_order,created_at,updated_at').single();
     if (submitButton) submitButton.disabled = false;
     if (error) {
+        if (String(error.code || '') === '23505') {
+            setWishlistFormError('Wishlist này đã tồn tại. Vui lòng nhập tên khác.');
+            return;
+        }
         if (isMissingWishlistTable(error)) {
             state.wishlistStorageMode = 'local';
             setWishlistNotice('Chưa có bảng wishlist_entries. Hãy chạy file SQL Wishlist để đồng bộ Supabase.');
@@ -3339,7 +3366,8 @@ async function handleListEntrySubmit(event) {
             if (submitButton) submitButton.disabled = false;
             return;
         }
-        if (newTopic !== oldTopic && getListTopicNames().some(topic => topic.toLowerCase() === newTopic.toLowerCase())) {
+        if (normalizeDuplicateText(newTopic) !== normalizeDuplicateText(oldTopic)
+            && getListTopicNames().some(topic => normalizeDuplicateText(topic) === normalizeDuplicateText(newTopic))) {
             setListFormError('Chủ đề này đã tồn tại.');
             if (submitButton) submitButton.disabled = false;
             return;
@@ -3372,7 +3400,7 @@ async function handleListEntrySubmit(event) {
         return;
     }
 
-    const topic = getListFormTopic();
+    let topic = getListFormTopic();
     const item = document.getElementById('list-entry-item')?.value.trim();
     if (!topic || !item) {
         setListFormError('Vui lòng chọn hoặc tạo chủ đề, sau đó nhập mục con.');
@@ -3382,6 +3410,22 @@ async function handleListEntrySubmit(event) {
 
     const editingId = state.listEditingEntryId;
     const editingEntry = editingId ? state.listEntries.find(entry => entry.id === editingId) : null;
+    const matchingTopic = getListTopicNames().find(name => normalizeDuplicateText(name) === normalizeDuplicateText(topic));
+    const creatingTopic = document.getElementById('list-entry-topic-select')?.value === '__new__';
+    if (creatingTopic && matchingTopic) {
+        setListFormError(`Chủ đề “${matchingTopic}” đã tồn tại. Hãy chọn chủ đề đó hoặc đặt tên khác.`);
+        if (submitButton) submitButton.disabled = false;
+        return;
+    }
+    if (matchingTopic) topic = matchingTopic;
+    const duplicateListItem = state.listEntries.some(entry =>
+        entry.id !== editingId
+        && normalizeDuplicateText(entry.item) === normalizeDuplicateText(item));
+    if (duplicateListItem) {
+        setListFormError(`Mục con “${item}” đã tồn tại trong Danh sách.`);
+        if (submitButton) submitButton.disabled = false;
+        return;
+    }
     if (state.listStorageMode === 'local') {
         saveListItemLocally(topic, item);
         return;
@@ -3398,6 +3442,11 @@ async function handleListEntrySubmit(event) {
         : supabaseClient.from('list_entries').insert({ user_id: state.currentUserId, topic, item, topic_order: targetTopicOrder, item_order: targetItemOrder });
     const { data, error } = await query.select('id,topic,item,topic_order,item_order,created_at,updated_at').single();
     if (error) {
+        if (String(error.code || '') === '23505') {
+            setListFormError('Mục con này đã tồn tại trong Danh sách.');
+            if (submitButton) submitButton.disabled = false;
+            return;
+        }
         if (isMissingListTable(error)) {
             state.listStorageMode = 'local';
             setListNotice('Chưa có bảng list_entries. Đã chuyển sang lưu tạm trên thiết bị; hãy chạy file supabase_list.sql.');
