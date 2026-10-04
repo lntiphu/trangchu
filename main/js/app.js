@@ -11,6 +11,10 @@ const state = {
     supportStorageMode: 'supabase',
     supportSelectionMode: null,
     supportEditingEntryId: null,
+    wishlistEntries: [],
+    wishlistSelectionMode: null,
+    wishlistEditingEntryId: null,
+    wishlistStorageMode: 'supabase',
     currentUserId: null,
     currentTab: 'dashboard',
     searchQuery: '',
@@ -115,6 +119,14 @@ function closeActiveAppView(fromHistory = false) {
     }
     if (isElementActive('support-modal')) {
         closeSupportModal(true, true);
+        return;
+    }
+    if (isElementActive('wishlist-entry-modal')) {
+        closeWishlistEntryModal(true, true);
+        return;
+    }
+    if (isElementActive('wishlist-modal')) {
+        closeWishlistModal(true, true);
         return;
     }
 
@@ -540,6 +552,24 @@ function registerEventListeners() {
     if (supportEntryForm) {
         supportEntryForm.addEventListener('submit', handleSupportEntrySubmit);
     }
+
+    // Mở / Đóng Wishlist (tính năng thứ 7)
+    const btnOpenWishlist = document.getElementById('welcome-opt-wishlist');
+    if (btnOpenWishlist) btnOpenWishlist.addEventListener('click', openWishlistModal);
+    const btnCloseWishlist = document.getElementById('btn-close-wishlist-modal');
+    if (btnCloseWishlist) btnCloseWishlist.addEventListener('click', closeWishlistModal);
+    const btnAddWishlist = document.getElementById('btn-add-wishlist-entry');
+    if (btnAddWishlist) btnAddWishlist.addEventListener('click', () => openWishlistEntryModal());
+    const btnEditWishlist = document.getElementById('btn-edit-wishlist-entry');
+    if (btnEditWishlist) btnEditWishlist.addEventListener('click', () => setWishlistSelectionMode('edit'));
+    const btnDeleteWishlist = document.getElementById('btn-delete-wishlist-entry');
+    if (btnDeleteWishlist) btnDeleteWishlist.addEventListener('click', () => setWishlistSelectionMode('delete'));
+    const btnCloseWishlistEntry = document.getElementById('btn-close-wishlist-entry-modal');
+    if (btnCloseWishlistEntry) btnCloseWishlistEntry.addEventListener('click', closeWishlistEntryModal);
+    const btnCancelWishlistEntry = document.getElementById('btn-cancel-wishlist-entry');
+    if (btnCancelWishlistEntry) btnCancelWishlistEntry.addEventListener('click', closeWishlistEntryModal);
+    const wishlistEntryForm = document.getElementById('wishlist-entry-form');
+    if (wishlistEntryForm) wishlistEntryForm.addEventListener('submit', handleWishlistEntrySubmit);
 
     // Mở / Đóng Modal 5 Options Hub
     const hubModal = document.getElementById('options-hub-modal');
@@ -2044,6 +2074,8 @@ function showWelcomeHubPage({ fromHistory = false } = {}) {
         'todo-modal',
         'support-entry-modal',
         'support-modal',
+        'wishlist-entry-modal',
+        'wishlist-modal',
         'notes-modal',
         'spending-analysis-page',
         'add-expense-modal',
@@ -2501,6 +2533,424 @@ async function handleSupportEntrySubmit(event) {
     closeSupportEntryModal();
 }
 
+// ============================================================================
+// WISHLIST – danh sách mong muốn có thể kéo để đổi thứ tự TOP
+// ============================================================================
+function openWishlistModal() {
+    const modal = document.getElementById('wishlist-modal');
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    state.wishlistSelectionMode = null;
+    document.getElementById('btn-edit-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-delete-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    pushAppView('wishlist-modal');
+    fetchWishlistEntries();
+    createLucideIcons();
+}
+
+function closeWishlistModal(returnToHub = true, fromHistory = false) {
+    const modal = document.getElementById('wishlist-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    state.wishlistSelectionMode = null;
+    document.getElementById('btn-edit-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-delete-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    if (returnToHub && !fromHistory) leaveAppView();
+}
+
+function isMissingWishlistTable(error) {
+    const code = String(error?.code || '');
+    const message = String(error?.message || '').toLowerCase();
+    return code === 'PGRST205'
+        || code === '42P01'
+        || message.includes("could not find the table 'public.wishlist_entries'")
+        || message.includes('relation "wishlist_entries" does not exist');
+}
+
+function getWishlistLocalStorageKey() {
+    return state.currentUserId ? `qlct_wishlist_${state.currentUserId}` : 'qlct_wishlist';
+}
+
+function loadLocalWishlistEntries() {
+    try {
+        const raw = localStorage.getItem(getWishlistLocalStorageKey());
+        const entries = raw ? JSON.parse(raw) : [];
+        return Array.isArray(entries) ? entries : [];
+    } catch (error) {
+        console.warn('Không thể đọc Wishlist tạm:', error);
+        return [];
+    }
+}
+
+function saveLocalWishlistEntries(entries) {
+    localStorage.setItem(getWishlistLocalStorageKey(), JSON.stringify(entries));
+}
+
+function setWishlistNotice(message = '') {
+    const notice = document.getElementById('wishlist-storage-notice');
+    if (!notice) return;
+    notice.textContent = message;
+    notice.hidden = !message;
+}
+
+function setWishlistFormError(message = '') {
+    const errorEl = document.getElementById('wishlist-entry-form-error');
+    if (!errorEl) return;
+    errorEl.textContent = message;
+    errorEl.hidden = !message;
+}
+
+function renderWishlistEntries() {
+    const tbody = document.getElementById('wishlist-table-body');
+    const countEl = document.getElementById('wishlist-entry-count');
+    if (!tbody) return;
+
+    tbody.replaceChildren();
+    const entries = state.wishlistEntries || [];
+    if (countEl) countEl.textContent = `${entries.length} mục`;
+
+    if (!entries.length) {
+        const row = document.createElement('tr');
+        row.className = 'support-empty-row';
+        const cell = document.createElement('td');
+        cell.colSpan = 2;
+        cell.innerHTML = '<div class="support-empty-state"><span class="support-empty-icon"><i data-lucide="heart"></i></span><strong>Chưa có Wishlist</strong><p>Bấm nút “+” để thêm điều bạn muốn theo dõi.</p></div>';
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        createLucideIcons();
+        return;
+    }
+
+    entries.forEach((entry, index) => {
+        const row = document.createElement('tr');
+        row.dataset.wishlistId = entry.id;
+        row.draggable = true;
+
+        const rankCell = document.createElement('td');
+        rankCell.className = 'support-col-index wishlist-rank-cell';
+        const isSelecting = Boolean(state.wishlistSelectionMode);
+        if (!isSelecting) {
+            const rank = document.createElement('span');
+            rank.className = 'wishlist-rank';
+            rank.textContent = String(index + 1);
+            rankCell.appendChild(rank);
+        }
+
+        const handle = document.createElement('button');
+        handle.type = 'button';
+        handle.className = 'wishlist-drag-handle';
+        handle.title = 'Kéo để đổi thứ tự TOP';
+        handle.setAttribute('aria-label', handle.title);
+        handle.innerHTML = '<i data-lucide="grip-vertical"></i>';
+        rankCell.appendChild(handle);
+
+        if (isSelecting) {
+            const selectButton = document.createElement('button');
+            selectButton.type = 'button';
+            selectButton.className = 'support-row-select wishlist-row-select';
+            selectButton.title = state.wishlistSelectionMode === 'edit'
+                ? 'Chỉnh sửa Wishlist này'
+                : 'Xóa Wishlist này';
+            selectButton.setAttribute('aria-label', selectButton.title);
+            selectButton.addEventListener('click', () => handleWishlistEntrySelection(entry.id));
+            rankCell.appendChild(selectButton);
+        }
+
+        const titleCell = document.createElement('td');
+        titleCell.className = 'support-cell-need wishlist-title-cell';
+        titleCell.textContent = entry.title || '';
+
+        row.append(rankCell, titleCell);
+        bindWishlistDrag(row, handle, entry.id);
+        tbody.appendChild(row);
+    });
+
+    createLucideIcons();
+}
+
+function setWishlistSelectionMode(mode) {
+    state.wishlistSelectionMode = state.wishlistSelectionMode === mode ? null : mode;
+    const editButton = document.getElementById('btn-edit-wishlist-entry');
+    const deleteButton = document.getElementById('btn-delete-wishlist-entry');
+    if (editButton) editButton.setAttribute('aria-pressed', state.wishlistSelectionMode === 'edit' ? 'true' : 'false');
+    if (deleteButton) deleteButton.setAttribute('aria-pressed', state.wishlistSelectionMode === 'delete' ? 'true' : 'false');
+    renderWishlistEntries();
+}
+
+function handleWishlistEntrySelection(id) {
+    if (!id || !state.wishlistSelectionMode) return;
+    if (state.wishlistSelectionMode === 'edit') {
+        openWishlistEntryModal(id);
+    } else {
+        deleteWishlistEntry(id);
+    }
+}
+
+async function deleteWishlistEntry(id) {
+    if (!id) return;
+    const entry = state.wishlistEntries.find(item => item.id === id);
+    const label = entry?.title ? ` “${entry.title}”` : '';
+    if (!confirm(`Bạn có chắc muốn xóa Wishlist${label} không?`)) return;
+
+    if (state.wishlistStorageMode === 'local') {
+        const entries = loadLocalWishlistEntries().filter(item => item.id !== id);
+        saveLocalWishlistEntries(entries);
+        state.wishlistEntries = entries;
+        state.wishlistSelectionMode = null;
+        document.getElementById('btn-delete-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+        renderWishlistEntries();
+        persistWishlistOrder();
+        return;
+    }
+
+    if (!supabaseClient || !state.currentUserId) return;
+    const { error } = await supabaseClient
+        .from('wishlist_entries')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', state.currentUserId);
+
+    if (error) {
+        if (isMissingWishlistTable(error)) {
+            state.wishlistStorageMode = 'local';
+            const entries = loadLocalWishlistEntries().filter(item => item.id !== id);
+            saveLocalWishlistEntries(entries);
+            state.wishlistEntries = entries;
+            setWishlistNotice('Chưa có bảng wishlist_entries. Wishlist đang được lưu tạm trên thiết bị.');
+        } else {
+            console.error('Không thể xóa Wishlist:', error);
+            alert('Không thể xóa Wishlist. Vui lòng thử lại.');
+            return;
+        }
+    } else {
+        state.wishlistEntries = state.wishlistEntries.filter(item => item.id !== id);
+    }
+
+    state.wishlistSelectionMode = null;
+    document.getElementById('btn-delete-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    renderWishlistEntries();
+    persistWishlistOrder();
+}
+
+function bindWishlistDrag(row, handle, entryId) {
+    row.addEventListener('dragstart', event => {
+        state.wishlistDraggingId = entryId;
+        row.classList.add('wishlist-dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', entryId);
+    });
+    row.addEventListener('dragover', event => {
+        event.preventDefault();
+        row.classList.add('wishlist-drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('wishlist-drag-over'));
+    row.addEventListener('drop', event => {
+        event.preventDefault();
+        row.classList.remove('wishlist-drag-over');
+        reorderWishlistEntries(state.wishlistDraggingId || event.dataTransfer.getData('text/plain'), entryId);
+    });
+    row.addEventListener('dragend', () => {
+        state.wishlistDraggingId = null;
+        row.classList.remove('wishlist-dragging', 'wishlist-drag-over');
+        document.querySelectorAll('.wishlist-drag-over').forEach(item => item.classList.remove('wishlist-drag-over'));
+    });
+
+    // Hỗ trợ kéo trên màn hình cảm ứng/PWA.
+    let pointerDragging = false;
+    handle.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'mouse') return;
+        event.preventDefault();
+        pointerDragging = true;
+        state.wishlistDraggingId = entryId;
+        row.classList.add('wishlist-dragging');
+        handle.setPointerCapture?.(event.pointerId);
+    });
+    handle.addEventListener('pointermove', event => {
+        if (!pointerDragging) return;
+        const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('#wishlist-table-body tr');
+        if (!target || target === row) return;
+        const rect = target.getBoundingClientRect();
+        if (event.clientY < rect.top + rect.height / 2) target.before(row);
+        else target.after(row);
+    });
+    const finishPointerDrag = () => {
+        if (!pointerDragging) return;
+        pointerDragging = false;
+        row.classList.remove('wishlist-dragging');
+        syncWishlistOrderFromDom();
+    };
+    handle.addEventListener('pointerup', finishPointerDrag);
+    handle.addEventListener('pointercancel', finishPointerDrag);
+}
+
+function reorderWishlistEntries(draggedId, targetId) {
+    if (!draggedId || !targetId || draggedId === targetId) return;
+    const entries = [...state.wishlistEntries];
+    const fromIndex = entries.findIndex(entry => entry.id === draggedId);
+    const toIndex = entries.findIndex(entry => entry.id === targetId);
+    if (fromIndex < 0 || toIndex < 0) return;
+    const [moved] = entries.splice(fromIndex, 1);
+    entries.splice(toIndex, 0, moved);
+    state.wishlistEntries = entries;
+    renderWishlistEntries();
+    persistWishlistOrder();
+}
+
+function syncWishlistOrderFromDom() {
+    const ids = Array.from(document.querySelectorAll('#wishlist-table-body tr[data-wishlist-id]'))
+        .map(row => row.dataset.wishlistId);
+    const byId = new Map(state.wishlistEntries.map(entry => [entry.id, entry]));
+    state.wishlistEntries = ids.map(id => byId.get(id)).filter(Boolean);
+    renderWishlistEntries();
+    persistWishlistOrder();
+}
+
+async function persistWishlistOrder() {
+    state.wishlistEntries.forEach((entry, index) => { entry.display_order = index + 1; });
+    if (state.wishlistStorageMode === 'local') {
+        saveLocalWishlistEntries(state.wishlistEntries);
+        return;
+    }
+    if (!supabaseClient || !state.currentUserId) return;
+    const results = await Promise.all(state.wishlistEntries.map((entry, index) =>
+        supabaseClient.from('wishlist_entries').update({ display_order: index + 1 }).eq('id', entry.id).eq('user_id', state.currentUserId)
+    ));
+    const error = results.find(result => result.error)?.error;
+    if (error) console.error('Không thể lưu thứ tự Wishlist:', error);
+}
+
+async function fetchWishlistEntries() {
+    if (!supabaseClient || !state.currentUserId) {
+        state.wishlistStorageMode = 'local';
+        state.wishlistEntries = loadLocalWishlistEntries();
+        setWishlistNotice('Chưa có phiên Supabase. Wishlist sẽ được lưu tạm trên thiết bị này.');
+        renderWishlistEntries();
+        return;
+    }
+    const { data, error } = await supabaseClient
+        .from('wishlist_entries')
+        .select('id,title,display_order,created_at,updated_at')
+        .eq('user_id', state.currentUserId)
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: true });
+    if (error) {
+        if (isMissingWishlistTable(error)) {
+            state.wishlistStorageMode = 'local';
+            state.wishlistEntries = loadLocalWishlistEntries();
+            setWishlistNotice('Chưa có bảng wishlist_entries. Hãy chạy file SQL Wishlist để đồng bộ Supabase.');
+        } else {
+            console.error('Không thể tải Wishlist:', error);
+            state.wishlistEntries = [];
+            setWishlistNotice(error.message || 'Không thể tải Wishlist.');
+        }
+    } else {
+        state.wishlistStorageMode = 'supabase';
+        state.wishlistEntries = data || [];
+        setWishlistNotice('');
+    }
+    renderWishlistEntries();
+}
+
+function openWishlistEntryModal(entryId = null) {
+    const modal = document.getElementById('wishlist-entry-modal');
+    const form = document.getElementById('wishlist-entry-form');
+    if (!modal || !form) return;
+    form.reset();
+    setWishlistFormError('');
+    state.wishlistEditingEntryId = entryId;
+    state.wishlistSelectionMode = null;
+    document.getElementById('btn-edit-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    document.getElementById('btn-delete-wishlist-entry')?.setAttribute('aria-pressed', 'false');
+    const entry = entryId ? state.wishlistEntries.find(item => item.id === entryId) : null;
+    if (entry) {
+        document.getElementById('wishlist-entry-title').value = entry.title || '';
+    }
+    document.getElementById('wishlist-entry-form-title').textContent = entry ? 'Chỉnh sửa Wishlist' : 'Thêm Wishlist';
+    document.querySelector('#wishlist-entry-form button[type="submit"] span').textContent = entry ? 'Cập nhật' : 'Lưu';
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    pushAppView('wishlist-entry-modal');
+    document.getElementById('wishlist-entry-title')?.focus();
+    createLucideIcons();
+}
+
+function closeWishlistEntryModal(returnToWishlist = true, fromHistory = false) {
+    const modal = document.getElementById('wishlist-entry-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    state.wishlistEditingEntryId = null;
+    renderWishlistEntries();
+    if (returnToWishlist && !fromHistory) leaveAppView();
+}
+
+async function handleWishlistEntrySubmit(event) {
+    event.preventDefault();
+    if (!supabaseClient || !state.currentUserId) {
+        showLoginScreen();
+        return;
+    }
+    const title = document.getElementById('wishlist-entry-title')?.value.trim();
+    const submitButton = document.querySelector('#wishlist-entry-form button[type="submit"]');
+    if (!title) return;
+    setWishlistFormError('');
+    if (submitButton) submitButton.disabled = true;
+
+    if (state.wishlistStorageMode === 'local') {
+        saveWishlistEntryLocally(title);
+        return;
+    }
+
+    const editingId = state.wishlistEditingEntryId;
+    const maxOrder = state.wishlistEntries.reduce((max, entry) => Math.max(max, Number(entry.display_order) || 0), 0);
+    const query = editingId
+        ? supabaseClient.from('wishlist_entries').update({ title, updated_at: new Date().toISOString() }).eq('id', editingId).eq('user_id', state.currentUserId)
+        : supabaseClient.from('wishlist_entries').insert({ user_id: state.currentUserId, title, display_order: maxOrder + 1 });
+    const { data, error } = await query.select('id,title,display_order,created_at,updated_at').single();
+    if (submitButton) submitButton.disabled = false;
+    if (error) {
+        if (isMissingWishlistTable(error)) {
+            state.wishlistStorageMode = 'local';
+            setWishlistNotice('Chưa có bảng wishlist_entries. Hãy chạy file SQL Wishlist để đồng bộ Supabase.');
+            saveWishlistEntryLocally(title);
+            if (submitButton) submitButton.disabled = false;
+            closeWishlistEntryModal();
+            return;
+        }
+        setWishlistFormError(`${error.code || 'SUPABASE'}: ${error.message || 'Không thể lưu Wishlist.'}`);
+        return;
+    }
+    if (editingId) state.wishlistEntries = state.wishlistEntries.map(entry => entry.id === editingId ? data : entry);
+    else state.wishlistEntries.push(data);
+    renderWishlistEntries();
+    closeWishlistEntryModal();
+}
+
+function saveWishlistEntryLocally(title) {
+    const now = new Date().toISOString();
+    const entries = loadLocalWishlistEntries();
+    if (state.wishlistEditingEntryId) {
+        const index = entries.findIndex(entry => entry.id === state.wishlistEditingEntryId);
+        if (index >= 0) entries[index] = { ...entries[index], title, updated_at: now };
+    } else {
+        entries.push({
+            id: `local-${Date.now()}`,
+            title,
+            display_order: entries.length + 1,
+            created_at: now,
+            updated_at: now
+        });
+    }
+    saveLocalWishlistEntries(entries);
+    state.wishlistEntries = entries;
+    renderWishlistEntries();
+    const submitButton = document.querySelector('#wishlist-entry-form button[type="submit"]');
+    if (submitButton) submitButton.disabled = false;
+    closeWishlistEntryModal();
+}
+
 window.openSupportModal = openSupportModal;
 window.closeSupportModal = closeSupportModal;
 
@@ -2599,6 +3049,7 @@ function setCurrentSupabaseUser(user) {
         loadExpenseDataForCurrentUser();
         loadSaverData();
         fetchSupportEntries();
+        fetchWishlistEntries();
         if (window.NotesModule && typeof window.NotesModule.setCurrentUser === 'function') {
             window.NotesModule.setCurrentUser(nextUserId);
         }
@@ -2607,8 +3058,14 @@ function setCurrentSupabaseUser(user) {
         state.savers = [];
         state.supportEntries = [];
         state.supportStorageMode = 'local';
+        state.wishlistEntries = [];
+        state.wishlistStorageMode = 'local';
+        state.wishlistSelectionMode = null;
+        state.wishlistEditingEntryId = null;
         setSupportStorageNotice('');
+        setWishlistNotice('');
         renderSupportEntries();
+        renderWishlistEntries();
         updateUI();
         renderSaverTable();
         if (window.NotesModule && typeof window.NotesModule.setCurrentUser === 'function') {
