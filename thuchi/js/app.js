@@ -17,6 +17,7 @@ let supabaseClient = null;
 let supabaseSubscription = null;
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
+let calendarSelectedDay = null;
 let dashboardCalendarYear = new Date().getFullYear();
 let dashboardCalendarMonth = new Date().getMonth();
 let analysisYear = new Date().getFullYear();
@@ -813,6 +814,19 @@ function openDetailModal(expenseId) {
     document.getElementById('detail-expense-modal').classList.add('active');
 }
 
+function refreshCalendarDayDetailIfOpen() {
+    const calendarModal = document.getElementById('calendar-expense-modal');
+    const detailView = document.getElementById('calendar-day-detail');
+    if (
+        calendarSelectedDay &&
+        calendarModal?.classList.contains('active') &&
+        detailView &&
+        detailView.style.display !== 'none'
+    ) {
+        showDayExpensesDetail(calendarSelectedDay);
+    }
+}
+
 function saveEditedExpense(id) {
     if (!state.currentUserId) {
         showLoginScreen();
@@ -866,6 +880,7 @@ function saveEditedExpense(id) {
     }
 
     closeDetailModal();
+    refreshCalendarDayDetailIfOpen();
 }
 
 function closeDetailModal() {
@@ -965,6 +980,7 @@ function openCalendarModal(e) {
     const detailView = document.getElementById('calendar-day-detail');
     if (gridView) gridView.style.display = 'block';
     if (detailView) detailView.style.display = 'none';
+    calendarSelectedDay = null;
 
     const modalEl = document.getElementById('calendar-expense-modal');
     if (modalEl) {
@@ -992,6 +1008,7 @@ function closeCalendarModal() {
         const detailView = document.getElementById('calendar-day-detail');
         if (gridView) gridView.style.display = 'block';
         if (detailView) detailView.style.display = 'none';
+        calendarSelectedDay = null;
     }, 350); // Đợi animation đóng xong
 }
 
@@ -1011,6 +1028,8 @@ function formatShortAmount(amount) {
 }
 
 function showDayExpensesDetail(dayStr) {
+    calendarSelectedDay = dayStr;
+
     // Lọc chi tiêu của ngày được chọn
     const dayExpenses = state.expenses.filter(exp => {
         if (!exp || !exp.date) return false;
@@ -1045,7 +1064,7 @@ function showDayExpensesDetail(dayStr) {
                 const amountStr = formatCurrency(exp.amount || 0);
                 const timeStr = formatDateTimeVietnamese(exp);
                 return `
-                <div style="
+                <div class="calendar-day-expense-item" data-expense-id="${exp.id}" role="button" tabindex="0" aria-label="Chỉnh sửa ${exp.title || 'khoản chi'}" style="
                     display: flex; align-items: center; gap: 12px;
                     background: rgba(255,255,255,0.04);
                     border-radius: 14px; padding: 12px 14px;
@@ -1063,6 +1082,19 @@ function showDayExpensesDetail(dayStr) {
                     <div style="font-size: 0.95rem; font-weight: 800; color: ${style.color}; white-space: nowrap; flex-shrink: 0;">-${amountStr}</div>
                 </div>`;
             }).join('');
+
+            listEl.querySelectorAll('[data-expense-id]').forEach(itemEl => {
+                const expenseId = itemEl.dataset.expenseId;
+                const openEditor = () => openDetailModal(expenseId);
+
+                itemEl.addEventListener('click', openEditor);
+                itemEl.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openEditor();
+                    }
+                });
+            });
         }
     }
 
@@ -1260,6 +1292,7 @@ function deleteExpense(id) {
     state.expenses = state.expenses.filter(item => item.id !== id);
     saveData();
     updateUI();
+    refreshCalendarDayDetailIfOpen();
 
     // Nếu đã kết nối Supabase, tự động xóa dòng tương ứng
     if (supabaseClient && state.currentUserId) {
