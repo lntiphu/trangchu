@@ -278,6 +278,80 @@ function formatDateStringVietnamese(dateStr) {
     }
 }
 
+// Chuẩn hóa từ khóa lịch sử để hỗ trợ tìm ngày với nhiều cách gõ:
+// 22/07/2026, 22-07-2026, 07/2026, 2026 hoặc "tháng 7 năm 2026".
+function normalizeHistorySearchText(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .replace(/[._-]+/g, '/')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function getExpenseDateSearchTokens(dateValue) {
+    const dateStr = String(dateValue || '').split('T')[0];
+    const match = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) return [];
+
+    const [, year, monthRaw, dayRaw] = match;
+    const month = Number(monthRaw);
+    const day = Number(dayRaw);
+    if (!month || !day) return [];
+
+    const dd = String(day).padStart(2, '0');
+    const mm = String(month).padStart(2, '0');
+    const yy = year.slice(-2);
+    const tokens = [
+        `${year}-${mm}-${dd}`,
+        `${year}/${mm}/${dd}`,
+        `${year}/${month}/${day}`,
+        `${dd}/${mm}/${year}`,
+        `${day}/${month}/${year}`,
+        `${dd}/${mm}/${yy}`,
+        `${day}/${month}/${yy}`,
+        `${mm}/${year}`,
+        `${month}/${year}`,
+        `${year}/${mm}`,
+        `${year}/${month}`,
+        `${day} thang ${month} nam ${year}`,
+        `${dd} thang ${mm} nam ${year}`,
+        `ngay ${day} thang ${month} nam ${year}`,
+        `ngay ${dd}/${mm}/${year}`,
+        `thang ${month} nam ${year}`,
+        `thang ${mm} nam ${year}`,
+        `thang ${month}`,
+        `nam ${year}`,
+        `${year}${mm}${dd}`,
+        `${dd}${mm}${year}`,
+        `${mm}${year}`,
+        year
+    ];
+    return [...new Set(tokens.map(normalizeHistorySearchText))];
+}
+
+function expenseMatchesHistorySearch(expense, rawQuery) {
+    const query = normalizeHistorySearchText(rawQuery);
+    if (!query) return true;
+
+    const textFields = [expense.title, expense.category, expense.amount]
+        .map(normalizeHistorySearchText);
+    if (textFields.some(value => value.includes(query))) return true;
+
+    const dateTokens = getExpenseDateSearchTokens(expense.date);
+    if (dateTokens.some(token => token.includes(query))) return true;
+
+    // Cho phép gõ liền số, ví dụ 22072026 hoặc 072026.
+    const queryDigits = query.replace(/\D/g, '');
+    if (queryDigits.length >= 4) {
+        return dateTokens.some(token => token.replace(/\D/g, '').includes(queryDigits));
+    }
+    return false;
+}
+
 // Định dạng Giờ & Ngày chi tiết: Vd 10:12 AM 22/07/26
 function formatDateTimeVietnamese(exp) {
     if (!exp) return '';
@@ -1654,11 +1728,7 @@ function renderHistoryList() {
     let filtered = state.expenses;
 
     if (state.searchQuery.trim() !== '') {
-        const query = state.searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(exp => 
-            exp.title.toLowerCase().includes(query) || 
-            exp.amount.toString().includes(query)
-        );
+        filtered = filtered.filter(exp => expenseMatchesHistorySearch(exp, state.searchQuery));
     }
 
     if (filtered.length === 0) {
