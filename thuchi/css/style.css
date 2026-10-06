@@ -897,6 +897,11 @@ html, body {
     padding: 20px;
 }
 
+/* Khi mở chỉnh sửa từ popup lịch, form chỉnh sửa phải nằm trên popup ngày. */
+#detail-expense-modal {
+    z-index: 100010;
+}
+
 #add-saver-modal,
 #adjust-saver-amount-modal {
     align-items: center;
@@ -1648,6 +1653,22 @@ html, body {
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 1;
+}
+
+.calendar-day-expense-item {
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.calendar-day-expense-item:hover,
+.calendar-day-expense-item:focus-visible {
+    background: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(220, 139, 120, 0.35) !important;
+    outline: none;
+}
+
+.calendar-day-expense-item:active {
+    transform: scale(0.985);
 }
 
 /* DASHBOARD MONTHLY CALENDAR */
