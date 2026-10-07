@@ -1,17 +1,19 @@
 /* ==========================================================================
    Money - Mô-đun Ghi Chú Cá Nhân (Notes Module Styles)
+   Nâng cấp giao diện hiện đại, chuyên nghiệp, chuẩn phong cách iOS Minimalist
    ========================================================================== */
 :root {
     --bg-cream: #FAF7F2;
     --bg-card: #FFFFFF;
-    --bg-input: #F2EBE1;
+    --bg-input: #FAF8F5;
     --text-primary: #232C25;
     --text-secondary: #6B786D;
     --text-tertiary: #929E94;
     --accent-sage: #6A7B68;
     --accent-green: #2E7D32;
+    --accent-green-dark: #1B5E20;
     --accent-red: #D45B50;
-    --ios-font: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --ios-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -22,12 +24,18 @@
     font-family: var(--ios-font);
 }
 
+html {
+    font-size: 13px !important;
+}
+
 body {
     background-color: var(--bg-cream);
     color: var(--text-primary);
+    font-size: 13px;
+    font-family: var(--ios-font);
     width: 100%;
     min-height: 100vh;
-    padding: max(16px, env(safe-area-inset-top)) 16px calc(82px + env(safe-area-inset-bottom));
+    padding: max(16px, env(safe-area-inset-top)) 16px calc(86px + env(safe-area-inset-bottom));
 }
 
 .notes-container {
@@ -38,6 +46,85 @@ body {
     gap: 16px;
 }
 
+/* Header Bar */
+.notes-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 4px;
+}
+
+.notes-header-back-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(52, 66, 55, 0.06);
+    border: none;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.notes-header-back-btn:hover {
+    background: rgba(52, 66, 55, 0.12);
+    transform: scale(0.96);
+}
+
+.notes-header-title-wrap {
+    flex: 1;
+    min-width: 0;
+    padding: 0 4px;
+}
+
+.notes-header-eyebrow {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    display: block;
+    line-height: 1.2;
+}
+
+.notes-header-heading {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 3px 0 0;
+    line-height: 1.2;
+}
+
+.notes-header-add-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%);
+    border: none;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.28);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    flex-shrink: 0;
+}
+
+.notes-header-add-btn:active {
+    transform: scale(0.93);
+}
+
+.notes-header-add-btn i {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
 /* ==========================================================================
    POPUP MODAL (BOTTOM SHEET) - Thêm & Chỉnh Sửa Ghi Chú
    ========================================================================== */
@@ -45,9 +132,9 @@ body {
     position: fixed;
     inset: 0;
     z-index: 10000;
-    background: rgba(15, 23, 18, 0.55);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(18, 26, 20, 0.52);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -65,14 +152,15 @@ body {
     background: #FFFFFF;
     width: 100%;
     max-width: 500px;
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
-    border-top: 1px solid rgba(52, 66, 55, 0.1);
-    padding: 14px 20px 24px;
+    border-radius: 28px 28px 0 0;
+    box-shadow: 0 -15px 50px rgba(18, 26, 20, 0.25);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 12px 20px max(24px, env(safe-area-inset-bottom));
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    max-height: 90vh;
+    max-height: 88vh;
     overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .notes-modal-overlay.active .notes-modal-sheet {
@@ -80,26 +168,26 @@ body {
 }
 
 .notes-drag-handle {
-    width: 40px;
+    width: 42px;
     height: 4px;
     background: rgba(52, 66, 55, 0.18);
     border-radius: 99px;
-    margin: 0 auto 12px;
+    margin: 0 auto 16px;
 }
 
 .notes-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
     border-bottom: 1px solid rgba(52, 66, 55, 0.08);
 }
 
 .notes-modal-close-btn {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     background: rgba(52, 66, 55, 0.06);
     border: none;
     color: var(--text-secondary);
@@ -111,8 +199,144 @@ body {
 }
 
 .notes-modal-close-btn:hover {
-    background: rgba(52, 66, 55, 0.12);
+    background: rgba(52, 66, 55, 0.14);
     color: var(--text-primary);
+}
+
+.notes-badge-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: rgba(46, 125, 50, 0.12);
+    color: var(--accent-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notes-badge-icon i {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.4;
+}
+
+#notes-form-heading {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.25;
+}
+
+.notes-form-sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.notes-collapse-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.notes-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.notes-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.notes-form-group label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.note-label-icon {
+    width: 15px;
+    height: 15px;
+    color: var(--accent-green);
+}
+
+.required-mark {
+    color: var(--accent-red);
+    font-weight: 800;
+}
+
+.notes-form-group input,
+.notes-form-group textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid rgba(52, 66, 55, 0.12);
+    border-radius: 15px;
+    padding: 12px 14px;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.notes-form-group input:focus,
+.notes-form-group textarea:focus {
+    background: #FFFFFF;
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.14);
+}
+
+.notes-form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+.notes-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.btn {
+    padding: 10px 18px;
+    border-radius: 14px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary {
+    background: rgba(52, 66, 55, 0.08);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: rgba(52, 66, 55, 0.14);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-dark) 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.28);
+}
+
+.btn-primary:active {
+    transform: scale(0.96);
 }
 
 /* ==========================================================================
@@ -125,9 +349,9 @@ body {
     right: 0;
     height: auto;
     min-height: 72px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     border-top: 1px solid rgba(52, 66, 55, 0.1);
     display: flex;
     align-items: center;
@@ -135,7 +359,7 @@ body {
     padding: 8px 16px max(10px, env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
     z-index: 999;
-    box-shadow: 0 -4px 20px rgba(52, 66, 55, 0.06);
+    box-shadow: 0 -4px 20px rgba(52, 66, 55, 0.05);
 }
 
 .notes-nav-item {
@@ -185,12 +409,12 @@ body {
     cursor: pointer;
     box-shadow: 0 6px 18px rgba(46, 125, 50, 0.35);
     transform: translateY(-8px);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
     -webkit-tap-highlight-color: transparent;
 }
 
 .notes-nav-add-btn:active {
-    transform: translateY(-8px) scale(0.88);
+    transform: translateY(-8px) scale(0.9);
 }
 
 .notes-nav-add-btn i {
@@ -199,141 +423,9 @@ body {
     stroke-width: 2.6;
 }
 
-.notes-badge-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: rgba(46, 125, 50, 0.12);
-    color: var(--accent-green);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notes-badge-icon i {
-    width: 18px;
-    height: 18px;
-}
-
-.notes-editor-header h3 {
-    font-size: 0.98rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.notes-form-sub {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-}
-
-.notes-collapse-btn {
-    background: none;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    padding: 4px;
-}
-
-.notes-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.notes-form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.notes-form-group label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.note-label-icon {
-    width: 15px;
-    height: 15px;
-    color: var(--accent-sage);
-}
-
-.required-mark {
-    color: var(--accent-red);
-    font-weight: 800;
-}
-
-.notes-form-group input,
-.notes-form-group textarea {
-    width: 100%;
-    background: var(--bg-input);
-    border: 1px solid rgba(52, 66, 55, 0.12);
-    border-radius: 14px;
-    padding: 12px 14px;
-    color: var(--text-primary);
-    font-size: 0.92rem;
-    outline: none;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-
-.notes-form-group input:focus,
-.notes-form-group textarea:focus {
-    background: #FFFFFF;
-    border-color: var(--accent-green);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
-}
-
-.notes-form-group textarea {
-    resize: vertical;
-    min-height: 95px;
-    line-height: 1.5;
-}
-
-.notes-form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 4px;
-}
-
-.btn {
-    padding: 10px 18px;
-    border-radius: 12px;
-    font-size: 0.86rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s ease;
-}
-
-.btn-secondary {
-    background: rgba(52, 66, 55, 0.08);
-    color: var(--text-primary);
-}
-
-.btn-secondary:hover {
-    background: rgba(52, 66, 55, 0.14);
-}
-
-.btn-primary {
-    background: var(--accent-green);
-    color: #FFFFFF;
-    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.25);
-}
-
-.btn-primary:active {
-    transform: scale(0.97);
-}
-
-/* List Header */
+/* ==========================================================================
+   DANH SÁCH & THANH TÌM KIẾM GHI CHÚ
+   ========================================================================== */
 .notes-list-header {
     display: flex;
     flex-direction: column;
@@ -356,18 +448,18 @@ body {
 }
 
 .notes-section-title {
-    font-size: 0.95rem;
+    font-size: 0.98rem;
     font-weight: 800;
     color: var(--text-primary);
 }
 
 .notes-counter-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 12px;
-    background: rgba(52, 66, 55, 0.08);
-    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(46, 125, 50, 0.12);
+    color: var(--accent-green);
 }
 
 .notes-search-wrapper {
@@ -390,22 +482,25 @@ body {
 .notes-search-wrapper input {
     width: 100%;
     background: #FFFFFF;
-    border: 1px solid rgba(52, 66, 55, 0.1);
-    border-radius: 14px;
-    padding: 8px 12px 8px 36px;
-    font-size: 0.82rem;
+    border: 1px solid rgba(52, 66, 55, 0.11);
+    border-radius: 15px;
+    padding: 9px 12px 9px 38px;
+    font-size: 0.84rem;
     outline: none;
     color: var(--text-primary);
     transition: all 0.2s ease;
     box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(52, 66, 55, 0.03);
 }
 
 .notes-search-wrapper input:focus {
     border-color: var(--accent-green);
-    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.13);
 }
 
-/* Cards */
+/* ==========================================================================
+   THẺ GHI CHÚ (NOTE CARDS)
+   ========================================================================== */
 .notes-cards-container {
     display: grid;
     grid-template-columns: 1fr;
@@ -414,20 +509,21 @@ body {
 
 .note-card {
     background: #FFFFFF;
-    border: 1px solid rgba(52, 66, 55, 0.08);
-    border-radius: 18px;
-    padding: 14px 16px;
-    box-shadow: 0 4px 16px rgba(52, 66, 55, 0.03);
+    border: 1px solid rgba(46, 125, 50, 0.12);
+    border-radius: 20px;
+    padding: 16px 18px;
+    box-shadow: 0 5px 18px rgba(52, 66, 55, 0.04);
     display: flex;
     flex-direction: column;
     gap: 10px;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
 }
 
 .note-card:hover {
-    border-color: rgba(52, 66, 55, 0.18);
-    box-shadow: 0 8px 24px rgba(52, 66, 55, 0.07);
-    transform: translateY(-1px);
+    border-color: rgba(46, 125, 50, 0.25);
+    box-shadow: 0 10px 28px rgba(46, 125, 50, 0.08);
+    transform: translateY(-2px);
 }
 
 .note-card-header {
@@ -443,11 +539,11 @@ body {
 }
 
 .note-card-title {
-    font-size: 0.98rem;
+    font-size: 1.02rem;
     font-weight: 800;
-    color: var(--text-primary);
+    color: #1C2E1F;
     margin: 0 0 4px;
-    line-height: 1.3;
+    line-height: 1.35;
     word-break: break-word;
 }
 
@@ -455,8 +551,9 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.72rem;
-    color: var(--text-tertiary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #647566;
 }
 
 .note-card-date i {
@@ -472,9 +569,9 @@ body {
 }
 
 .note-action-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
     background: transparent;
     border: none;
     color: var(--text-tertiary);
@@ -482,7 +579,7 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.16s ease;
 }
 
 .note-action-btn:hover {
@@ -490,20 +587,25 @@ body {
     color: var(--text-primary);
 }
 
-.btn-delete-note:hover {
-    background: rgba(212, 91, 80, 0.12);
-    color: var(--accent-red);
-}
-
-.btn-edit-note:hover {
+.btn-copy-note:hover {
     background: rgba(46, 125, 50, 0.12);
     color: var(--accent-green);
 }
 
+.btn-delete-note:hover {
+    background: rgba(212, 91, 80, 0.14);
+    color: var(--accent-red);
+}
+
+.btn-edit-note:hover {
+    background: rgba(106, 123, 104, 0.16);
+    color: #445942;
+}
+
 .note-card-content {
-    font-size: 0.86rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
+    font-size: 0.88rem;
+    color: #405043;
+    line-height: 1.55;
     word-break: break-word;
     white-space: pre-wrap;
     max-height: 220px;
@@ -516,26 +618,30 @@ body {
     font-style: italic;
 }
 
+/* ==========================================================================
+   TRẠNG THÁI TRỐNG & TOAST
+   ========================================================================== */
 .notes-empty-state {
     text-align: center;
-    padding: 36px 16px;
+    padding: 42px 18px;
     background: #FFFFFF;
-    border: 1px dashed rgba(52, 66, 55, 0.15);
-    border-radius: 18px;
+    border: 1px dashed rgba(46, 125, 50, 0.2);
+    border-radius: 20px;
     color: var(--text-secondary);
 }
 
 .notes-empty-icon {
-    width: 44px;
-    height: 44px;
-    color: var(--text-tertiary);
+    width: 48px;
+    height: 48px;
+    color: var(--accent-green);
     margin: 0 auto 10px;
-    stroke-width: 1.5;
+    stroke-width: 1.6;
+    display: block;
 }
 
 .notes-empty-state h4 {
-    font-size: 0.98rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: 800;
     color: var(--text-primary);
     margin: 0 0 4px;
 }
@@ -543,13 +649,12 @@ body {
 .notes-empty-state p {
     font-size: 0.8rem;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
-/* Toast */
 .notes-toast {
     position: fixed;
-    bottom: 24px;
+    bottom: 84px;
     left: 50%;
     transform: translateX(-50%) translateY(30px);
     background: #232C25;
