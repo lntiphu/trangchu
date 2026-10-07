@@ -35,10 +35,18 @@
 }
 
 /* ── Reset ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 
 /* Thanh cuộn mảnh, đồng bộ với giao diện Phân tích và Tiết kiệm. */
 html {
+  font-size: 13px !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   scrollbar-width: thin;
   scrollbar-color: rgba(176, 92, 122, 0.48) transparent;
 }
@@ -97,10 +105,18 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 body {
-  font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif!important;
+  font-size: 13px;
   background: var(--bg);
   min-height: 100vh;
   color: var(--text);
+}
+
+.ckkn-modal-overlay,
+.ckkn-modal-sheet,
+.modal {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif!important;
+  font-size: 13px;
 }
 
 /* ══════════════════════════════════════
