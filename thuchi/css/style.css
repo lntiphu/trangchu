@@ -92,7 +92,7 @@ input, select, textarea {
 }
 
 html {
-    font-size: 13px !important;
+    font-size: 15px !important;
 }
 
 html, body {
@@ -103,7 +103,7 @@ html, body {
     overflow: hidden;
     background-color: var(--bg-black);
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 15px;
     font-family: var(--ios-font);
     -webkit-user-select: none;
     user-select: none;
@@ -891,7 +891,7 @@ html, body {
     pointer-events: none;
     transition: opacity 0.3s ease;
     font-family: var(--ios-font);
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .modal-overlay.active {
@@ -3284,7 +3284,7 @@ html, body {
     color: #d93025;
     padding: 10px 14px;
     border-radius: 10px;
-    font-size: 13px;
+    ;
     font-weight: 500;
     border: 1px solid #ffcdd2;
     text-align: center;
@@ -3329,7 +3329,7 @@ html, body {
 
 .login-footer {
     margin-top: 32px;
-    font-size: 13px;
+    ;
     color: #8a8d91;
     font-weight: 500;
     letter-spacing: 0.2px;
