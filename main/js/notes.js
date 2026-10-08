@@ -14,6 +14,7 @@
     let notesSubscription = null;
     let notes = [];
     let isEditingId = null;
+    let editingIsFavorite = false;
     let currentFilter = 'all'; // 'all' hoặc 'fav'
 
     const SAMPLE_NOTES = [
@@ -318,9 +319,9 @@
             } else if (currentFilter === 'fav') {
                 container.innerHTML = `
                     <div class="notes-empty-state">
-                        <i data-lucide="heart" class="notes-empty-icon" style="color: #dc2626;"></i>
-                        <h4>Chưa có ghi chú quan trọng</h4>
-                        <p>Nhấp vào biểu tượng trái tim trên các thẻ ghi chú để đánh dấu các nội dung quan trọng nhất.</p>
+                        <i data-lucide="pin" class="notes-empty-icon" style="color: #2E7D32;"></i>
+                        <h4>Chưa có ghi chú được ghim</h4>
+                        <p>Ghim những ghi chú quan trọng để truy cập nhanh hơn.</p>
                         <button type="button" class="notes-empty-btn" id="btn-switch-to-all">
                             <span>Xem tất cả ghi chú</span>
                         </button>
@@ -372,7 +373,7 @@
             const contentHtml = formatCleanContentHtml(note.content);
             const isFav = Boolean(note.isFavorite);
             const favClass = isFav ? 'is-fav' : '';
-            const favIconFill = isFav ? 'fill="#dc2626"' : '';
+            const favIconFill = isFav ? 'fill="currentColor"' : '';
 
             html += `
                 <div class="note-card" data-note-id="${escapeHtml(note.id)}">
@@ -385,8 +386,8 @@
                             <h4 class="note-card-title">${escapeHtml(note.title)}</h4>
                         </div>
                         <div class="note-card-actions">
-                            <button type="button" class="note-action-btn btn-fav-note ${favClass}" data-id="${escapeHtml(note.id)}" title="${isFav ? 'Bỏ đánh dấu quan trọng' : 'Đánh dấu quan trọng'}" aria-label="Đánh dấu quan trọng">
-                                <i data-lucide="heart" ${favIconFill}></i>
+                            <button type="button" class="note-action-btn btn-fav-note ${favClass}" data-id="${escapeHtml(note.id)}" title="${isFav ? 'Bỏ ghim ghi chú' : 'Ghim ghi chú'}" aria-label="${isFav ? 'Bỏ ghim ghi chú' : 'Ghim ghi chú'}">
+                                <i data-lucide="pin" ${favIconFill}></i>
                             </button>
                             <button type="button" class="note-action-btn btn-copy-note" data-id="${escapeHtml(note.id)}" title="Sao chép nội dung" aria-label="Sao chép">
                                 <i data-lucide="copy"></i>
@@ -566,6 +567,26 @@
         }, 2200);
     }
 
+    function updateNoteEditorCount() {
+        const contentInput = document.getElementById('note-content-input');
+        const countEl = document.getElementById('notes-content-count');
+        if (!contentInput || !countEl) return;
+        countEl.textContent = `${contentInput.value.length} / ${contentInput.maxLength || 3000}`;
+    }
+
+    function updateNoteEditorPinState() {
+        const pinButton = document.getElementById('btn-toggle-note-pin');
+        if (!pinButton) return;
+        pinButton.classList.toggle('is-pinned', editingIsFavorite);
+        pinButton.setAttribute('aria-pressed', editingIsFavorite ? 'true' : 'false');
+        pinButton.title = editingIsFavorite ? 'Bỏ ghim ghi chú' : 'Ghim ghi chú';
+    }
+
+    function toggleNoteEditorPin() {
+        editingIsFavorite = !editingIsFavorite;
+        updateNoteEditorPinState();
+    }
+
     // Mở Bottom Sheet Thêm / Sửa Ghi chú
     function openNoteEntryModal(id = null) {
         const modal = document.getElementById('notes-entry-modal');
@@ -577,6 +598,7 @@
         const headingEl = document.getElementById('notes-entry-form-title');
         const descEl = document.getElementById('notes-entry-form-description');
         const btnSaveText = document.getElementById('btn-save-note-text');
+        const statusEl = document.getElementById('notes-entry-status');
 
         if (id) {
             const note = notes.find(n => n.id === id);
@@ -588,6 +610,8 @@
             if (headingEl) headingEl.textContent = 'Chỉnh sửa ghi chú';
             if (descEl) descEl.textContent = 'Cập nhật lại tiêu đề hoặc nội dung cần ghi nhớ.';
             if (btnSaveText) btnSaveText.textContent = 'Cập nhật';
+            if (statusEl) statusEl.textContent = 'Chỉnh sửa ghi chú';
+            editingIsFavorite = Boolean(note.isFavorite);
         } else {
             isEditingId = null;
             if (idInput) idInput.value = '';
@@ -596,7 +620,12 @@
             if (headingEl) headingEl.textContent = 'Ghi chú mới';
             if (descEl) descEl.textContent = 'Nhập thông tin tiêu đề và nội dung cần lưu trữ.';
             if (btnSaveText) btnSaveText.textContent = 'Lưu ghi chú';
+            if (statusEl) statusEl.textContent = 'Ghi chú mới';
+            editingIsFavorite = false;
         }
+
+        updateNoteEditorCount();
+        updateNoteEditorPinState();
 
         modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
@@ -618,6 +647,7 @@
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
         isEditingId = null;
+        editingIsFavorite = false;
 
         const form = document.getElementById('notes-form');
         if (form) form.reset();
@@ -651,6 +681,7 @@
             if (idx !== -1) {
                 notes[idx].title = title;
                 notes[idx].content = content;
+                notes[idx].isFavorite = editingIsFavorite;
                 notes[idx].updatedAt = new Date().toISOString();
                 
                 const updatedNote = notes[idx];
@@ -665,7 +696,7 @@
                 id: generateNoteId(),
                 title: title,
                 content: content,
-                isFavorite: false,
+                isFavorite: editingIsFavorite,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -778,6 +809,12 @@
         if (form) {
             form.addEventListener('submit', handleSaveNote);
         }
+
+        const contentInput = document.getElementById('note-content-input');
+        if (contentInput) contentInput.addEventListener('input', updateNoteEditorCount);
+
+        const pinEditorButton = document.getElementById('btn-toggle-note-pin');
+        if (pinEditorButton) pinEditorButton.addEventListener('click', toggleNoteEditorPin);
 
         // Đóng form entry bottom sheet
         const btnCloseEntry = document.getElementById('btn-close-notes-entry-modal');
