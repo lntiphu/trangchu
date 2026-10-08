@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=47">
+    <link rel="stylesheet" href="main/css/styles.css?v=48">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -971,6 +971,114 @@
         </div>
     </div><!-- End #quote-entry-modal -->
 
+    <!-- MODAL 10: SỔ TAY BÀI VIẾT / MẸO SỨC KHỎE -->
+    <div class="modal-overlay handbook-page-modal" id="handbook-modal" aria-hidden="true">
+        <div class="modal-sheet handbook-page-sheet" role="dialog" aria-modal="true" aria-label="Sổ tay">
+            <div class="handbook-page-header">
+                <button class="modal-close-btn handbook-back-btn" id="btn-close-handbook-modal" aria-label="Quay lại trang chức năng" title="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="handbook-page-title">
+                    <span>SỔ TAY CỦA BẠN</span>
+                    <h2><i data-lucide="book-open"></i> Sổ tay</h2>
+                    <p>Lưu bài thuốc dân gian, mẹo hay và kinh nghiệm gia đình</p>
+                </div>
+                <div class="handbook-header-actions">
+                    <button type="button" class="handbook-icon-btn" id="btn-import-handbook" title="Nhập dữ liệu JSON" aria-label="Nhập dữ liệu JSON"><i data-lucide="upload"></i></button>
+                    <button type="button" class="handbook-icon-btn" id="btn-export-handbook" title="Xuất dữ liệu JSON" aria-label="Xuất dữ liệu JSON"><i data-lucide="download"></i></button>
+                    <button type="button" class="handbook-add-btn" id="btn-add-handbook-entry" title="Thêm bài mới"><i data-lucide="plus"></i><span>Thêm bài</span></button>
+                    <input type="file" id="handbook-import-input" accept="application/json,.json" hidden>
+                </div>
+            </div>
+
+            <div class="handbook-page-scroll">
+                <div class="handbook-intro-card">
+                    <div class="handbook-intro-icon"><i data-lucide="notebook-pen"></i></div>
+                    <div>
+                        <strong>Ghi lại điều hữu ích cho cả nhà</strong>
+                        <p>Tìm nhanh theo tên bài, công dụng hoặc nguyên liệu.</p>
+                    </div>
+                </div>
+
+                <div class="handbook-toolbar">
+                    <label class="handbook-search" for="handbook-search-input">
+                        <i data-lucide="search"></i>
+                        <input type="search" id="handbook-search-input" placeholder="Tìm theo tên, công dụng, nguyên liệu..." autocomplete="off">
+                        <button type="button" id="btn-clear-handbook-search" aria-label="Xóa tìm kiếm" title="Xóa tìm kiếm" hidden><i data-lucide="x"></i></button>
+                    </label>
+                    <div class="handbook-filter-row">
+                        <label class="handbook-category-filter" for="handbook-category-filter">
+                            <i data-lucide="layers-3"></i>
+                            <select id="handbook-category-filter" aria-label="Lọc theo danh mục">
+                                <option value="all">Tất cả danh mục</option>
+                                <option value="Ho/cảm cúm">Ho/cảm cúm</option>
+                                <option value="Tiêu hóa">Tiêu hóa</option>
+                                <option value="Da liễu">Da liễu</option>
+                                <option value="Xương khớp">Xương khớp</option>
+                                <option value="Mẹo vặt gia đình">Mẹo vặt gia đình</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </label>
+                        <label class="handbook-favorite-filter">
+                            <input type="checkbox" id="handbook-favorite-filter">
+                            <span><i data-lucide="star"></i> Chỉ xem bài yêu thích</span>
+                        </label>
+                        <span class="handbook-count" id="handbook-entry-count">0 bài</span>
+                    </div>
+                </div>
+
+                <div class="handbook-cards-grid" id="handbook-cards-container" aria-live="polite"></div>
+            </div>
+            <div class="handbook-disclaimer">Thông tin chỉ mang tính tham khảo, không thay thế tư vấn y tế. Hãy hỏi ý kiến bác sĩ nếu triệu chứng kéo dài hoặc nặng.</div>
+        </div>
+    </div>
+
+    <!-- Modal xem chi tiết một bài trong Sổ tay -->
+    <div class="modal-overlay handbook-detail-modal" id="handbook-detail-modal" aria-hidden="true">
+        <div class="handbook-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="handbook-detail-title">
+            <div class="handbook-detail-header">
+                <span class="handbook-detail-category" id="handbook-detail-category">Danh mục</span>
+                <button class="modal-close-btn" id="btn-close-handbook-detail" aria-label="Đóng chi tiết" title="Đóng"><i data-lucide="x"></i></button>
+            </div>
+            <h2 id="handbook-detail-title">Tên bài</h2>
+            <div class="handbook-detail-body" id="handbook-detail-body"></div>
+            <div class="handbook-detail-actions">
+                <button type="button" class="handbook-secondary-btn" id="btn-print-handbook-detail"><i data-lucide="printer"></i> In</button>
+                <button type="button" class="handbook-secondary-btn" id="btn-edit-handbook-detail"><i data-lucide="pencil"></i> Sửa</button>
+                <button type="button" class="handbook-danger-btn" id="btn-delete-handbook-detail"><i data-lucide="trash-2"></i> Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form thêm / sửa bài trong Sổ tay -->
+    <div class="modal-overlay handbook-entry-modal" id="handbook-entry-modal" aria-hidden="true">
+        <div class="handbook-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="handbook-entry-form-title">
+            <div class="handbook-entry-header">
+                <div>
+                    <span class="handbook-form-eyebrow">SỔ TAY</span>
+                    <h2 id="handbook-entry-form-title">Thêm bài mới</h2>
+                    <p>Ghi lại kinh nghiệm để dễ tìm và dùng lại sau này.</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-handbook-entry" aria-label="Đóng form" title="Đóng"><i data-lucide="x"></i></button>
+            </div>
+            <form id="handbook-entry-form" class="handbook-entry-form">
+                <input type="hidden" id="handbook-entry-id" value="">
+                <div class="handbook-form-grid">
+                    <div class="handbook-form-field handbook-field-wide"><label for="handbook-entry-title"><i data-lucide="bookmark"></i>Tên bài <span>*</span></label><input id="handbook-entry-title" type="text" maxlength="180" required placeholder="Ví dụ: Nước gừng ấm giảm ho"></div>
+                    <div class="handbook-form-field"><label for="handbook-entry-category"><i data-lucide="tag"></i>Danh mục <span>*</span></label><select id="handbook-entry-category" required><option value="Ho/cảm cúm">Ho/cảm cúm</option><option value="Tiêu hóa">Tiêu hóa</option><option value="Da liễu">Da liễu</option><option value="Xương khớp">Xương khớp</option><option value="Mẹo vặt gia đình">Mẹo vặt gia đình</option><option value="Khác">Khác</option></select></div>
+                    <div class="handbook-form-field"><label for="handbook-entry-use"><i data-lucide="sparkles"></i>Công dụng</label><textarea id="handbook-entry-use" rows="3" maxlength="1200" placeholder="Bài này dùng để làm gì?"></textarea></div>
+                    <div class="handbook-form-field"><label for="handbook-entry-ingredients"><i data-lucide="leaf"></i>Nguyên liệu</label><textarea id="handbook-entry-ingredients" rows="3" maxlength="1200" placeholder="Ví dụ: gừng tươi, mật ong..."></textarea></div>
+                    <div class="handbook-form-field handbook-field-wide"><label for="handbook-entry-method"><i data-lucide="list-ordered"></i>Cách làm / cách dùng</label><textarea id="handbook-entry-method" rows="5" maxlength="3000" placeholder="Viết từng bước, liều lượng hoặc cách sử dụng..."></textarea></div>
+                    <div class="handbook-form-field"><label for="handbook-entry-warning"><i data-lucide="triangle-alert"></i>Lưu ý / chống chỉ định</label><textarea id="handbook-entry-warning" rows="3" maxlength="1600" placeholder="Ai không nên dùng? Khi nào cần dừng?"></textarea></div>
+                    <div class="handbook-form-field"><label for="handbook-entry-source"><i data-lucide="link"></i>Nguồn</label><input id="handbook-entry-source" type="text" maxlength="300" placeholder="Sách, người thân, website..."></div>
+                    <div class="handbook-form-field handbook-field-wide"><label for="handbook-entry-personal"><i data-lucide="heart"></i>Ghi chú cá nhân</label><textarea id="handbook-entry-personal" rows="3" maxlength="1600" placeholder="Kinh nghiệm hoặc điều cần nhớ của riêng bạn..."></textarea></div>
+                </div>
+                <p class="handbook-form-error" id="handbook-form-error" role="alert" hidden></p>
+                <div class="handbook-entry-actions"><button type="button" class="support-cancel-btn" id="btn-cancel-handbook-entry">Hủy</button><button type="submit" class="support-save-btn"><i data-lucide="check"></i><span id="handbook-save-text">Lưu bài</span></button></div>
+            </form>
+        </div>
+    </div>
+
     <!-- SAVER (QUẢN LÝ TIẾT KIỆM) FULL-SCREEN PAGE -->
     <div class="modal-overlay" id="saver-page-modal" aria-hidden="true">
         <div class="modal-sheet saver-modal-sheet">
@@ -1319,7 +1427,7 @@
             </div>
         </div>
 
-        <!-- Danh sách 9 tính năng chính -->
+         <!-- Danh sách 10 tính năng chính -->
         <div class="welcome-hub-cards">
             <!-- 1. Thu Chi -->
             <button type="button" class="welcome-card welcome-card-thuchi" id="welcome-opt-thuchi" onclick="navigateToFeature('thuchi')">
@@ -1458,6 +1566,21 @@
                 </div>
                 <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
             </button>
+
+            <!-- 10. Sổ tay -->
+            <button type="button" class="welcome-card welcome-card-handbook" id="welcome-opt-handbook">
+                <div class="welcome-card-icon-wrap icon-handbook">
+                    <i data-lucide="book-open"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Sổ tay</span>
+                        <span class="welcome-card-badge">10</span>
+                    </div>
+                    <p class="welcome-card-desc">Lưu bài thuốc dân gian, công dụng, nguyên liệu và mẹo hay gia đình</p>
+                </div>
+                <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
+            </button>
         </div>
     </section>
 
@@ -1527,8 +1650,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=49" defer></script>
+    <script src="main/js/app.js?v=50" defer></script>
     <script src="main/js/notes.js?v=3" defer></script>
+    <script src="main/js/handbook.js?v=1" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
 </html>
