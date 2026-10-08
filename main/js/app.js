@@ -159,6 +159,18 @@ function closeActiveAppView(fromHistory = false) {
         closeQuoteModal(true, true);
         return;
     }
+    if (isElementActive('handbook-entry-modal')) {
+        if (typeof window.closeHandbookEntryModal === 'function') window.closeHandbookEntryModal();
+        return;
+    }
+    if (isElementActive('handbook-detail-modal')) {
+        if (typeof window.closeHandbookDetail === 'function') window.closeHandbookDetail();
+        return;
+    }
+    if (isElementActive('handbook-modal')) {
+        if (typeof window.closeHandbookModal === 'function') window.closeHandbookModal(true, true);
+        return;
+    }
 
     const host = document.getElementById('module-host-container');
     if (host && host.style.display !== 'none') {
@@ -2192,6 +2204,9 @@ function showWelcomeHubPage({ fromHistory = false } = {}) {
         'list-modal',
         'quote-entry-modal',
         'quote-modal',
+        'handbook-entry-modal',
+        'handbook-detail-modal',
+        'handbook-modal',
         'notes-modal',
         'spending-analysis-page',
         'add-expense-modal',

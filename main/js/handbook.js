@@ -505,43 +505,6 @@
         setTimeout(() => printable.print(), 250);
     }
 
-    function exportEntries() {
-        const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), entries }, null, 2)], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `so-tay-${new Date().toISOString().slice(0, 10)}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-    }
-
-    function importEntries(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const parsed = JSON.parse(reader.result);
-                const imported = Array.isArray(parsed) ? parsed : parsed.entries;
-                if (!Array.isArray(imported)) throw new Error('invalid');
-                entries = imported.filter(item => item && item.title).map(item => ({
-                    id: item.id || createId(), title: String(item.title), category: CATEGORIES.includes(item.category) ? item.category : 'Khác',
-                    use: String(item.use || ''), ingredients: String(item.ingredients || ''), method: String(item.method || ''),
-                    warning: String(item.warning || ''), source: String(item.source || ''), personal: String(item.personal || ''),
-                    favorite: Boolean(item.favorite), createdAt: item.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString()
-                }));
-                saveEntriesLocally();
-                if (handbookClient && currentUserId) {
-                    void Promise.all(entries.map(syncEntryToSupabase));
-                }
-                renderEntries();
-                window.alert(`Đã nhập ${entries.length} bài vào Sổ tay.`);
-            } catch {
-                window.alert('File JSON không đúng định dạng Sổ tay.');
-            }
-        };
-        reader.readAsText(file, 'utf-8');
-    }
-
     function bindEvents() {
         // Dùng chung phiên đăng nhập và Supabase client của ứng dụng chính.
         initSupabase();
@@ -587,12 +550,6 @@
             document.getElementById('btn-clear-handbook-search').hidden = true;
             renderEntries();
             input?.focus();
-        });
-        document.getElementById('btn-export-handbook')?.addEventListener('click', exportEntries);
-        document.getElementById('btn-import-handbook')?.addEventListener('click', () => document.getElementById('handbook-import-input')?.click());
-        document.getElementById('handbook-import-input')?.addEventListener('change', event => {
-            importEntries(event.target.files?.[0]);
-            event.target.value = '';
         });
         document.getElementById('handbook-modal')?.addEventListener('click', event => {
             if (event.target.id === 'handbook-modal') closeHandbookModal();
