@@ -4484,6 +4484,9 @@ html, body {
 .welcome-card-list::before { background: #6687a6; }
 .icon-list { background: rgba(102, 135, 166, 0.15); color: #4f7090; }
 
+.welcome-card-quote::before { background: #7c5295; }
+.icon-quote { background: rgba(124, 82, 149, 0.15); color: #7c5295; }
+
 .welcome-card-body {
     flex: 1;
     min-width: 0;
@@ -4516,6 +4519,7 @@ html, body {
 .badge-suckhoe { background: rgba(220, 139, 120, 0.18); color: #c45b43; }
 .badge-congviec { background: rgba(79, 94, 82, 0.14); color: #4F5E52; }
 .badge-ghichu { background: rgba(46, 125, 50, 0.16); color: #2e7d32; }
+.badge-quote { background: rgba(124, 82, 149, 0.16); color: #7c5295; }
 
 .welcome-card-desc {
     font-size: 0.78rem;
@@ -4551,7 +4555,8 @@ html, body {
    ========================================================================== */
 #support-modal.support-page-modal,
 #wishlist-modal.support-page-modal,
-#list-modal.support-page-modal {
+#list-modal.support-page-modal,
+#quote-modal.support-page-modal {
     position: absolute !important;
     inset: 0 !important;
     align-items: stretch !important;
@@ -4565,7 +4570,8 @@ html, body {
 
 #support-modal .support-page-sheet,
 #wishlist-modal .support-page-sheet,
-#list-modal .support-page-sheet {
+#list-modal .support-page-sheet,
+#quote-modal .support-page-sheet {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -4586,7 +4592,8 @@ html, body {
 
 #support-modal .support-page-header,
 #wishlist-modal .support-page-header,
-#list-modal .support-page-header {
+#list-modal .support-page-header,
+#quote-modal .support-page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -4597,7 +4604,8 @@ html, body {
 
 #support-modal.active .support-page-sheet,
 #wishlist-modal.active .support-page-sheet,
-#list-modal.active .support-page-sheet {
+#list-modal.active .support-page-sheet,
+#quote-modal.active .support-page-sheet {
     transform: translateX(0);
 }
 
@@ -4605,7 +4613,8 @@ html, body {
 @media (min-width: 480px) {
     #support-modal .support-page-sheet,
     #wishlist-modal .support-page-sheet,
-    #list-modal .support-page-sheet { padding-top: 44px; }
+    #list-modal .support-page-sheet,
+    #quote-modal .support-page-sheet { padding-top: 44px; }
 }
 
 /* Tiêu đề trang Hỗ trợ */
@@ -4928,13 +4937,16 @@ html, body {
 /* ==========================================================================
    FORM THÊM MỚI – bottom sheet kiểu iOS, nằm gọn trong khung iPhone
    ========================================================================== */
-#support-entry-modal.support-entry-form-overlay {
-    position: absolute;
-    inset: 0;
-    align-items: flex-end;
-    justify-content: stretch;
-    padding: 0;
-    z-index: 100010;
+#support-entry-modal.support-entry-form-overlay,
+#wishlist-entry-modal.support-entry-form-overlay,
+#list-entry-modal.support-entry-form-overlay,
+#quote-entry-modal.support-entry-form-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    align-items: flex-end !important;
+    justify-content: stretch !important;
+    padding: 0 !important;
+    z-index: 100010 !important;
     background: rgba(20, 28, 22, 0.52);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -5698,6 +5710,782 @@ html, body {
     .list-toolbar { font-size: 0.66rem; }
     .list-topic-name { font-size: 0.86rem; }
     .list-item-row { padding-left: 14px; }
+}
+
+/* ==========================================================================
+   QUOTE (TRÍCH DẪN) – TÍNH NĂNG THỨ 9 (BẢNG SHOW ĐƯỢC THIẾT KẾ ĐẸP MẮT)
+   ========================================================================== */
+#quote-modal .quote-page-title {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-right: auto;
+    padding: 0 4px;
+}
+
+#quote-modal .quote-page-title span {
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7c5295;
+    margin-bottom: 2px;
+}
+
+#quote-modal .quote-page-title h2 {
+    margin: 0;
+    font-size: 1.18rem;
+    font-weight: 800;
+    color: var(--text-primary, #232C25);
+    line-height: 1.2;
+}
+
+#quote-modal .quote-add-btn {
+    background: rgba(124, 82, 149, 0.16);
+    color: #7c5295;
+}
+
+#quote-modal .quote-add-btn:hover {
+    background: rgba(124, 82, 149, 0.25);
+}
+
+#quote-modal .quote-edit-btn {
+    background: rgba(217, 119, 6, 0.14);
+    color: #b45309;
+}
+
+#quote-modal .quote-delete-btn {
+    background: rgba(220, 38, 38, 0.12);
+    color: #dc2626;
+}
+
+#quote-modal .quote-edit-btn[aria-pressed="true"],
+#quote-modal .quote-delete-btn[aria-pressed="true"] {
+    color: #ffffff;
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+#quote-modal .quote-edit-btn[aria-pressed="true"] { background: #b45309; }
+#quote-modal .quote-delete-btn[aria-pressed="true"] { background: #dc2626; }
+
+.quote-page-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 6px 2px 24px;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* HERO BANNER: CÂU TRÍCH DẪN NỔI BẬT */
+.quote-hero-banner {
+    background: linear-gradient(135deg, #7c5295 0%, #5d3575 55%, #421e58 100%);
+    border-radius: 22px;
+    padding: 16px 18px 14px;
+    color: #ffffff;
+    box-shadow: 0 10px 25px -4px rgba(124, 82, 149, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.quote-hero-banner::after {
+    content: '“';
+    position: absolute;
+    right: 8px;
+    bottom: -22px;
+    font-size: 6.5rem;
+    font-family: Georgia, serif;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+.quote-hero-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.quote-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(4px);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #f3e8ff;
+}
+
+.quote-hero-badge i { width: 12px; height: 12px; color: #fbbf24; }
+
+.quote-hero-shuffle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-hero-shuffle-btn:hover { background: rgba(255, 255, 255, 0.22); transform: scale(1.03); }
+.quote-hero-shuffle-btn:active { transform: scale(0.95); }
+.quote-hero-shuffle-btn i { width: 13px; height: 13px; }
+
+.quote-hero-text {
+    margin: 0 0 10px;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    font-style: italic;
+    font-weight: 500;
+    color: #ffffff;
+    word-break: break-word;
+    position: relative;
+    z-index: 1;
+}
+
+.quote-hero-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 1;
+}
+
+.quote-hero-author {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #e9d5ff;
+}
+
+.quote-hero-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 0;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-hero-copy-btn:hover { background: rgba(255, 255, 255, 0.28); transform: scale(1.08); }
+.quote-hero-copy-btn i { width: 14px; height: 14px; }
+
+/* TOOLBAR & BỘ LỌC */
+.quote-toolbar-section {
+    margin-bottom: 12px;
+}
+
+.quote-search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid rgba(124, 82, 149, 0.15);
+    border-radius: 16px;
+    padding: 0 12px;
+    box-shadow: 0 2px 8px rgba(50, 30, 60, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quote-search-bar:focus-within {
+    border-color: #7c5295;
+    box-shadow: 0 0 0 3px rgba(124, 82, 149, 0.12);
+}
+
+.quote-search-icon {
+    width: 16px;
+    height: 16px;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.quote-search-bar input {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    padding: 10px 0;
+    font-size: 0.88rem;
+    color: var(--text-primary, #232C25);
+}
+
+.quote-search-clear-btn {
+    background: transparent;
+    border: 0;
+    padding: 4px;
+    color: #9ca3af;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quote-search-clear-btn i { width: 14px; height: 14px; }
+
+.quote-filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.quote-filter-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.quote-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(124, 82, 149, 0.16);
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-filter-tab:hover {
+    border-color: #7c5295;
+    color: #7c5295;
+}
+
+.quote-filter-tab.active {
+    background: #7c5295;
+    border-color: #7c5295;
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(124, 82, 149, 0.28);
+}
+
+.quote-tab-badge {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.08);
+    color: inherit;
+}
+
+.quote-filter-tab.active .quote-tab-badge {
+    background: rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+}
+
+.quote-load-samples-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: 12px;
+    border: 1px dashed rgba(124, 82, 149, 0.35);
+    background: rgba(124, 82, 149, 0.07);
+    color: #7c5295;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-load-samples-btn:hover {
+    background: rgba(124, 82, 149, 0.15);
+    border-color: #7c5295;
+}
+
+.quote-load-samples-btn i { width: 13px; height: 13px; color: #fbbf24; }
+
+/* DANH SÁCH THẺ QUOTE */
+.quote-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 24px;
+}
+
+.quote-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 16px 18px 14px;
+    border: 1px solid rgba(124, 82, 149, 0.12);
+    border-left: 4px solid #7c5295;
+    box-shadow: 0 4px 16px rgba(45, 20, 60, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
+}
+
+.quote-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 82, 149, 0.12);
+}
+
+.quote-card-watermark {
+    position: absolute;
+    right: 12px;
+    top: -10px;
+    font-size: 5rem;
+    font-family: Georgia, serif;
+    line-height: 1;
+    color: rgba(124, 82, 149, 0.05);
+    user-select: none;
+    pointer-events: none;
+}
+
+.quote-card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.quote-card-index {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #7c5295;
+    background: rgba(124, 82, 149, 0.1);
+    padding: 2px 7px;
+    border-radius: 8px;
+    letter-spacing: 0.03em;
+}
+
+.quote-card-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.quote-fav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 0;
+    background: transparent;
+    color: #d1d5db;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-fav-btn:hover {
+    color: #ec4899;
+    background: rgba(236, 72, 153, 0.08);
+}
+
+.quote-fav-btn.is-fav {
+    color: #e11d48;
+    background: rgba(225, 29, 72, 0.1);
+}
+
+.quote-fav-btn i {
+    width: 15px;
+    height: 15px;
+}
+
+.quote-fav-btn.is-fav i {
+    fill: #e11d48;
+}
+
+.quote-card-text {
+    margin: 0 0 12px;
+    font-size: 0.96rem;
+    line-height: 1.6;
+    font-style: italic;
+    color: #1f2937;
+    font-weight: 500;
+    word-break: break-word;
+    position: relative;
+    z-index: 1;
+}
+
+.quote-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(124, 82, 149, 0.14);
+    position: relative;
+    z-index: 1;
+}
+
+.quote-author-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.quote-author-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c5295 0%, #a275bf 100%);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.quote-author-name {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.quote-card-action-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.quote-card-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(124, 82, 149, 0.08);
+    color: #7c5295;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.15s ease, color 0.18s ease;
+}
+
+.quote-card-btn:hover {
+    background: rgba(124, 82, 149, 0.18);
+    transform: scale(1.06);
+}
+
+.quote-card-btn:active {
+    transform: scale(0.92);
+}
+
+.quote-card-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+.quote-card.is-edit-mode {
+    cursor: pointer;
+    border: 1.5px solid #b45309;
+    border-left: 4px solid #b45309;
+    background: rgba(245, 158, 11, 0.03);
+}
+
+.quote-card.is-edit-mode:hover {
+    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.2);
+}
+
+.quote-card.is-delete-mode {
+    cursor: pointer;
+    border: 1.5px solid #dc2626;
+    border-left: 4px solid #dc2626;
+    background: rgba(239, 68, 68, 0.03);
+}
+
+.quote-card.is-delete-mode:hover {
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
+}
+
+.quote-card-select-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.quote-card.is-edit-mode .quote-card-select-badge {
+    background: #b45309;
+    color: #ffffff;
+}
+
+.quote-card.is-delete-mode .quote-card-select-badge {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+/* EMPTY STATE ĐƯỢC CHĂM CHÚT NGHỆ THUẬT */
+.quote-empty-container {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 32px 20px;
+    text-align: center;
+    border: 1px solid rgba(124, 82, 149, 0.12);
+    box-shadow: 0 6px 20px rgba(50, 30, 60, 0.04);
+    margin: 10px 0;
+}
+
+.quote-empty-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(124, 82, 149, 0.12);
+    color: #7c5295;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    box-shadow: 0 0 0 8px rgba(124, 82, 149, 0.05);
+}
+
+.quote-empty-icon-wrap i { width: 28px; height: 28px; }
+
+.quote-empty-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0 0 6px;
+}
+
+.quote-empty-desc {
+    font-size: 0.8rem;
+    color: #6b7280;
+    line-height: 1.45;
+    margin: 0 auto 18px;
+    max-width: 260px;
+}
+
+.quote-empty-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 240px;
+    margin: 0 auto;
+}
+
+.quote-empty-btn-primary {
+    padding: 10px 18px;
+    border-radius: 14px;
+    border: 0;
+    background: linear-gradient(135deg, #7c5295 0%, #683d80 100%);
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(124, 82, 149, 0.3);
+    transition: transform 0.18s ease;
+}
+
+.quote-empty-btn-primary:active { transform: scale(0.96); }
+
+.quote-empty-btn-secondary {
+    padding: 9px 18px;
+    border-radius: 14px;
+    border: 1px dashed rgba(124, 82, 149, 0.35);
+    background: rgba(124, 82, 149, 0.06);
+    color: #7c5295;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+}
+
+.quote-empty-btn-secondary:hover {
+    background: rgba(124, 82, 149, 0.12);
+}
+
+.quote-empty-btn-secondary:active { transform: scale(0.96); }
+
+/* TOAST THÔNG BÁO SAO CHÉP */
+.quote-toast {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    background: rgba(31, 41, 55, 0.95);
+    color: #ffffff;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100020;
+    backdrop-filter: blur(4px);
+}
+
+.quote-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.quote-toast i { width: 14px; height: 14px; color: #34d399; }
+
+/* GỢI Ý TÁC GIẢ NHANH TRONG FORM */
+.quote-author-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.quote-chip-label {
+    font-size: 0.7rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.quote-chip-btn {
+    border: 1px solid rgba(124, 82, 149, 0.2);
+    background: rgba(124, 82, 149, 0.06);
+    color: #7c5295;
+    border-radius: 12px;
+    padding: 3px 9px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.quote-chip-btn:hover {
+    background: #7c5295;
+    color: #ffffff;
+}
+
+#quote-entry-modal.quote-entry-form-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    align-items: flex-end !important;
+    justify-content: stretch !important;
+    padding: 0 !important;
+    z-index: 100010 !important;
+    background: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+#quote-entry-modal .support-entry-form-sheet {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 30px 30px 0 0;
+    box-shadow: 0 -15px 50px rgba(20, 28, 22, 0.25);
+    background: #ffffff;
+    max-width: 100%;
+}
+
+@media (min-width: 480px) {
+    #quote-entry-modal .support-entry-form-sheet {
+        padding-bottom: 28px;
+        border-radius: 30px 30px 38px 38px;
+    }
+}
+
+#quote-entry-modal .support-modal-eyebrow {
+    color: #7c5295;
+}
+
+.quote-form-field {
+    background: rgba(124, 82, 149, 0.05);
+    border: 1px solid rgba(124, 82, 149, 0.12);
+    border-radius: 18px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.quote-form-field .support-field-icon {
+    background: rgba(124, 82, 149, 0.18);
+    color: #7c5295;
+}
+
+.quote-form-field textarea,
+.quote-form-field input {
+    width: 100%;
+    border: 1px solid rgba(124, 82, 149, 0.2);
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 0.92rem;
+    color: var(--text-primary, #232C25);
+    background: var(--bg-surface, #ffffff);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.quote-form-field textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.5;
+}
+
+.quote-form-field textarea:focus,
+.quote-form-field input:focus {
+    outline: none;
+    border-color: #7c5295;
+    box-shadow: 0 0 0 3px rgba(124, 82, 149, 0.15);
+}
+
+#quote-entry-modal .support-save-btn {
+    background: linear-gradient(135deg, #8a5aab 0%, #683d80 100%);
+    box-shadow: 0 6px 18px rgba(104, 61, 128, 0.35);
+}
+
+@media (max-width: 479px) {
+    #quote-modal .quote-page-title h2 { font-size: 1.08rem; }
+    .quote-hero-banner { padding: 14px 16px; border-radius: 18px; }
+    .quote-hero-text { font-size: 0.92rem; }
+    .quote-card { padding: 14px 16px 12px; }
+    .quote-card-text { font-size: 0.92rem; }
 }
 
 .welcome-hub-footer {
