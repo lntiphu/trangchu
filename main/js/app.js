@@ -2522,10 +2522,15 @@ function openSupportEntryModal(entryId = null) {
     if (titleEl) titleEl.textContent = editingEntry ? 'Chỉnh sửa' : 'Thêm mới';
     if (submitText) submitText.textContent = editingEntry ? 'Cập nhật' : 'Lưu';
 
+    // Luôn mở form từ đầu. Không tự focus textarea ở đây: trên mobile,
+    // autofocus sẽ bật bàn phím ngay khi bottom-sheet vừa xuất hiện,
+    // làm visual viewport bị thu nhỏ và đẩy sheet lên sai vị trí.
+    const formSheet = modal.querySelector('.support-entry-form-sheet');
+    if (formSheet) formSheet.scrollTop = 0;
+
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
     pushAppView('support-entry-modal');
-    document.getElementById('support-entry-need')?.focus();
     createLucideIcons();
 }
 

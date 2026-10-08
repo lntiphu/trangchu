@@ -14,6 +14,25 @@
     let notesSubscription = null;
     let notes = [];
     let isEditingId = null;
+    let currentFilter = 'all'; // 'all' hoặc 'fav'
+
+    const SAMPLE_NOTES = [
+        {
+            title: 'Tip test màn hình',
+            content: 'Hạ độ sáng xuống 0\nVào web Ezio Monitor Test\nBấm Start\nVào dòng số 8 để Test',
+            isFavorite: true
+        },
+        {
+            title: 'Mẹo vặt chăm sóc da',
+            content: '- Trị gàu: giã gừng nát rồi để vào nước ấm mát xa da đầu.\n- Se khít lỗ chân lông: thái mỏng dưa leo rồi đem đông đá đắp mặt.\n- Mụn đầu đen: đắp lòng trắng trứng gà lên mũi.\n- Giảm Cholesterol: bơ, đậu bắp, tỏi, trà xanh, óc chó.',
+            isFavorite: false
+        },
+        {
+            title: 'Checklist đi du lịch',
+            content: '1. Căn cước công dân, thẻ ngân hàng, tiền mặt dự phòng\n2. Củ sạc đa năng + pin dự phòng\n3. Thuốc đau đầu, tiêu hóa, băng cá nhân\n4. Quần áo dự phòng + áo khoác nhẹ',
+            isFavorite: true
+        }
+    ];
 
     // Khởi tạo Supabase client cho module Notes
     function initSupabase() {
@@ -93,7 +112,6 @@
 
             if (error) {
                 if (error.code === '42P01') {
-                    // Bảng notes chưa được tạo trong Supabase
                     console.info('[Notes] Bảng "notes" chưa tồn tại trên Supabase. Đang chạy chế độ Local Storage.');
                 } else {
                     console.warn('[Notes] Lỗi tải ghi chú từ Supabase:', error.message);
@@ -106,6 +124,7 @@
                     id: row.id,
                     title: row.title || '',
                     content: row.content || '',
+                    isFavorite: Boolean(row.is_favorite || row.isFavorite),
                     createdAt: row.created_at || new Date().toISOString(),
                     updatedAt: row.updated_at || new Date().toISOString()
                 }));
@@ -127,6 +146,7 @@
                 user_id: currentUserId,
                 title: note.title,
                 content: note.content || '',
+                is_favorite: Boolean(note.isFavorite),
                 created_at: note.createdAt || new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
@@ -196,6 +216,7 @@
                     id: newRow.id,
                     title: newRow.title || '',
                     content: newRow.content || '',
+                    isFavorite: Boolean(newRow.is_favorite || newRow.isFavorite),
                     createdAt: newRow.created_at,
                     updatedAt: newRow.updated_at
                 });
@@ -210,6 +231,7 @@
                         id: newRow.id,
                         title: newRow.title || '',
                         content: newRow.content || '',
+                        isFavorite: Boolean(newRow.is_favorite || newRow.isFavorite),
                         createdAt: newRow.created_at,
                         updatedAt: newRow.updated_at
                     };
@@ -226,25 +248,51 @@
         }
     }
 
+    // Chuẩn hóa và render các dòng văn bản không bị thụt lề
+    function formatCleanContentHtml(contentStr) {
+        if (!contentStr || !contentStr.trim()) {
+            return '<em class="notes-no-content">(Không có mô tả chi tiết)</em>';
+        }
+        // Tách theo dòng, trim từng dòng và bọc trong div dòng riêng biệt
+        const lines = contentStr.split(/\r?\n/);
+        return lines.map(line => {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                return '<span class="note-card-empty-line"></span>';
+            }
+            return `<div class="note-card-line">${escapeHtml(trimmed)}</div>`;
+        }).join('');
+    }
+
     // Hiển thị danh sách ghi chú
     function renderNotesList() {
         const container = document.getElementById('notes-cards-container');
-        const counterEl = document.getElementById('notes-counter-badge');
         const searchInput = document.getElementById('notes-search-input');
+        const clearSearchBtn = document.getElementById('btn-clear-notes-search');
+        const badgeAll = document.getElementById('notes-badge-all');
+        const badgeFav = document.getElementById('notes-badge-fav');
+
         if (!container) return;
 
         const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
 
-        const filtered = notes.filter(n => {
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = query ? 'flex' : 'none';
+        }
+
+        const favCount = notes.filter(n => Boolean(n.isFavorite)).length;
+        if (badgeAll) badgeAll.textContent = String(notes.length);
+        if (badgeFav) badgeFav.textContent = String(favCount);
+
+        let filtered = notes.filter(n => {
+            if (currentFilter === 'fav' && !n.isFavorite) {
+                return false;
+            }
             if (!query) return true;
             const t = (n.title || '').toLowerCase();
             const c = (n.content || '').toLowerCase();
             return t.includes(query) || c.includes(query);
         });
-
-        if (counterEl) {
-            counterEl.textContent = `${filtered.length} / ${notes.length} ghi chú`;
-        }
 
         if (filtered.length === 0) {
             if (query) {
@@ -253,17 +301,65 @@
                         <i data-lucide="search-x" class="notes-empty-icon"></i>
                         <h4>Không tìm thấy ghi chú</h4>
                         <p>Không có ghi chú nào khớp với từ khóa "<strong>${escapeHtml(query)}</strong>"</p>
+                        <button type="button" class="notes-empty-btn" id="btn-empty-clear-search">
+                            <i data-lucide="x"></i>
+                            <span>Xóa từ khóa tìm kiếm</span>
+                        </button>
                     </div>
                 `;
+                const btnClearSearch = document.getElementById('btn-empty-clear-search');
+                if (btnClearSearch && searchInput) {
+                    btnClearSearch.addEventListener('click', () => {
+                        searchInput.value = '';
+                        renderNotesList();
+                        searchInput.focus();
+                    });
+                }
+            } else if (currentFilter === 'fav') {
+                container.innerHTML = `
+                    <div class="notes-empty-state">
+                        <i data-lucide="heart" class="notes-empty-icon" style="color: #dc2626;"></i>
+                        <h4>Chưa có ghi chú quan trọng</h4>
+                        <p>Nhấp vào biểu tượng trái tim trên các thẻ ghi chú để đánh dấu các nội dung quan trọng nhất.</p>
+                        <button type="button" class="notes-empty-btn" id="btn-switch-to-all">
+                            <span>Xem tất cả ghi chú</span>
+                        </button>
+                    </div>
+                `;
+                const btnSwitchAll = document.getElementById('btn-switch-to-all');
+                if (btnSwitchAll) {
+                    btnSwitchAll.addEventListener('click', () => {
+                        setNotesFilter('all');
+                    });
+                }
             } else {
                 container.innerHTML = `
                     <div class="notes-empty-state">
                         <i data-lucide="file-plus" class="notes-empty-icon"></i>
                         <h4>Chưa có ghi chú nào</h4>
-                        <p>Nhập Tên và Mô tả ghi chú ở ô phía trên rồi bấm "Lưu ghi chú" để tạo ghi chú đầu tiên của bạn.</p>
+                        <p>Bạn chưa tạo ghi chú nào. Hãy tạo ghi chú đầu tiên hoặc nạp các ghi chú mẫu hữu ích để trải nghiệm.</p>
+                        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                            <button type="button" class="notes-empty-btn" id="btn-empty-add-note">
+                                <i data-lucide="plus"></i>
+                                <span>Thêm ghi chú</span>
+                            </button>
+                            <button type="button" class="notes-sample-btn" id="btn-empty-load-sample" style="padding: 8px 14px; font-size: 0.8rem;">
+                                <i data-lucide="sparkles"></i>
+                                <span>Nạp mẫu ngay</span>
+                            </button>
+                        </div>
                     </div>
                 `;
+                const btnEmptyAdd = document.getElementById('btn-empty-add-note');
+                if (btnEmptyAdd) {
+                    btnEmptyAdd.addEventListener('click', () => openNoteEntryModal());
+                }
+                const btnEmptySample = document.getElementById('btn-empty-load-sample');
+                if (btnEmptySample) {
+                    btnEmptySample.addEventListener('click', () => loadSampleNotes());
+                }
             }
+
             if (window.lucide && typeof window.lucide.createIcons === 'function') {
                 window.lucide.createIcons();
             }
@@ -271,25 +367,32 @@
         }
 
         let html = '';
-        filtered.forEach(note => {
+        filtered.forEach((note, index) => {
             const dateText = formatNoteDate(note.updatedAt || note.createdAt);
-            const contentHtml = note.content 
-                ? escapeHtml(note.content).replace(/\n/g, '<br>') 
-                : '<em class="notes-no-content">(Không có mô tả)</em>';
+            const contentHtml = formatCleanContentHtml(note.content);
+            const isFav = Boolean(note.isFavorite);
+            const favClass = isFav ? 'is-fav' : '';
+            const favIconFill = isFav ? 'fill="#dc2626"' : '';
 
             html += `
                 <div class="note-card" data-note-id="${escapeHtml(note.id)}">
                     <div class="note-card-header">
                         <div class="note-card-title-group">
+                            <div class="note-card-top-meta">
+                                <span class="note-index-badge">#${index + 1}</span>
+                                <span class="note-card-date"><i data-lucide="clock"></i> ${dateText}</span>
+                            </div>
                             <h4 class="note-card-title">${escapeHtml(note.title)}</h4>
-                            <span class="note-card-date"><i data-lucide="clock"></i> ${dateText}</span>
                         </div>
                         <div class="note-card-actions">
+                            <button type="button" class="note-action-btn btn-fav-note ${favClass}" data-id="${escapeHtml(note.id)}" title="${isFav ? 'Bỏ đánh dấu quan trọng' : 'Đánh dấu quan trọng'}" aria-label="Đánh dấu quan trọng">
+                                <i data-lucide="heart" ${favIconFill}></i>
+                            </button>
                             <button type="button" class="note-action-btn btn-copy-note" data-id="${escapeHtml(note.id)}" title="Sao chép nội dung" aria-label="Sao chép">
                                 <i data-lucide="copy"></i>
                             </button>
                             <button type="button" class="note-action-btn btn-edit-note" data-id="${escapeHtml(note.id)}" title="Chỉnh sửa ghi chú" aria-label="Chỉnh sửa">
-                                <i data-lucide="edit-2"></i>
+                                <i data-lucide="edit-3"></i>
                             </button>
                             <button type="button" class="note-action-btn btn-delete-note" data-id="${escapeHtml(note.id)}" title="Xóa ghi chú" aria-label="Xóa">
                                 <i data-lucide="trash-2"></i>
@@ -305,7 +408,14 @@
 
         container.innerHTML = html;
 
-        // Gắn sự kiện cho các nút hành động trong từng thẻ
+        // Gắn sự kiện cho các nút hành động
+        container.querySelectorAll('.btn-fav-note').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNoteFavorite(btn.getAttribute('data-id'));
+            });
+        });
+
         container.querySelectorAll('.btn-copy-note').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -332,13 +442,69 @@
         }
     }
 
+    // Đổi tab lọc
+    function setNotesFilter(filter) {
+        currentFilter = filter;
+        const btnAll = document.getElementById('btn-filter-notes-all');
+        const btnFav = document.getElementById('btn-filter-notes-fav');
+
+        if (btnAll) btnAll.classList.toggle('active', filter === 'all');
+        if (btnFav) btnFav.classList.toggle('active', filter === 'fav');
+
+        renderNotesList();
+    }
+
+    // Đánh dấu yêu thích / quan trọng
+    function toggleNoteFavorite(id) {
+        const note = notes.find(n => n.id === id);
+        if (!note) return;
+
+        note.isFavorite = !note.isFavorite;
+        note.updatedAt = new Date().toISOString();
+        saveNotesLocally();
+        renderNotesList();
+        syncNoteToSupabase(note);
+        showNotesToast(note.isFavorite ? 'Đã ghim vào mục Quan trọng ❤️' : 'Đã bỏ ghim Quan trọng');
+    }
+
+    // Nạp ghi chú mẫu
+    function loadSampleNotes() {
+        const now = new Date().toISOString();
+        let addedCount = 0;
+
+        SAMPLE_NOTES.forEach(sample => {
+            const exists = notes.some(n => n.title.trim().toLowerCase() === sample.title.trim().toLowerCase());
+            if (!exists) {
+                const newNote = {
+                    id: generateNoteId(),
+                    title: sample.title,
+                    content: sample.content,
+                    isFavorite: Boolean(sample.isFavorite),
+                    createdAt: now,
+                    updatedAt: now
+                };
+                notes.push(newNote);
+                syncNoteToSupabase(newNote);
+                addedCount++;
+            }
+        });
+
+        if (addedCount > 0) {
+            saveNotesLocally();
+            renderNotesList();
+            showNotesToast(`Đã thêm ${addedCount} ghi chú mẫu! ✨`);
+        } else {
+            showNotesToast('Các ghi chú mẫu đã có sẵn trong danh sách!');
+        }
+    }
+
     // Thoát mã HTML an toàn để chống XSS
     function escapeHtml(str) {
         if (!str) return '';
         return String(str)
             .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
+            .replace(/&lt;/g, '&lt;')
+            .replace(/&gt;/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
     }
@@ -348,10 +514,10 @@
         const note = notes.find(n => n.id === id);
         if (!note) return;
 
-        const textToCopy = `${note.title}\n\n${note.content || ''}`.trim();
+        const textToCopy = `${note.title}\n\n${(note.content || '').trim()}`.trim();
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(textToCopy).then(() => {
-                showNotesToast('Đã sao chép nội dung ghi chú!');
+                showNotesToast('Đã sao chép nội dung ghi chú! 📋');
             }).catch(() => {
                 fallbackCopyText(textToCopy);
             });
@@ -369,7 +535,7 @@
         ta.select();
         try {
             document.execCommand('copy');
-            showNotesToast('Đã sao chép nội dung ghi chú!');
+            showNotesToast('Đã sao chép nội dung ghi chú! 📋');
         } catch {
             showNotesToast('Không thể sao chép');
         }
@@ -383,56 +549,83 @@
             toast = document.createElement('div');
             toast.id = 'notes-toast';
             toast.className = 'notes-toast';
-            document.body.appendChild(toast);
+            const modalSheet = document.querySelector('#notes-modal .notes-page-sheet');
+            if (modalSheet) {
+                modalSheet.appendChild(toast);
+            } else {
+                document.body.appendChild(toast);
+            }
         }
-        toast.textContent = msg;
+        toast.innerHTML = `<i data-lucide="check-circle-2" style="width: 14px; height: 14px; color: #4ade80;"></i> ${escapeHtml(msg)}`;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
         toast.classList.add('show');
         setTimeout(() => {
             toast.classList.remove('show');
         }, 2200);
     }
 
-    // Xử lý nạp dữ liệu để sửa ghi chú
-    function editNote(id) {
-        const note = notes.find(n => n.id === id);
-        if (!note) return;
+    // Mở Bottom Sheet Thêm / Sửa Ghi chú
+    function openNoteEntryModal(id = null) {
+        const modal = document.getElementById('notes-entry-modal');
+        if (!modal) return;
 
-        isEditingId = id;
         const titleInput = document.getElementById('note-title-input');
         const contentInput = document.getElementById('note-content-input');
-        const headingEl = document.getElementById('notes-form-heading');
+        const idInput = document.getElementById('note-id');
+        const headingEl = document.getElementById('notes-entry-form-title');
+        const descEl = document.getElementById('notes-entry-form-description');
         const btnSaveText = document.getElementById('btn-save-note-text');
-        const btnCancel = document.getElementById('btn-cancel-note-form');
 
-        if (titleInput) titleInput.value = note.title;
-        if (contentInput) contentInput.value = note.content || '';
-        if (headingEl) headingEl.textContent = 'Chỉnh sửa ghi chú';
-        if (btnSaveText) btnSaveText.textContent = 'Cập nhật ghi chú';
-        if (btnCancel) btnCancel.style.display = 'inline-flex';
-
-        // Cuộn mượt đến form nhập
-        const editorCard = document.getElementById('notes-editor-card');
-        if (editorCard) {
-            editorCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            editorCard.classList.add('highlight-pulse');
-            setTimeout(() => editorCard.classList.remove('highlight-pulse'), 1200);
+        if (id) {
+            const note = notes.find(n => n.id === id);
+            if (!note) return;
+            isEditingId = id;
+            if (idInput) idInput.value = note.id;
+            if (titleInput) titleInput.value = note.title || '';
+            if (contentInput) contentInput.value = (note.content || '').trim();
+            if (headingEl) headingEl.textContent = 'Chỉnh sửa ghi chú';
+            if (descEl) descEl.textContent = 'Cập nhật lại tiêu đề hoặc nội dung cần ghi nhớ.';
+            if (btnSaveText) btnSaveText.textContent = 'Cập nhật';
+        } else {
+            isEditingId = null;
+            if (idInput) idInput.value = '';
+            if (titleInput) titleInput.value = '';
+            if (contentInput) contentInput.value = '';
+            if (headingEl) headingEl.textContent = 'Ghi chú mới';
+            if (descEl) descEl.textContent = 'Nhập thông tin tiêu đề và nội dung cần lưu trữ.';
+            if (btnSaveText) btnSaveText.textContent = 'Lưu ghi chú';
         }
-        if (titleInput) titleInput.focus();
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
+
+        setTimeout(() => {
+            if (titleInput) titleInput.focus();
+        }, 150);
     }
 
-    // Đặt lại form ghi chú về trạng thái tạo mới
-    function resetNoteForm() {
+    // Đóng Bottom Sheet Thêm / Sửa Ghi chú
+    function closeNoteEntryModal() {
+        const modal = document.getElementById('notes-entry-modal');
+        if (!modal) return;
+
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
         isEditingId = null;
+
         const form = document.getElementById('notes-form');
         if (form) form.reset();
+    }
 
-        const headingEl = document.getElementById('notes-form-heading');
-        const btnSaveText = document.getElementById('btn-save-note-text');
-        const btnCancel = document.getElementById('btn-cancel-note-form');
-
-        if (headingEl) headingEl.textContent = 'Ghi chú mới';
-        if (btnSaveText) btnSaveText.textContent = 'Lưu ghi chú';
-        if (btnCancel) btnCancel.style.display = 'none';
+    // Xử lý nạp dữ liệu để sửa ghi chú
+    function editNote(id) {
+        openNoteEntryModal(id);
     }
 
     // Xử lý submit lưu ghi chú (Tạo mới hoặc Cập nhật)
@@ -443,6 +636,7 @@
         const contentInput = document.getElementById('note-content-input');
 
         const title = (titleInput ? titleInput.value : '').trim();
+        // Lấy nội dung, loại bỏ thụt lề đầu tiên bằng trim()
         const content = (contentInput ? contentInput.value : '').trim();
 
         if (!title) {
@@ -463,7 +657,7 @@
                 saveNotesLocally();
                 renderNotesList();
                 syncNoteToSupabase(updatedNote);
-                showNotesToast('Đã cập nhật ghi chú thành công!');
+                showNotesToast('Đã cập nhật ghi chú thành công! ✨');
             }
         } else {
             // Thêm ghi chú mới
@@ -471,6 +665,7 @@
                 id: generateNoteId(),
                 title: title,
                 content: content,
+                isFavorite: false,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -478,10 +673,10 @@
             saveNotesLocally();
             renderNotesList();
             syncNoteToSupabase(newNote);
-            showNotesToast('Đã thêm ghi chú mới!');
+            showNotesToast('Đã thêm ghi chú mới! 📝');
         }
 
-        resetNoteForm();
+        closeNoteEntryModal();
     }
 
     // Xóa ghi chú
@@ -494,8 +689,8 @@
             saveNotesLocally();
             renderNotesList();
             deleteNoteFromSupabase(id);
-            if (isEditingId === id) resetNoteForm();
-            showNotesToast('Đã xóa ghi chú');
+            if (isEditingId === id) closeNoteEntryModal();
+            showNotesToast('Đã xóa ghi chú 🗑️');
         }
     }
 
@@ -521,14 +716,14 @@
         }
     }
 
-    // Đóng Modal trang Ghi Chú và quay lại Modal 5 Options
+    // Đóng Modal trang Ghi Chú và quay lại Modal 5 Options / Hub
     function closeNotesModal(returnToHub = true, fromHistory = false) {
         const modal = document.getElementById('notes-modal');
         if (!modal) return;
 
         modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        resetNoteForm();
+        closeNoteEntryModal();
 
         if (!fromHistory && typeof window.exitAppView === 'function') {
             window.exitAppView();
@@ -584,16 +779,25 @@
             form.addEventListener('submit', handleSaveNote);
         }
 
-        // Nút đặt lại
-        const btnReset = document.getElementById('btn-reset-note-form');
-        if (btnReset) {
-            btnReset.addEventListener('click', resetNoteForm);
+        // Đóng form entry bottom sheet
+        const btnCloseEntry = document.getElementById('btn-close-notes-entry-modal');
+        if (btnCloseEntry) {
+            btnCloseEntry.addEventListener('click', closeNoteEntryModal);
         }
 
-        // Nút hủy sửa
-        const btnCancel = document.getElementById('btn-cancel-note-form');
-        if (btnCancel) {
-            btnCancel.addEventListener('click', resetNoteForm);
+        const btnCancelEntry = document.getElementById('btn-cancel-note-entry');
+        if (btnCancelEntry) {
+            btnCancelEntry.addEventListener('click', closeNoteEntryModal);
+        }
+
+        // Click outside entry sheet to close
+        const entryOverlay = document.getElementById('notes-entry-modal');
+        if (entryOverlay) {
+            entryOverlay.addEventListener('click', (e) => {
+                if (e.target === entryOverlay) {
+                    closeNoteEntryModal();
+                }
+            });
         }
 
         // Tìm kiếm ghi chú
@@ -604,6 +808,38 @@
             });
         }
 
+        const btnClearSearch = document.getElementById('btn-clear-notes-search');
+        if (btnClearSearch && searchInput) {
+            btnClearSearch.addEventListener('click', () => {
+                searchInput.value = '';
+                renderNotesList();
+                searchInput.focus();
+            });
+        }
+
+        // Filter tabs
+        const btnFilterAll = document.getElementById('btn-filter-notes-all');
+        if (btnFilterAll) {
+            btnFilterAll.addEventListener('click', () => setNotesFilter('all'));
+        }
+
+        const btnFilterFav = document.getElementById('btn-filter-notes-fav');
+        if (btnFilterFav) {
+            btnFilterFav.addEventListener('click', () => setNotesFilter('fav'));
+        }
+
+        // Nút nạp sample notes
+        const btnSample = document.getElementById('btn-load-sample-notes');
+        if (btnSample) {
+            btnSample.addEventListener('click', loadSampleNotes);
+        }
+
+        // Nút thêm từ hero banner
+        const btnHeroAdd = document.getElementById('btn-hero-add-note');
+        if (btnHeroAdd) {
+            btnHeroAdd.addEventListener('click', () => openNoteEntryModal());
+        }
+
         // Nút đóng / quay lại từ modal ghi chú
         const btnClose = document.getElementById('btn-close-notes-modal');
         if (btnClose) {
@@ -612,15 +848,11 @@
             });
         }
 
-        // Nút toggle mở form thêm nhanh
+        // Nút toggle mở form thêm nhanh từ header
         const btnToggleAdd = document.getElementById('btn-toggle-add-note');
         if (btnToggleAdd) {
             btnToggleAdd.addEventListener('click', () => {
-                resetNoteForm();
-                const titleInput = document.getElementById('note-title-input');
-                if (titleInput) titleInput.focus();
-                const editorCard = document.getElementById('notes-editor-card');
-                if (editorCard) editorCard.scrollIntoView({ behavior: 'smooth' });
+                openNoteEntryModal();
             });
         }
     }
@@ -629,6 +861,8 @@
     window.NotesModule = {
         openModal: openNotesModal,
         closeModal: closeNotesModal,
+        openEntryModal: openNoteEntryModal,
+        closeEntryModal: closeNoteEntryModal,
         fetchFromSupabase: fetchNotesFromSupabase,
         setCurrentUser: (userId) => {
             currentUserId = userId;
