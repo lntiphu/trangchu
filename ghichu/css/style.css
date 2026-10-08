@@ -674,3 +674,262 @@ body {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ============================================================================
+   Google Keep inspired refresh - modal editor, pins and pastel note cards
+   ============================================================================ */
+:root {
+    --keep-ink: #202124;
+    --keep-muted: #5f6368;
+    --keep-border: #dadce0;
+    --keep-yellow: #fff8c5;
+    --keep-blue: #e8f0fe;
+    --keep-green: #e6f4ea;
+    --keep-peach: #fce8e6;
+    --keep-lilac: #f3e8fd;
+}
+
+body {
+    background: #f7f8f9;
+}
+
+.notes-modal-overlay {
+    align-items: center;
+    padding: 18px;
+    background: rgba(32, 33, 36, 0.48);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.notes-modal-sheet {
+    width: min(100%, 520px);
+    max-height: min(720px, 90vh);
+    margin: 0 auto;
+    padding: 18px 22px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 24px;
+    background: #fffef9;
+    box-shadow: 0 18px 55px rgba(32, 33, 36, 0.24);
+    transform: translateY(18px) scale(.98);
+    transition: transform .24s cubic-bezier(.2, .8, .2, 1);
+}
+
+.notes-modal-overlay.active .notes-modal-sheet {
+    transform: translateY(0) scale(1);
+}
+
+.notes-drag-handle {
+    width: 34px;
+    height: 3px;
+    margin-bottom: 18px;
+    background: #c7c9cc;
+}
+
+.notes-modal-header {
+    margin-bottom: 0;
+    padding: 0 0 15px;
+    border-bottom: 1px solid rgba(95, 99, 104, .14);
+}
+
+.notes-modal-heading-wrap {
+    min-width: 0;
+}
+
+.notes-modal-kicker {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--accent-green);
+    font-size: .64rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+}
+
+#notes-form-heading {
+    color: var(--keep-ink);
+    font-size: 1.28rem;
+    font-weight: 700;
+}
+
+.notes-modal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.notes-pin-btn,
+.notes-modal-close-btn {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--keep-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+
+.notes-pin-btn:hover,
+.notes-modal-close-btn:hover {
+    background: rgba(95, 99, 104, .1);
+}
+
+.notes-pin-btn:active,
+.notes-modal-close-btn:active {
+    transform: scale(.92);
+}
+
+.notes-pin-btn.is-active {
+    color: var(--accent-green-dark);
+    background: rgba(46, 125, 50, .12);
+}
+
+.notes-pin-btn.is-active svg {
+    fill: currentColor;
+}
+
+.notes-form {
+    gap: 0;
+}
+
+.notes-keep-editor {
+    padding: 12px 0 8px;
+}
+
+.notes-keep-editor input,
+.notes-keep-editor textarea {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--keep-ink);
+    font-family: inherit;
+    resize: none;
+}
+
+.notes-keep-editor input {
+    padding: 8px 0 10px;
+    font-size: 1.08rem;
+    font-weight: 700;
+}
+
+.notes-keep-editor textarea {
+    min-height: 190px;
+    padding: 8px 0;
+    font-size: .98rem;
+    line-height: 1.6;
+}
+
+.notes-keep-editor input::placeholder,
+.notes-keep-editor textarea::placeholder {
+    color: #9aa0a6;
+    opacity: 1;
+}
+
+.notes-form-actions {
+    min-height: 42px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0;
+    padding-top: 11px;
+    border-top: 1px solid rgba(95, 99, 104, .14);
+}
+
+.notes-save-status,
+.notes-char-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: auto;
+    color: var(--keep-muted);
+    font-size: .7rem;
+}
+
+.notes-save-status svg {
+    width: 13px;
+    height: 13px;
+}
+
+.notes-char-count {
+    margin-right: 4px;
+    color: #80868b;
+}
+
+.notes-modal-cancel,
+.notes-modal-save {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 10px;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.notes-modal-cancel {
+    color: var(--keep-muted);
+    background: transparent;
+}
+
+.notes-modal-cancel:hover {
+    background: rgba(95, 99, 104, .1);
+}
+
+.notes-modal-save {
+    color: #fff;
+    background: var(--accent-green);
+    box-shadow: 0 4px 12px rgba(46, 125, 50, .2);
+}
+
+.notes-modal-save:hover {
+    background: var(--accent-green-dark);
+}
+
+.note-card {
+    border: 1px solid transparent;
+    box-shadow: 0 3px 10px rgba(32, 33, 36, .04);
+}
+
+.note-card:nth-child(5n + 1) { background: var(--keep-yellow); }
+.note-card:nth-child(5n + 2) { background: var(--keep-blue); }
+.note-card:nth-child(5n + 3) { background: var(--keep-green); }
+.note-card:nth-child(5n + 4) { background: var(--keep-peach); }
+.note-card:nth-child(5n + 5) { background: var(--keep-lilac); }
+
+.note-card.is-pinned {
+    border-color: rgba(46, 125, 50, .38);
+}
+
+.note-action-btn.btn-pin-note.is-active {
+    color: var(--accent-green-dark);
+    background: rgba(46, 125, 50, .12);
+}
+
+.note-action-btn.btn-pin-note.is-active svg {
+    fill: currentColor;
+}
+
+@media (max-width: 480px) {
+    .notes-modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .notes-modal-sheet {
+        width: 100%;
+        max-height: 90vh;
+        border-radius: 24px 24px 0 0;
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+
+    .notes-save-status {
+        flex-basis: 100%;
+        order: 5;
+        margin-top: 2px;
+    }
+}
