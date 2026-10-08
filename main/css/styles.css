@@ -7217,17 +7217,15 @@ html, body {
 .handbook-page-header {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr);
-    grid-template-areas: "back title" "actions actions";
+    grid-template-areas: "back actions";
     align-items: center;
-    gap: 8px 12px;
-    padding: 4px 16px 14px;
+    gap: 12px;
+    padding: 8px 16px 12px;
     background: rgba(255, 255, 255, .9);
     border-bottom: 1px solid rgba(63, 125, 87, .12);
 }
 
 .handbook-back-btn { grid-area: back; flex: 0 0 auto; }
-.handbook-page-title { grid-area: title; min-width: 0; }
-.handbook-page-title > span,
 .handbook-form-eyebrow {
     display: block;
     color: #3f7d57;
@@ -7235,13 +7233,9 @@ html, body {
     font-weight: 800;
     letter-spacing: .13em;
 }
-.handbook-page-title h2 { display: flex; align-items: center; gap: 7px; margin: 2px 0 2px; color: #243126; font-size: 1.35rem; font-weight: 800; white-space: nowrap; }
-.handbook-page-title h2 svg { width: 21px; height: 21px; color: #3f7d57; }
-.handbook-page-title p { margin: 0; color: #718073; font-size: .78rem; line-height: 1.4; }
-.handbook-header-actions { grid-area: actions; display: grid; grid-template-columns: 44px 44px minmax(0, 1fr); align-items: center; gap: 8px; min-width: 0; }
-.handbook-icon-btn,
+.handbook-header-actions { grid-area: actions; display: flex; justify-content: flex-end; min-width: 0; }
 .handbook-add-btn {
-    min-height: 38px;
+    min-height: 42px;
     border: 0;
     border-radius: 12px;
     display: inline-flex;
@@ -7251,11 +7245,9 @@ html, body {
     cursor: pointer;
     transition: transform .16s ease, background .16s ease;
 }
-.handbook-icon-btn { width: 44px; color: #52715d; background: #eaf4eb; }
-.handbook-add-btn { width: 100%; padding: 0 12px; color: #fff; background: #3f7d57; font: inherit; font-size: .86rem; font-weight: 800; box-shadow: 0 5px 14px rgba(63, 125, 87, .2); }
-.handbook-icon-btn svg, .handbook-add-btn svg { width: 17px; height: 17px; }
-.handbook-icon-btn:hover, .handbook-add-btn:hover { transform: translateY(-1px); }
-.handbook-icon-btn:hover { background: #dcecdf; }
+.handbook-add-btn { min-width: 128px; padding: 0 14px; color: #fff; background: #3f7d57; font: inherit; font-size: .86rem; font-weight: 800; box-shadow: 0 5px 14px rgba(63, 125, 87, .2); }
+.handbook-add-btn svg { width: 17px; height: 17px; }
+.handbook-add-btn:hover { transform: translateY(-1px); }
 .handbook-add-btn:hover { background: #2f6845; }
 
 .handbook-page-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 20px; }
