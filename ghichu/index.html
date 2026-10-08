@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/style.css?v=3">
     <script>
         function goBackToHome() {
             try {
@@ -31,6 +31,20 @@
 </head>
 <body>
     <div class="notes-container">
+        <!-- Top Header Bar -->
+        <header class="notes-header-bar">
+            <button type="button" class="notes-header-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
+                <i data-lucide="arrow-left"></i>
+            </button>
+            <div class="notes-header-title-wrap">
+                <span class="notes-header-eyebrow">CHỨC NĂNG BỔ SUNG</span>
+                <h1 class="notes-header-heading">Ghi chú cá nhân</h1>
+            </div>
+            <button type="button" class="notes-header-add-btn" id="btn-header-add-note" title="Thêm ghi chú mới" aria-label="Thêm mới">
+                <i data-lucide="plus"></i>
+            </button>
+        </header>
+
         <!-- Controls & Search -->
         <div class="notes-list-header">
             <div class="notes-count-info">
@@ -54,63 +68,32 @@
         <div class="notes-modal-sheet" id="notes-modal-sheet">
             <div class="notes-drag-handle"></div>
             <div class="notes-modal-header">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="notes-badge-icon">
-                        <i data-lucide="edit-3"></i>
-                    </div>
-                    <div>
-                        <h3 id="notes-form-heading">Ghi chú mới</h3>
-                        <span class="notes-form-sub">Nhập tên và mô tả chi tiết</span>
-                    </div>
+                <div class="notes-modal-heading-wrap">
+                    <span class="notes-modal-kicker">GHI CHÚ</span>
+                    <h3 id="notes-form-heading">Ghi chú mới</h3>
                 </div>
-                <button type="button" class="notes-modal-close-btn" id="btn-close-note-modal" title="Đóng">
-                    <i data-lucide="x"></i>
-                </button>
+                <div class="notes-modal-header-actions">
+                    <button type="button" class="notes-pin-btn" id="btn-toggle-note-pin" title="Ghim ghi chú" aria-label="Ghim ghi chú" aria-pressed="false">
+                        <i data-lucide="pin"></i>
+                    </button>
+                    <button type="button" class="notes-modal-close-btn" id="btn-close-note-modal" title="Đóng" aria-label="Đóng">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
             </div>
 
             <form id="notes-form" class="notes-form">
                 <input type="hidden" id="note-id" value="">
-                
-                <!-- Box 1: Tên ghi chú -->
-                <div class="form-group notes-form-group">
-                    <label for="note-title-input">
-                        <i data-lucide="bookmark" class="note-label-icon"></i>
-                        Tên ghi chú <span class="required-mark">*</span>
-                    </label>
-                    <div class="input-wrapper">
-                        <input 
-                            type="text" 
-                            id="note-title-input" 
-                            placeholder="Nhập tên hoặc tiêu đề ghi chú..." 
-                            required 
-                            autocomplete="off"
-                        >
-                    </div>
+                <div class="notes-keep-editor">
+                    <input type="text" id="note-title-input" placeholder="Tiêu đề" required autocomplete="off" aria-label="Tiêu đề ghi chú">
+                    <textarea id="note-content-input" placeholder="Ghi chú..." rows="7" aria-label="Nội dung ghi chú"></textarea>
                 </div>
 
-                <!-- Box 2: Mô tả ghi chú -->
-                <div class="form-group notes-form-group">
-                    <label for="note-content-input">
-                        <i data-lucide="align-left" class="note-label-icon"></i>
-                        Mô tả ghi chú
-                    </label>
-                    <div class="input-wrapper">
-                        <textarea 
-                            id="note-content-input" 
-                            placeholder="Nhập nội dung, chi tiết thông tin cần ghi nhớ..." 
-                            rows="5"
-                        ></textarea>
-                    </div>
-                </div>
-
-                <!-- Form Actions -->
                 <div class="notes-form-actions">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-note-form">
-                        Hủy
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="btn-save-note">
-                        <i data-lucide="check"></i> <span id="btn-save-note-text">Lưu ghi chú</span>
-                    </button>
+                    <span class="notes-save-status" id="notes-save-status"><i data-lucide="cloud"></i> Lưu trên thiết bị</span>
+                    <span class="notes-char-count" id="notes-char-count">0 ký tự</span>
+                    <button type="button" class="notes-modal-cancel" id="btn-cancel-note-form">Hủy</button>
+                    <button type="submit" class="notes-modal-save" id="btn-save-note"><span id="btn-save-note-text">Lưu</span></button>
                 </div>
             </form>
         </div>
@@ -134,6 +117,6 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/app.js?v=1"></script>
+    <script src="js/app.js?v=2"></script>
 </body>
 </html>
