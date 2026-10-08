@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=46">
+    <link rel="stylesheet" href="main/css/styles.css?v=47">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -1176,9 +1176,9 @@
                     <i data-lucide="arrow-left"></i>
                 </button>
                 <div class="notes-page-title">
-                    <span>CHỨC NĂNG BỔ SUNG</span>
-                    <h2>Ghi chú cá nhân</h2>
-                    <p>Lưu lại các thông tin và nội dung cần ghi nhớ</p>
+                    <span>SỔ TAY CỦA BẠN</span>
+                    <h2>Ghi chú</h2>
+                    <p>Ghi nhanh những điều quan trọng</p>
                 </div>
                 <div class="notes-header-actions">
                     <button class="notes-icon-btn notes-add-btn" id="btn-toggle-add-note" aria-label="Thêm ghi chú" title="Thêm ghi chú mới">
@@ -1195,12 +1195,12 @@
                         <i data-lucide="sparkles"></i>
                     </div>
                     <div class="notes-hero-body">
-                        <div class="notes-hero-tag">SỔ TAY THÔNG MINH</div>
-                        <div class="notes-hero-text" id="notes-hero-text">Lưu trữ ý tưởng, mẹo hay và mọi thông tin quan trọng mọi lúc mọi nơi.</div>
+                        <div class="notes-hero-tag">GHI NHANH</div>
+                        <div class="notes-hero-text" id="notes-hero-text">Lưu lại ý tưởng, việc cần làm hoặc điều bạn muốn nhớ.</div>
                     </div>
                     <button type="button" class="notes-hero-add-pill" id="btn-hero-add-note">
                         <i data-lucide="plus"></i>
-                        <span>Viết ghi chú</span>
+                        <span>Viết nhanh</span>
                     </button>
                 </div>
 
@@ -1208,7 +1208,7 @@
                 <div class="notes-toolbar">
                     <div class="notes-search-wrapper">
                         <i data-lucide="search" class="notes-search-icon"></i>
-                        <input type="text" id="notes-search-input" placeholder="Tìm theo tiêu đề, nội dung ghi chú...">
+                        <input type="text" id="notes-search-input" placeholder="Tìm ghi chú...">
                         <button type="button" class="notes-search-clear" id="btn-clear-notes-search" title="Xóa tìm kiếm" style="display: none;">
                             <i data-lucide="x"></i>
                         </button>
@@ -1222,14 +1222,14 @@
                             </button>
                             <button type="button" class="notes-filter-tab" data-filter="fav" id="btn-filter-notes-fav">
                                 <i data-lucide="heart" class="notes-fav-icon"></i>
-                                <span>Quan trọng</span>
+                                <span>Đã ghim</span>
                                 <span class="notes-tab-badge" id="notes-badge-fav">0</span>
                             </button>
                         </div>
                         <div class="notes-quick-actions">
                             <button type="button" class="notes-sample-btn" id="btn-load-sample-notes" title="Nạp ghi chú mẫu để trải nghiệm">
                                 <i data-lucide="sparkles"></i>
-                                <span>Nạp mẫu</span>
+                                <span>Mẫu dùng thử</span>
                             </button>
                         </div>
                     </div>
@@ -1258,36 +1258,35 @@
             </div>
             <form id="notes-form" class="support-entry-form notes-entry-form">
                 <input type="hidden" id="note-id" value="">
-                
-                <div class="support-form-field notes-form-field">
-                    <label for="note-title-input">
-                        <span class="support-field-icon notes-field-icon"><i data-lucide="bookmark"></i></span>
-                        Tiêu đề ghi chú <span class="required-mark">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="note-title-input" 
-                        maxlength="150" 
-                        placeholder="Ví dụ: Tip test màn hình, Mẹo vặt nấu ăn,..." 
-                        required 
+                <div class="notes-editor-surface">
+                    <div class="notes-editor-topline">
+                        <span class="notes-editor-mode"><i data-lucide="edit-3"></i><span id="notes-entry-status">Ghi chú mới</span></span>
+                        <span class="notes-editor-saved"><i data-lucide="cloud-check"></i>Đồng bộ an toàn</span>
+                    </div>
+                    <label class="sr-only" for="note-title-input">Tiêu đề ghi chú</label>
+                    <input
+                        type="text"
+                        id="note-title-input"
+                        maxlength="150"
+                        placeholder="Tiêu đề"
+                        required
                         autocomplete="off"
                     >
-                </div>
-
-                <div class="support-form-field notes-form-field">
-                    <label for="note-content-input">
-                        <span class="support-field-icon notes-field-icon"><i data-lucide="align-left"></i></span>
-                        Nội dung chi tiết
-                    </label>
-                    <textarea 
-                        id="note-content-input" 
-                        rows="6" 
-                        maxlength="3000" 
-                        placeholder="Nhập nội dung, checklist, các bước thực hiện hoặc hướng dẫn chi tiết..."
+                    <label class="sr-only" for="note-content-input">Nội dung ghi chú</label>
+                    <textarea
+                        id="note-content-input"
+                        rows="8"
+                        maxlength="3000"
+                        placeholder="Bắt đầu viết..."
                     ></textarea>
+                    <div class="notes-editor-bottomline">
+                        <button type="button" class="notes-editor-tool" id="btn-toggle-note-pin" aria-pressed="false" title="Ghim ghi chú">
+                            <i data-lucide="pin"></i><span>Ghim</span>
+                        </button>
+                        <span class="notes-editor-count" id="notes-content-count">0 / 3000</span>
+                    </div>
                 </div>
-
-                <div class="support-entry-form-actions">
+                <div class="support-entry-form-actions notes-entry-actions">
                     <button type="button" class="support-cancel-btn" id="btn-cancel-note-entry">Hủy</button>
                     <button type="submit" class="support-save-btn notes-save-btn" id="btn-save-note">
                         <i data-lucide="check"></i>
@@ -1529,7 +1528,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
     <script src="main/js/app.js?v=49" defer></script>
-    <script src="main/js/notes.js?v=2" defer></script>
+    <script src="main/js/notes.js?v=3" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
 </html>
