@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=44">
+    <link rel="stylesheet" href="main/css/styles.css?v=45">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -1180,89 +1180,58 @@
                     <h2>Ghi chú cá nhân</h2>
                     <p>Lưu lại các thông tin và nội dung cần ghi nhớ</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button class="btn btn-primary btn-add-note-toggle" id="btn-toggle-add-note" aria-label="Thêm ghi chú" title="Thêm ghi chú mới">
+                <div class="notes-header-actions">
+                    <button class="notes-icon-btn notes-add-btn" id="btn-toggle-add-note" aria-label="Thêm ghi chú" title="Thêm ghi chú mới">
                         <i data-lucide="plus"></i>
-                        <span>Thêm mới</span>
                     </button>
                 </div>
             </div>
 
             <!-- Notes Main Scroll Area -->
             <div class="notes-page-scroll">
-                <!-- FORM NHẬP GHI CHÚ (2 BOX: TÊN GHI CHÚ VÀ MÔ TẢ GHI CHÚ) -->
-                <div class="notes-editor-card" id="notes-editor-card">
-                    <div class="notes-editor-header">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div class="notes-badge-icon">
-                                <i data-lucide="edit-3"></i>
-                            </div>
-                            <div>
-                                <h3 id="notes-form-heading">Ghi chú mới</h3>
-                                <span class="notes-form-sub">Nhập tên và mô tả chi tiết</span>
-                            </div>
-                        </div>
-                        <button type="button" class="notes-collapse-btn" id="btn-cancel-note-form" title="Đóng ô nhập" style="display: none;">
+                <!-- HERO BANNER TỔNG QUAN -->
+                <div class="notes-hero-banner" id="notes-hero-banner">
+                    <div class="notes-hero-icon-bubble">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <div class="notes-hero-body">
+                        <div class="notes-hero-tag">SỔ TAY THÔNG MINH</div>
+                        <div class="notes-hero-text" id="notes-hero-text">Lưu trữ ý tưởng, mẹo hay và mọi thông tin quan trọng mọi lúc mọi nơi.</div>
+                    </div>
+                    <button type="button" class="notes-hero-add-pill" id="btn-hero-add-note">
+                        <i data-lucide="plus"></i>
+                        <span>Viết ghi chú</span>
+                    </button>
+                </div>
+
+                <!-- CONTROLS & SEARCH GHI CHÚ -->
+                <div class="notes-toolbar">
+                    <div class="notes-search-wrapper">
+                        <i data-lucide="search" class="notes-search-icon"></i>
+                        <input type="text" id="notes-search-input" placeholder="Tìm theo tiêu đề, nội dung ghi chú...">
+                        <button type="button" class="notes-search-clear" id="btn-clear-notes-search" title="Xóa tìm kiếm" style="display: none;">
                             <i data-lucide="x"></i>
                         </button>
                     </div>
 
-                    <form id="notes-form" class="notes-form">
-                        <input type="hidden" id="note-id" value="">
-                        
-                        <!-- Box 1: Tên ghi chú -->
-                        <div class="form-group notes-form-group">
-                            <label for="note-title-input">
-                                <i data-lucide="bookmark" class="note-label-icon"></i>
-                                Tên ghi chú <span class="required-mark">*</span>
-                            </label>
-                            <div class="input-wrapper">
-                                <input 
-                                    type="text" 
-                                    id="note-title-input" 
-                                    placeholder="Nhập tên hoặc tiêu đề ghi chú..." 
-                                    required 
-                                    autocomplete="off"
-                                >
-                            </div>
-                        </div>
-
-                        <!-- Box 2: Mô tả ghi chú -->
-                        <div class="form-group notes-form-group">
-                            <label for="note-content-input">
-                                <i data-lucide="align-left" class="note-label-icon"></i>
-                                Mô tả ghi chú
-                            </label>
-                            <div class="input-wrapper">
-                                <textarea 
-                                    id="note-content-input" 
-                                    placeholder="Nhập nội dung, chi tiết thông tin cần ghi nhớ..." 
-                                    rows="4"
-                                ></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Form Actions -->
-                        <div class="notes-form-actions">
-                            <button type="button" class="btn btn-secondary" id="btn-reset-note-form">
-                                <i data-lucide="rotate-ccw"></i> Đặt lại
+                    <div class="notes-filter-row">
+                        <div class="notes-filter-tabs">
+                            <button type="button" class="notes-filter-tab active" data-filter="all" id="btn-filter-notes-all">
+                                <span>Tất cả</span>
+                                <span class="notes-tab-badge" id="notes-badge-all">0</span>
                             </button>
-                            <button type="submit" class="btn btn-primary" id="btn-save-note">
-                                <i data-lucide="check"></i> <span id="btn-save-note-text">Lưu ghi chú</span>
+                            <button type="button" class="notes-filter-tab" data-filter="fav" id="btn-filter-notes-fav">
+                                <i data-lucide="heart" class="notes-fav-icon"></i>
+                                <span>Quan trọng</span>
+                                <span class="notes-tab-badge" id="notes-badge-fav">0</span>
                             </button>
                         </div>
-                    </form>
-                </div>
-
-                <!-- CONTROLS & SEARCH GHI CHÚ -->
-                <div class="notes-list-header">
-                    <div class="notes-count-info">
-                        <span class="notes-section-title">Danh sách ghi chú</span>
-                        <span class="notes-counter-badge" id="notes-counter-badge">0 ghi chú</span>
-                    </div>
-                    <div class="notes-search-wrapper">
-                        <i data-lucide="search" class="notes-search-icon"></i>
-                        <input type="text" id="notes-search-input" placeholder="Tìm theo tên hoặc mô tả...">
+                        <div class="notes-quick-actions">
+                            <button type="button" class="notes-sample-btn" id="btn-load-sample-notes" title="Nạp ghi chú mẫu để trải nghiệm">
+                                <i data-lucide="sparkles"></i>
+                                <span>Nạp mẫu</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1273,6 +1242,61 @@
             </div>
         </div>
     </div><!-- End #notes-modal -->
+
+    <!-- FORM THÊM / SỬA GHI CHÚ (BOTTOM-SHEET CHUẨN IOS TRONG KHUNG ĐIỆN THOẠI) -->
+    <div class="modal-overlay support-entry-form-overlay notes-entry-form-overlay" id="notes-entry-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet notes-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="notes-entry-form-title">
+            <div class="support-modal-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow notes-modal-eyebrow">SỔ TAY GHI CHÚ</span>
+                    <h2 id="notes-entry-form-title">Ghi chú mới</h2>
+                    <p id="notes-entry-form-description">Nhập thông tin tiêu đề và nội dung cần lưu trữ.</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-notes-entry-modal" aria-label="Đóng form Ghi chú" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="notes-form" class="support-entry-form notes-entry-form">
+                <input type="hidden" id="note-id" value="">
+                
+                <div class="support-form-field notes-form-field">
+                    <label for="note-title-input">
+                        <span class="support-field-icon notes-field-icon"><i data-lucide="bookmark"></i></span>
+                        Tiêu đề ghi chú <span class="required-mark">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="note-title-input" 
+                        maxlength="150" 
+                        placeholder="Ví dụ: Tip test màn hình, Mẹo vặt nấu ăn,..." 
+                        required 
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div class="support-form-field notes-form-field">
+                    <label for="note-content-input">
+                        <span class="support-field-icon notes-field-icon"><i data-lucide="align-left"></i></span>
+                        Nội dung chi tiết
+                    </label>
+                    <textarea 
+                        id="note-content-input" 
+                        rows="6" 
+                        maxlength="3000" 
+                        placeholder="Nhập nội dung, checklist, các bước thực hiện hoặc hướng dẫn chi tiết..."
+                    ></textarea>
+                </div>
+
+                <div class="support-entry-form-actions">
+                    <button type="button" class="support-cancel-btn" id="btn-cancel-note-entry">Hủy</button>
+                    <button type="submit" class="support-save-btn notes-save-btn" id="btn-save-note">
+                        <i data-lucide="check"></i>
+                        <span id="btn-save-note-text">Lưu ghi chú</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div><!-- End #notes-entry-modal -->
 
     <!-- STANDALONE MODULE FRAME CONTAINER (ISOLATED RUNTIME INSIDE PHONE VIEW) -->
     <div id="module-host-container" class="module-host-container" style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 9990; background: var(--bg-cream); overflow: auto;">
@@ -1504,7 +1528,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=48" defer></script>
+    <script src="main/js/app.js?v=49" defer></script>
     <script src="main/js/notes.js?v=2" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
 </body>
