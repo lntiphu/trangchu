@@ -13,6 +13,7 @@
     let notesSubscription = null;
     let notes = [];
     let isEditingId = null;
+    let editingIsFavorite = false;
 
     // Quay lại màn hình chính của ứng dụng
     function goBackToHome() {
@@ -113,13 +114,17 @@
             }
 
             if (data && Array.isArray(data)) {
-                notes = data.map(row => ({
+                notes = data.map(row => {
+                    const localNote = notes.find(note => note.id === row.id);
+                    return {
                     id: row.id,
                     title: row.title || '',
                     content: row.content || '',
                     createdAt: row.created_at || new Date().toISOString(),
-                    updatedAt: row.updated_at || new Date().toISOString()
-                }));
+                    updatedAt: row.updated_at || new Date().toISOString(),
+                    isFavorite: Boolean(localNote && localNote.isFavorite)
+                    };
+                });
                 saveNotesLocally();
                 renderNotesList();
             }
@@ -204,7 +209,8 @@
                     title: newRow.title || '',
                     content: newRow.content || '',
                     createdAt: newRow.created_at,
-                    updatedAt: newRow.updated_at
+                    updatedAt: newRow.updated_at,
+                    isFavorite: false
                 });
                 saveNotesLocally();
                 renderNotesList();
@@ -218,7 +224,8 @@
                         title: newRow.title || '',
                         content: newRow.content || '',
                         createdAt: newRow.created_at,
-                        updatedAt: newRow.updated_at
+                        updatedAt: newRow.updated_at,
+                        isFavorite: Boolean(notes[idx].isFavorite)
                     };
                     saveNotesLocally();
                     renderNotesList();
@@ -266,7 +273,7 @@
                     <div class="notes-empty-state">
                         <i data-lucide="file-plus" class="notes-empty-icon"></i>
                         <h4>Chưa có ghi chú nào</h4>
-                        <p>Nhập Tên và Mô tả ghi chú ở ô phía trên rồi bấm "Lưu ghi chú" để tạo ghi chú đầu tiên của bạn.</p>
+                        <p>Chạm nút <strong>+</strong> để tạo ghi chú đầu tiên của bạn.</p>
                     </div>
                 `;
             }
@@ -277,20 +284,24 @@
         }
 
         let html = '';
-        filtered.forEach(note => {
+        [...filtered].sort((a, b) => Number(Boolean(b.isFavorite)) - Number(Boolean(a.isFavorite))).forEach(note => {
             const dateText = formatNoteDate(note.updatedAt || note.createdAt);
             const contentHtml = note.content 
                 ? escapeHtml(note.content).replace(/\n/g, '<br>') 
                 : '<em class="notes-no-content">(Không có mô tả)</em>';
+            const isPinned = Boolean(note.isFavorite);
 
             html += `
-                <div class="note-card" data-note-id="${escapeHtml(note.id)}">
+                <div class="note-card${isPinned ? ' is-pinned' : ''}" data-note-id="${escapeHtml(note.id)}">
                     <div class="note-card-header">
                         <div class="note-card-title-group">
                             <h4 class="note-card-title">${escapeHtml(note.title)}</h4>
-                            <span class="note-card-date"><i data-lucide="clock"></i> ${dateText}</span>
+                            <span class="note-card-date"><i data-lucide="clock"></i> ${dateText}${isPinned ? ' · Đã ghim' : ''}</span>
                         </div>
                         <div class="note-card-actions">
+                            <button type="button" class="note-action-btn btn-pin-note${isPinned ? ' is-active' : ''}" data-id="${escapeHtml(note.id)}" title="${isPinned ? 'Bỏ ghim ghi chú' : 'Ghim ghi chú'}" aria-label="${isPinned ? 'Bỏ ghim' : 'Ghim'}" aria-pressed="${isPinned}">
+                                <i data-lucide="pin"></i>
+                            </button>
                             <button type="button" class="note-action-btn btn-copy-note" data-id="${escapeHtml(note.id)}" title="Sao chép nội dung" aria-label="Sao chép">
                                 <i data-lucide="copy"></i>
                             </button>
@@ -315,6 +326,13 @@
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 copyNoteContent(btn.getAttribute('data-id'));
+            });
+        });
+
+        container.querySelectorAll('.btn-pin-note').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleNotePin(btn.getAttribute('data-id'));
             });
         });
 
@@ -394,6 +412,33 @@
         }, 2200);
     }
 
+    function toggleNotePin(id) {
+        const note = notes.find(n => n.id === id);
+        if (!note) return;
+        note.isFavorite = !Boolean(note.isFavorite);
+        saveNotesLocally();
+        renderNotesList();
+        showNotesToast(note.isFavorite ? 'Đã ghim ghi chú' : 'Đã bỏ ghim ghi chú');
+    }
+
+    function updateCharacterCount() {
+        const titleInput = document.getElementById('note-title-input');
+        const contentInput = document.getElementById('note-content-input');
+        const countEl = document.getElementById('notes-char-count');
+        if (!countEl) return;
+        const count = ((titleInput ? titleInput.value : '') + (contentInput ? contentInput.value : '')).length;
+        countEl.textContent = `${count} ký tự`;
+    }
+
+    function updatePinButton() {
+        const pinBtn = document.getElementById('btn-toggle-note-pin');
+        if (!pinBtn) return;
+        pinBtn.classList.toggle('is-active', editingIsFavorite);
+        pinBtn.setAttribute('aria-pressed', String(editingIsFavorite));
+        pinBtn.title = editingIsFavorite ? 'Bỏ ghim ghi chú' : 'Ghim ghi chú';
+        pinBtn.setAttribute('aria-label', pinBtn.title);
+    }
+
     function openNoteModal(isEdit) {
         const modal = document.getElementById('notes-modal-overlay');
         if (modal) {
@@ -427,14 +472,18 @@
         if (idInput) idInput.value = note.id;
         if (titleInput) titleInput.value = note.title;
         if (contentInput) contentInput.value = note.content || '';
+        editingIsFavorite = Boolean(note.isFavorite);
         if (headingEl) headingEl.textContent = 'Chỉnh sửa ghi chú';
-        if (btnSaveText) btnSaveText.textContent = 'Cập nhật ghi chú';
+        if (btnSaveText) btnSaveText.textContent = 'Cập nhật';
+        updatePinButton();
+        updateCharacterCount();
 
         openNoteModal(true);
     }
 
     function resetNoteForm() {
         isEditingId = null;
+        editingIsFavorite = false;
         const form = document.getElementById('notes-form');
         if (form) form.reset();
 
@@ -444,8 +493,10 @@
         const headingEl = document.getElementById('notes-form-heading');
         const btnSaveText = document.getElementById('btn-save-note-text');
 
-        if (headingEl) headingEl.textContent = 'Thêm ghi chú mới';
-        if (btnSaveText) btnSaveText.textContent = 'Lưu ghi chú';
+        if (headingEl) headingEl.textContent = 'Ghi chú mới';
+        if (btnSaveText) btnSaveText.textContent = 'Lưu';
+        updatePinButton();
+        updateCharacterCount();
     }
 
     async function handleSaveNote(e) {
@@ -468,6 +519,7 @@
             if (idx !== -1) {
                 notes[idx].title = title;
                 notes[idx].content = content;
+                notes[idx].isFavorite = editingIsFavorite;
                 notes[idx].updatedAt = new Date().toISOString();
                 
                 const updatedNote = notes[idx];
@@ -481,6 +533,7 @@
                 id: generateNoteId(),
                 title: title,
                 content: content,
+                isFavorite: editingIsFavorite,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -550,6 +603,20 @@
         const btnCloseModal = document.getElementById('btn-close-note-modal');
         if (btnCloseModal) btnCloseModal.addEventListener('click', closeNoteModal);
 
+        const pinBtn = document.getElementById('btn-toggle-note-pin');
+        if (pinBtn) {
+            pinBtn.addEventListener('click', () => {
+                editingIsFavorite = !editingIsFavorite;
+                updatePinButton();
+            });
+        }
+
+        const titleInput = document.getElementById('note-title-input');
+        const contentInput = document.getElementById('note-content-input');
+        [titleInput, contentInput].forEach(input => {
+            if (input) input.addEventListener('input', updateCharacterCount);
+        });
+
         const modalOverlay = document.getElementById('notes-modal-overlay');
         if (modalOverlay) {
             modalOverlay.addEventListener('click', (e) => {
@@ -563,6 +630,14 @@
         const btnToggleAdd = document.getElementById('btn-toggle-add-note');
         if (btnToggleAdd) {
             btnToggleAdd.addEventListener('click', () => {
+                resetNoteForm();
+                openNoteModal(false);
+            });
+        }
+
+        const btnHeaderAdd = document.getElementById('btn-header-add-note');
+        if (btnHeaderAdd) {
+            btnHeaderAdd.addEventListener('click', () => {
                 resetNoteForm();
                 openNoteModal(false);
             });
