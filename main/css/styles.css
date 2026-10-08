@@ -5789,6 +5789,7 @@ html, body {
 
 /* HERO BANNER: CÂU TRÍCH DẪN NỔI BẬT */
 .quote-hero-banner {
+    flex: 0 0 auto;
     background: linear-gradient(135deg, #7c5295 0%, #5d3575 55%, #421e58 100%);
     border-radius: 22px;
     padding: 16px 18px 14px;
@@ -5905,6 +5906,7 @@ html, body {
 
 /* TOOLBAR & BỘ LỌC */
 .quote-toolbar-section {
+    flex: 0 0 auto;
     margin-bottom: 12px;
 }
 
@@ -6034,6 +6036,7 @@ html, body {
 
 /* DANH SÁCH THẺ QUOTE */
 .quote-cards-container {
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
