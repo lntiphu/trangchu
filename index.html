@@ -597,6 +597,10 @@
                 <button class="modal-close-btn ckkn-back-btn" id="btn-close-support-modal" aria-label="Quay lại tổng quan" title="Quay lại">
                     <i data-lucide="arrow-left"></i>
                 </button>
+                <div class="support-page-title">
+                    <span>HƯỚNG DẪN &amp; TRA CỨU</span>
+                    <h2>Hỗ trợ</h2>
+                </div>
                 <div class="support-header-actions" aria-label="Thao tác hỗ trợ">
                     <button type="button" class="support-action-btn support-add-btn" id="btn-add-support-entry" aria-label="Thêm mới" title="Thêm mới">
                         <i data-lucide="plus"></i>
@@ -835,6 +839,137 @@
             </form>
         </div>
     </div><!-- End #list-entry-modal -->
+
+    <!-- TRÍCH DẪN (TÍNH NĂNG THỨ 9) -->
+    <div class="modal-overlay support-page-modal quote-page-modal" id="quote-modal" aria-hidden="true">
+        <div class="modal-sheet support-page-sheet quote-page-sheet" role="dialog" aria-modal="true" aria-label="Trích dẫn">
+            <div class="ckkn-page-header support-page-header quote-page-header">
+                <button class="modal-close-btn ckkn-back-btn" id="btn-close-quote-modal" aria-label="Quay lại tổng quan" title="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="quote-page-title">
+                    <span>TRUYỀN CẢM HỨNG</span>
+                    <h2>Trích dẫn</h2>
+                </div>
+                <div class="support-header-actions" aria-label="Thao tác Trích dẫn">
+                    <button type="button" class="support-action-btn quote-add-btn" id="btn-add-quote-entry" aria-label="Thêm câu quote" title="Thêm mới">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button type="button" class="support-action-btn quote-edit-btn" id="btn-edit-quote-entry" aria-label="Chọn câu quote để chỉnh sửa" title="Chỉnh sửa">
+                        <i data-lucide="pencil"></i>
+                    </button>
+                    <button type="button" class="support-action-btn quote-delete-btn" id="btn-delete-quote-entry" aria-label="Chọn câu quote để xóa" title="Xóa">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vùng cuộn chính của trang Trích dẫn -->
+            <div class="quote-page-scroll" id="quote-page-scroll">
+                <!-- Highlight Hero Banner: CẢM HỨNG HÔM NAY / NGẪU NHIÊN -->
+                <div class="quote-hero-banner" id="quote-hero-banner">
+                    <div class="quote-hero-top-row">
+                        <div class="quote-hero-badge">
+                            <i data-lucide="sparkles"></i>
+                            <span>CẢM HỨNG HÔM NAY</span>
+                        </div>
+                        <button type="button" class="quote-hero-shuffle-btn" id="btn-shuffle-hero-quote" title="Đổi câu khác" aria-label="Đổi câu ngẫu nhiên">
+                            <i data-lucide="shuffle"></i>
+                            <span>Đổi câu</span>
+                        </button>
+                    </div>
+                    <div class="quote-hero-body">
+                        <p class="quote-hero-text" id="quote-hero-text">“Hành trình vạn dặm bắt đầu từ một bước chân.”</p>
+                        <div class="quote-hero-footer">
+                            <span class="quote-hero-author" id="quote-hero-author">— Lão Tử</span>
+                            <button type="button" class="quote-hero-copy-btn" id="btn-copy-hero-quote" title="Sao chép câu này" aria-label="Sao chép">
+                                <i data-lucide="copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thanh tìm kiếm và bộ lọc nhanh -->
+                <div class="quote-toolbar-section">
+                    <div class="quote-search-bar">
+                        <i data-lucide="search" class="quote-search-icon"></i>
+                        <input type="search" id="quote-search-input" placeholder="Tìm theo nội dung hoặc tác giả..." autocomplete="off">
+                        <button type="button" class="quote-search-clear-btn" id="btn-clear-quote-search" aria-label="Xóa tìm kiếm" hidden>
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
+                    <div class="quote-filter-row">
+                        <div class="quote-filter-tabs">
+                            <button type="button" class="quote-filter-tab active" id="btn-quote-filter-all" data-filter="all">
+                                <span>Tất cả</span>
+                                <span class="quote-tab-badge" id="quote-count-all">0</span>
+                            </button>
+                            <button type="button" class="quote-filter-tab" id="btn-quote-filter-fav" data-filter="fav">
+                                <i data-lucide="heart" style="width: 12px; height: 12px;"></i>
+                                <span>Yêu thích</span>
+                                <span class="quote-tab-badge" id="quote-count-fav">0</span>
+                            </button>
+                        </div>
+                        <button type="button" class="quote-load-samples-btn" id="btn-load-sample-quotes" title="Thêm danh ngôn mẫu truyền cảm hứng">
+                            <i data-lucide="sparkle"></i>
+                            <span>Mẫu hay</span>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="support-storage-notice" id="quote-storage-notice" role="status" aria-live="polite" hidden></p>
+
+                <!-- Danh sách câu quote -->
+                <div class="quote-cards-container" id="quote-cards-container" aria-live="polite"></div>
+            </div>
+
+            <!-- Thông báo sao chép nhanh (Toast) -->
+            <div id="quote-toast" class="quote-toast" aria-live="polite">
+                <i data-lucide="check"></i>
+                <span id="quote-toast-message">Đã sao chép câu quote!</span>
+            </div>
+        </div>
+    </div><!-- End #quote-modal -->
+
+    <!-- FORM THÊM / SỬA TRÍCH DẪN -->
+    <div class="modal-overlay support-entry-form-overlay quote-entry-form-overlay" id="quote-entry-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet quote-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="quote-entry-form-title">
+            <div class="support-modal-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow">TRÍCH DẪN &amp; DANH NGÔN</span>
+                    <h2 id="quote-entry-form-title">Thêm câu quote</h2>
+                    <p id="quote-entry-form-description">Lưu câu nói hay và nguồn tác giả.</p>
+                </div>
+                <button class="modal-close-btn" id="btn-close-quote-entry-modal" aria-label="Đóng form Trích dẫn" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="quote-entry-form" class="support-entry-form">
+                <div class="support-form-field quote-form-field">
+                    <label for="quote-entry-text"><span class="support-field-icon"><i data-lucide="quote"></i></span>Nội dung câu quote <span class="required-mark">*</span></label>
+                    <textarea id="quote-entry-text" rows="4" maxlength="1000" placeholder="Nhập câu danh ngôn, trích dẫn hoặc câu nói tâm đắc..." required></textarea>
+                </div>
+                <div class="support-form-field quote-form-field">
+                    <label for="quote-entry-author"><span class="support-field-icon"><i data-lucide="user"></i></span>Tác giả / Nguồn</label>
+                    <input type="text" id="quote-entry-author" maxlength="120" placeholder="Ví dụ: Steve Jobs, Khuyết danh, Sách Dám bị ghét...">
+                    <div class="quote-author-chips" id="quote-author-chips">
+                        <span class="quote-chip-label">Gợi ý nhanh:</span>
+                        <button type="button" class="quote-chip-btn" data-author="Khuyết danh">Khuyết danh</button>
+                        <button type="button" class="quote-chip-btn" data-author="Steve Jobs">Steve Jobs</button>
+                        <button type="button" class="quote-chip-btn" data-author="Albert Einstein">Albert Einstein</button>
+                        <button type="button" class="quote-chip-btn" data-author="Lão Tử">Lão Tử</button>
+                        <button type="button" class="quote-chip-btn" data-author="Sách hay">Sách hay</button>
+                    </div>
+                </div>
+                <p class="support-entry-form-error" id="quote-entry-form-error" role="alert" hidden></p>
+                <div class="support-entry-form-actions">
+                    <button type="button" class="support-cancel-btn" id="btn-cancel-quote-entry">Hủy</button>
+                    <button type="submit" class="support-save-btn"><i data-lucide="check"></i><span>Lưu</span></button>
+                </div>
+            </form>
+        </div>
+    </div><!-- End #quote-entry-modal -->
 
     <!-- SAVER (QUẢN LÝ TIẾT KIỆM) FULL-SCREEN PAGE -->
     <div class="modal-overlay" id="saver-page-modal" aria-hidden="true">
@@ -1161,7 +1296,7 @@
             </div>
         </div>
 
-        <!-- Danh sách 8 tính năng chính -->
+        <!-- Danh sách 9 tính năng chính -->
         <div class="welcome-hub-cards">
             <!-- 1. Thu Chi -->
             <button type="button" class="welcome-card welcome-card-thuchi" id="welcome-opt-thuchi" onclick="navigateToFeature('thuchi')">
@@ -1283,6 +1418,20 @@
                         <span class="welcome-card-name">Danh sách</span>
                     </div>
                     <p class="welcome-card-desc">Gom các mục con theo từng chủ đề riêng</p>
+                </div>
+                <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
+            </button>
+
+            <!-- 9. Trích dẫn -->
+            <button type="button" class="welcome-card welcome-card-quote" id="welcome-opt-quote">
+                <div class="welcome-card-icon-wrap icon-quote">
+                    <i data-lucide="quote"></i>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Trích dẫn</span>
+                    </div>
+                    <p class="welcome-card-desc">Lưu lại những câu danh ngôn, trích dẫn truyền cảm hứng</p>
                 </div>
                 <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
             </button>
