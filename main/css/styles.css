@@ -7140,6 +7140,175 @@ html, body {
     max-width: 100%;
 }
 
+/* ============================================================================
+   MODAL 10 - SỔ TAY
+   Giao diện card sáng, chữ lớn và dễ đọc trên điện thoại.
+   ============================================================================ */
+.welcome-card-handbook::before { background: #3f7d57; }
+.icon-handbook { background: rgba(63, 125, 87, .15); color: #3f7d57; }
+
+.handbook-page-modal,
+.handbook-detail-modal,
+.handbook-entry-modal {
+    z-index: 10020;
+}
+
+.handbook-detail-modal,
+.handbook-entry-modal {
+    background: rgba(28, 40, 31, .48);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.handbook-page-sheet {
+    width: min(100%, 760px);
+    height: min(100%, 920px);
+    max-height: 96vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #f7fbf6;
+    border: 1px solid rgba(63, 125, 87, .12);
+}
+
+.handbook-page-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    background: rgba(255, 255, 255, .9);
+    border-bottom: 1px solid rgba(63, 125, 87, .12);
+}
+
+.handbook-back-btn { flex: 0 0 auto; }
+.handbook-page-title { flex: 1; min-width: 0; }
+.handbook-page-title > span,
+.handbook-form-eyebrow {
+    display: block;
+    color: #3f7d57;
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .13em;
+}
+.handbook-page-title h2 { display: flex; align-items: center; gap: 7px; margin: 2px 0 2px; color: #243126; font-size: 1.35rem; font-weight: 800; }
+.handbook-page-title h2 svg { width: 21px; height: 21px; color: #3f7d57; }
+.handbook-page-title p { margin: 0; color: #718073; font-size: .76rem; line-height: 1.35; }
+.handbook-header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.handbook-icon-btn,
+.handbook-add-btn {
+    min-height: 38px;
+    border: 0;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform .16s ease, background .16s ease;
+}
+.handbook-icon-btn { width: 38px; color: #52715d; background: #eaf4eb; }
+.handbook-add-btn { padding: 0 12px; color: #fff; background: #3f7d57; font: inherit; font-size: .78rem; font-weight: 800; box-shadow: 0 5px 14px rgba(63, 125, 87, .2); }
+.handbook-icon-btn svg, .handbook-add-btn svg { width: 17px; height: 17px; }
+.handbook-icon-btn:hover, .handbook-add-btn:hover { transform: translateY(-1px); }
+.handbook-icon-btn:hover { background: #dcecdf; }
+.handbook-add-btn:hover { background: #2f6845; }
+
+.handbook-page-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 20px 78px; }
+.handbook-intro-card { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; padding: 15px; border: 1px solid #d9eadb; border-radius: 17px; background: linear-gradient(135deg, #eef8ef, #fbfdf7); }
+.handbook-intro-icon { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 14px; color: #3f7d57; background: #dcefe0; }
+.handbook-intro-icon svg { width: 21px; height: 21px; }
+.handbook-intro-card strong { color: #2e4935; font-size: .9rem; }
+.handbook-intro-card p { margin: 3px 0 0; color: #6e7c70; font-size: .76rem; }
+.handbook-sync-status { display: inline-flex; margin-top: 5px; color: #3f7d57; font-size: .65rem; font-weight: 800; }
+.handbook-sync-status.is-local { color: #98752a; }
+.handbook-sync-status.is-error { color: #a24f47; }
+
+.handbook-toolbar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.handbook-search { position: relative; display: flex; align-items: center; min-height: 48px; padding: 0 42px 0 42px; border: 1px solid #d9e4da; border-radius: 15px; background: #fff; }
+.handbook-search > svg { position: absolute; left: 15px; width: 19px; height: 19px; color: #66816c; }
+.handbook-search input { width: 100%; border: 0; outline: 0; background: transparent; color: #29382d; font: inherit; font-size: .9rem; }
+.handbook-search input::placeholder { color: #98a49a; }
+.handbook-search button { position: absolute; right: 8px; width: 30px; height: 30px; border: 0; border-radius: 9px; color: #718073; background: #eff5ef; cursor: pointer; }
+.handbook-filter-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.handbook-category-filter { position: relative; display: flex; align-items: center; min-height: 40px; flex: 1 1 205px; }
+.handbook-category-filter svg { position: absolute; left: 12px; width: 16px; color: #5f7d65; pointer-events: none; }
+.handbook-category-filter select { width: 100%; min-height: 40px; padding: 0 10px 0 35px; border: 1px solid #d9e4da; border-radius: 12px; color: #3a503f; background: #fff; font: inherit; font-size: .8rem; outline: 0; }
+.handbook-favorite-filter { min-height: 40px; padding: 0 11px; display: inline-flex; align-items: center; border: 1px solid #e6dec0; border-radius: 12px; color: #6d5e2e; background: #fffbed; font-size: .76rem; font-weight: 700; cursor: pointer; }
+.handbook-favorite-filter input { accent-color: #c5972e; margin-right: 6px; }
+.handbook-favorite-filter span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.handbook-favorite-filter svg { width: 15px; height: 15px; color: #c5972e; fill: currentColor; }
+.handbook-count { margin-left: auto; color: #6a796d; font-size: .76rem; font-weight: 700; white-space: nowrap; }
+
+.handbook-cards-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.handbook-card { position: relative; min-height: 188px; padding: 15px; border: 1px solid #dce8dd; border-radius: 18px; background: #fff; box-shadow: 0 4px 15px rgba(43, 74, 51, .05); cursor: pointer; outline: 0; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.handbook-card:hover, .handbook-card:focus-visible { transform: translateY(-2px); border-color: #91bb9a; box-shadow: 0 9px 22px rgba(43, 74, 51, .11); }
+.handbook-card.is-favorite { background: linear-gradient(145deg, #fffdf1, #fff); border-color: #eadca8; }
+.handbook-card-topline { display: flex; align-items: center; gap: 7px; }
+.handbook-card-index { color: #8b9b8e; font-size: .7rem; font-weight: 800; }
+.handbook-card-category { max-width: calc(100% - 54px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 8px; border-radius: 999px; color: #4d7357; background: #e9f4ea; font-size: .65rem; font-weight: 800; }
+.handbook-star-btn { width: 29px; height: 29px; margin-left: auto; border: 0; border-radius: 50%; color: #b7bcb2; background: transparent; font-size: 1.2rem; line-height: 1; cursor: pointer; }
+.handbook-star-btn:hover, .handbook-star-btn.is-active { color: #d09d25; background: #fff3c8; }
+.handbook-card h3 { margin: 13px 0 7px; color: #29382d; font-size: .98rem; line-height: 1.3; }
+.handbook-card p { display: -webkit-box; min-height: 42px; margin: 0; overflow: hidden; color: #657267; font-size: .78rem; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.handbook-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 14px; color: #92a096; font-size: .65rem; }
+.handbook-card-footer span { display: inline-flex; align-items: center; gap: 4px; }
+.handbook-card-footer svg { width: 13px; height: 13px; }
+.handbook-card-open { color: #3f7d57; font-weight: 800; }
+.handbook-empty-state { grid-column: 1 / -1; padding: 54px 20px; border: 1px dashed #b9d1bc; border-radius: 20px; text-align: center; color: #6d7c70; background: #fff; }
+.handbook-empty-state svg { width: 44px; height: 44px; color: #70a17b; }
+.handbook-empty-state h3 { margin: 10px 0 4px; color: #34543d; font-size: 1rem; }
+.handbook-empty-state p { margin: 0; font-size: .8rem; }
+.handbook-disclaimer { position: absolute; right: 0; bottom: 0; left: 0; z-index: 3; padding: 10px 20px max(10px, env(safe-area-inset-bottom)); border-top: 1px solid #e3ece3; color: #6c796e; background: rgba(250, 253, 249, .96); font-size: .68rem; line-height: 1.35; text-align: center; }
+
+.handbook-detail-sheet,
+.handbook-entry-sheet { width: min(100% - 28px, 650px); max-height: 92vh; overflow-y: auto; padding: 22px; border: 1px solid #dce8dd; border-radius: 24px; background: #fff; box-shadow: 0 20px 55px rgba(24, 44, 29, .22); }
+.handbook-detail-header, .handbook-entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.handbook-detail-category { display: inline-flex; padding: 6px 10px; border-radius: 999px; color: #3f7d57; background: #eaf5eb; font-size: .72rem; font-weight: 800; }
+.handbook-detail-sheet > h2 { margin: 14px 0 16px; color: #25362b; font-size: 1.45rem; line-height: 1.25; }
+.handbook-detail-body { display: grid; gap: 12px; }
+.handbook-detail-section { padding: 12px 13px; border-radius: 14px; background: #f7fbf6; }
+.handbook-detail-section h3 { display: flex; align-items: center; gap: 7px; margin: 0 0 5px; color: #3f7d57; font-size: .82rem; }
+.handbook-detail-section h3 svg { width: 16px; height: 16px; }
+.handbook-detail-section p { margin: 0; color: #425347; font-size: .86rem; line-height: 1.6; white-space: normal; }
+.handbook-detail-section p em { color: #9aa59c; }
+.handbook-detail-actions, .handbook-entry-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
+.handbook-secondary-btn, .handbook-danger-btn { min-height: 40px; padding: 0 13px; border: 0; border-radius: 11px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: .78rem; font-weight: 800; cursor: pointer; }
+.handbook-secondary-btn { color: #42614a; background: #edf5ee; }
+.handbook-danger-btn { color: #a94d45; background: #fff0ee; }
+.handbook-secondary-btn svg, .handbook-danger-btn svg { width: 16px; height: 16px; }
+.handbook-form-eyebrow { margin-bottom: 3px; }
+.handbook-entry-header h2 { margin: 0; color: #26372c; font-size: 1.28rem; }
+.handbook-entry-header p { margin: 4px 0 0; color: #758277; font-size: .76rem; }
+.handbook-entry-form { margin-top: 18px; }
+.handbook-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.handbook-field-wide { grid-column: 1 / -1; }
+.handbook-form-field { display: flex; flex-direction: column; gap: 6px; }
+.handbook-form-field label { display: flex; align-items: center; gap: 6px; color: #46624c; font-size: .76rem; font-weight: 800; }
+.handbook-form-field label svg { width: 15px; height: 15px; color: #5e8b68; }
+.handbook-form-field label span { color: #bd5a4f; }
+.handbook-form-field input, .handbook-form-field select, .handbook-form-field textarea { width: 100%; border: 1px solid #d9e4da; border-radius: 12px; outline: 0; padding: 11px 12px; color: #304134; background: #fbfdfb; font: inherit; font-size: .84rem; line-height: 1.45; }
+.handbook-form-field textarea { resize: vertical; min-height: 76px; }
+.handbook-form-field input:focus, .handbook-form-field select:focus, .handbook-form-field textarea:focus { border-color: #72a27c; background: #fff; box-shadow: 0 0 0 3px rgba(72, 137, 85, .12); }
+.handbook-form-error { margin: 12px 0 0; padding: 9px 11px; border-radius: 10px; color: #a24f47; background: #fff1ef; font-size: .78rem; }
+
+@media (max-width: 640px) {
+    .handbook-page-sheet { width: 100%; height: 100%; max-height: 100vh; border-radius: 0; }
+    .handbook-page-header { align-items: flex-start; padding: 14px 12px 12px; }
+    .handbook-page-title h2 { font-size: 1.12rem; }
+    .handbook-page-title p { font-size: .7rem; }
+    .handbook-header-actions { gap: 4px; }
+    .handbook-add-btn { width: 39px; padding: 0; }
+    .handbook-add-btn span { display: none; }
+    .handbook-page-scroll { padding: 14px 12px 78px; }
+    .handbook-cards-grid { grid-template-columns: 1fr; gap: 10px; }
+    .handbook-card { min-height: 166px; }
+    .handbook-form-grid { grid-template-columns: 1fr; }
+    .handbook-field-wide { grid-column: auto; }
+    .handbook-detail-sheet, .handbook-entry-sheet { width: 100%; max-height: 92vh; border-radius: 24px 24px 0 0; padding: 19px 16px max(18px, env(safe-area-inset-bottom)); align-self: flex-end; }
+    .handbook-detail-actions, .handbook-entry-actions { position: sticky; bottom: 0; padding-top: 10px; background: #fff; }
+    .handbook-disclaimer { padding-right: 12px; padding-left: 12px; font-size: .63rem; }
+}
+
 @media (min-width: 480px) {
     #notes-entry-modal .notes-entry-sheet {
         padding-bottom: 28px;
