@@ -7233,3 +7233,315 @@ html, body {
     box-sizing: border-box !important;
     padding-bottom: 0 !important;
 }
+
+/* ========================================================================
+   NOTES UX REFRESH – tinh than Google Keep, giu lai palette cua ung dung
+   ======================================================================== */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+#notes-modal .notes-page-sheet {
+    background:
+        radial-gradient(circle at 100% 0%, rgba(232, 245, 233, 0.78), transparent 32%),
+        var(--bg-cream, #FAF7F2);
+}
+
+.notes-page-header {
+    padding: 10px 2px 14px;
+    border-bottom-color: rgba(52, 66, 55, 0.1);
+}
+
+.notes-page-title span {
+    color: #2E7D32;
+    letter-spacing: 0.14em;
+}
+
+.notes-page-title h2 {
+    letter-spacing: -0.02em;
+}
+
+.notes-page-title p {
+    color: #788579;
+}
+
+.notes-page-scroll {
+    gap: 12px;
+    min-height: 0;
+    padding: 14px 2px 34px;
+}
+
+.notes-hero-banner {
+    flex: 0 0 auto;
+    min-height: 82px;
+    padding: 13px 14px;
+    border: 1px solid rgba(46, 125, 50, 0.12);
+    border-radius: 18px;
+    background: linear-gradient(135deg, #E8F5E9 0%, #F5FAF3 100%);
+    color: #1B5E20;
+    box-shadow: 0 6px 18px rgba(46, 125, 50, 0.08);
+}
+
+.notes-hero-banner::after {
+    background: radial-gradient(circle, rgba(76, 175, 80, 0.16) 0%, transparent 70%);
+}
+
+.notes-hero-icon-bubble {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #2E7D32;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.22);
+}
+
+.notes-hero-tag {
+    color: #55845a;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+}
+
+.notes-hero-text {
+    color: #254d2b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-shadow: none;
+}
+
+.notes-hero-add-pill {
+    padding: 8px 11px;
+    background: #fff;
+    color: #1B5E20;
+    border: 1px solid rgba(46, 125, 50, 0.12);
+    box-shadow: 0 3px 10px rgba(46, 125, 50, 0.12);
+}
+
+.notes-search-wrapper input {
+    border-color: rgba(52, 66, 55, 0.12);
+    border-radius: 14px;
+    box-shadow: 0 3px 10px rgba(52, 66, 55, 0.04);
+}
+
+.notes-filter-row {
+    margin-top: 2px;
+}
+
+.notes-filter-tabs {
+    background: #EAF3EA;
+    border: 1px solid rgba(46, 125, 50, 0.08);
+}
+
+.notes-filter-tab.active {
+    color: #fff;
+    background: #2E7D32;
+    box-shadow: 0 3px 10px rgba(46, 125, 50, 0.2);
+}
+
+.notes-filter-tab.active .notes-tab-badge {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.notes-sample-btn {
+    background: #fff;
+    border-color: rgba(46, 125, 50, 0.16);
+}
+
+.notes-cards-container {
+    flex: 0 0 auto;
+    gap: 10px;
+}
+
+.note-card {
+    border: 1px solid rgba(52, 66, 55, 0.08);
+    border-left: 4px solid #66A56B;
+    border-radius: 16px;
+    padding: 14px 14px 12px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(52, 66, 55, 0.045);
+}
+
+.note-card:nth-child(4n + 2) { background: #FFFDF1; border-left-color: #D1A947; }
+.note-card:nth-child(4n + 3) { background: #FFF7F3; border-left-color: #D98A72; }
+.note-card:nth-child(4n + 4) { background: #F4F8FF; border-left-color: #7A9CC7; }
+
+.note-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(52, 66, 55, 0.09);
+}
+
+.note-card-top-meta {
+    margin-bottom: 6px;
+}
+
+.note-index-badge {
+    color: #55735a;
+    background: rgba(46, 125, 50, 0.1);
+}
+
+.note-card-title {
+    font-size: 0.96rem;
+    letter-spacing: -0.01em;
+}
+
+.note-card-content {
+    max-height: 150px;
+    color: #455449;
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.note-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.btn-fav-note.is-fav {
+    color: #2E7D32 !important;
+    background: rgba(46, 125, 50, 0.12) !important;
+}
+
+/* Editor toi gian: tieu de va noi dung nam tren cung mot mat giay */
+#notes-entry-modal.notes-entry-form-overlay {
+    display: flex !important;
+    bottom: 0 !important;
+    min-height: 100% !important;
+}
+
+#notes-entry-modal .notes-entry-sheet {
+    padding: 12px 16px max(18px, env(safe-area-inset-bottom));
+    border-radius: 26px 26px 0 0;
+    background: #FFFEFC;
+}
+
+.notes-entry-form {
+    gap: 12px;
+}
+
+.notes-editor-surface {
+    overflow: hidden;
+    border: 1px solid rgba(52, 66, 55, 0.1);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(52, 66, 55, 0.06);
+}
+
+.notes-editor-topline,
+.notes-editor-bottomline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 13px;
+}
+
+.notes-editor-topline {
+    border-bottom: 1px solid rgba(52, 66, 55, 0.07);
+    background: #FBFCF9;
+}
+
+.notes-editor-mode,
+.notes-editor-saved {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    color: #58715c;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.notes-editor-mode { color: #2E7D32; }
+.notes-editor-mode i,
+.notes-editor-saved i { width: 13px; height: 13px; flex-shrink: 0; }
+.notes-editor-saved { color: #89958B; font-weight: 600; }
+
+#notes-entry-modal #note-title-input,
+#notes-entry-modal #note-content-input {
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    box-sizing: border-box;
+}
+
+#notes-entry-modal #note-title-input {
+    padding: 16px 15px 7px;
+    color: #253128;
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+#notes-entry-modal #note-content-input {
+    min-height: 180px;
+    padding: 7px 15px 14px;
+    color: #465549;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+#notes-entry-modal #note-title-input::placeholder,
+#notes-entry-modal #note-content-input::placeholder {
+    color: #A0AAA2;
+}
+
+.notes-editor-bottomline {
+    border-top: 1px solid rgba(52, 66, 55, 0.07);
+    background: #FBFCF9;
+}
+
+.notes-editor-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 5px 9px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #708073;
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.notes-editor-tool i { width: 15px; height: 15px; }
+.notes-editor-tool:hover,
+.notes-editor-tool.is-pinned {
+    color: #2E7D32;
+    background: rgba(46, 125, 50, 0.12);
+}
+.notes-editor-tool.is-pinned i { fill: currentColor; }
+
+.notes-editor-count {
+    color: #98A29A;
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.notes-entry-actions {
+    margin-top: 0;
+}
+
+.notes-save-btn {
+    min-width: 132px;
+}
+
+@media (min-width: 640px) {
+    .notes-cards-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+}
