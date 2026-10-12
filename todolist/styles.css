@@ -1412,6 +1412,224 @@ main.view-panel {
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* The integrated Todo page loads this stylesheet without its Tailwind script.
+   Keep the editor a real viewport overlay in both integrated and standalone use. */
+#task-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+#task-modal.hidden {
+  display: none !important;
+}
+
+#task-modal .hidden {
+  display: none !important;
+}
+
+#task-modal .modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+  max-height: 92vh;
+  max-height: 92dvh;
+  padding: 1.25rem 1.25rem max(1.25rem, env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+  border: 1px solid rgba(52, 66, 55, 0.1);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+}
+
+#task-modal .modal-content > div:nth-child(2),
+#task-form > div:last-child,
+#task-modal .modal-content > div:nth-child(2) > div:first-child,
+#task-form > div:last-child > button,
+#modal-upload-image-btn {
+  display: flex;
+  align-items: center;
+}
+
+#task-modal .modal-content > div:nth-child(2),
+#task-form > div:last-child {
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+#task-form > div:last-child {
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+#task-form > div:last-child > button {
+  flex: 1;
+  justify-content: center;
+  min-height: 44px;
+  gap: 0.375rem;
+}
+
+#modal-upload-image-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+#task-modal .modal-content > div:first-child {
+  width: 3rem;
+  height: 0.375rem;
+  margin: 0 auto 1rem;
+  border-radius: 9999px;
+  background: #cbd5e1;
+}
+
+#task-modal .modal-content > div:nth-child(2) {
+  margin-bottom: 1rem;
+}
+
+#task-form {
+  display: grid;
+  gap: 0.875rem;
+}
+
+#task-form input:not([type="hidden"]),
+#task-form textarea {
+  max-width: 100%;
+}
+
+#task-form #modal-task-title,
+#task-form #modal-task-desc {
+  width: 100%;
+}
+
+#task-modal .modal-content > div:nth-child(2) > div:first-child {
+  gap: 0.625rem;
+}
+
+#task-modal .modal-content > div:nth-child(2) > div:first-child > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: #fff;
+  border-radius: 16px;
+}
+
+#task-modal #close-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+}
+
+#task-form label {
+  display: block;
+  margin-bottom: 0.375rem;
+}
+
+#task-form > div:nth-of-type(2) > div:first-child,
+#task-form > div:nth-of-type(4) > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#task-form > div:nth-of-type(2) > div:first-child > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+#task-form .relative {
+  position: relative;
+}
+
+#task-form .relative > svg {
+  position: absolute;
+  top: 50%;
+  left: 0.875rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+#task-form #modal-task-title {
+  padding-left: 2.5rem;
+}
+
+#task-form #modal-task-title,
+#task-form #modal-task-desc,
+#task-form #modal-task-due-date,
+#task-form #modal-task-due-time {
+  border: 1px solid rgba(52, 66, 55, 0.2);
+  border-radius: 16px;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+#task-form #modal-task-desc {
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+}
+
+#modal-due-container > div:nth-of-type(2) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+#modal-due-container .quick-preset-btn {
+  min-height: 36px;
+  border-radius: 12px;
+}
+
+#modal-upload-image-btn,
+#task-form > div:last-child > button {
+  padding: 0.625rem 0.75rem;
+  border-radius: 16px;
+  font-weight: 700;
+}
+
+#modal-upload-image-btn {
+  min-height: 42px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+}
+
+#task-form > div:last-child > button:first-child {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+#task-form > div:last-child > button:last-child {
+  color: #fff;
+}
+
+@media (min-width: 640px) {
+  #task-modal {
+    align-items: center;
+  }
+
+  #task-modal .modal-content {
+    border-radius: 28px;
+    border-bottom: 1px solid rgba(52, 66, 55, 0.1);
+  }
+}
+
 @media (min-width: 640px) {
   #task-modal .modal-content {
     border-radius: 28px !important;
