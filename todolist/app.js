@@ -1109,6 +1109,12 @@ function openConfirmModal(title, message) {
 function showModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
+  // A previous close animation may still be waiting to add `hidden`.
+  // Cancel it before reopening so it cannot hide the newly opened modal.
+  if (modal._hideTimeout) {
+    clearTimeout(modal._hideTimeout);
+    modal._hideTimeout = null;
+  }
   modal.classList.remove('hidden');
   setTimeout(() => {
     modal.classList.add('modal-active');
@@ -1119,7 +1125,11 @@ function hideModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
   modal.classList.remove('modal-active');
-  setTimeout(() => modal.classList.add('hidden'), 200);
+  if (modal._hideTimeout) clearTimeout(modal._hideTimeout);
+  modal._hideTimeout = setTimeout(() => {
+    modal.classList.add('hidden');
+    modal._hideTimeout = null;
+  }, 200);
 }
 
 // Switch Tabs (Chuyển đổi giữa Timeline Việc và Lịch Sử Đã Xong)
