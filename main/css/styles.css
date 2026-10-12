@@ -2944,6 +2944,22 @@ html, body {
     overscroll-behavior: contain;
 }
 
+/* Todo modals are mounted inside the full-screen PWA page. Lift their
+   ancestors' clipping while one is open so iOS Safari can paint the sheet. */
+#todo-modal.todo-page-modal.todo-child-modal-open .todo-page-sheet {
+    overflow: visible !important;
+}
+
+#todo-modal.todo-page-modal.todo-child-modal-open .todo-frame-wrap {
+    position: relative !important;
+    z-index: 100 !important;
+    overflow: visible !important;
+}
+
+#todo-modal.todo-page-modal.todo-child-modal-open #todo-feature-host {
+    z-index: 100 !important;
+}
+
 #todo-feature-host .task-item {
     min-width: 0;
 }
@@ -3013,6 +3029,14 @@ html, body {
     max-width: 100% !important;
     box-sizing: border-box !important;
     margin: 0 !important;
+}
+
+#todo-feature-host > #task-modal > .modal-content {
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)) !important;
 }
 
 @media (max-width: 479px) {
