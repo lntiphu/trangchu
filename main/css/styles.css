@@ -2950,6 +2950,15 @@ html, body {
     overflow: visible !important;
 }
 
+/* A transformed sheet becomes the containing block for the task editor's
+   position:fixed overlay on iOS. Release it while an editor is open. */
+@media (max-width: 479px) {
+    #todo-modal.todo-page-modal.todo-child-modal-open .todo-page-sheet {
+        transform: none !important;
+        will-change: auto !important;
+    }
+}
+
 #todo-modal.todo-page-modal.todo-child-modal-open .todo-frame-wrap {
     position: relative !important;
     z-index: 100 !important;
