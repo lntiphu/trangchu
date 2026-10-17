@@ -2,11 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#344237">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Làm chủ mọi thứ">
-    <link rel="icon" type="image/png" href="favicon.png?v=2" sizes="192x192">
+    <link rel="icon" type="image/png" href="assets/icon-192.png" sizes="192x192">
     <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2" sizes="180x180">
     <link rel="manifest" href="manifest.json">
     <title>Trang chủ - Làm chủ mọi thứ</title>
@@ -23,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=53">
+    <link rel="stylesheet" href="main/css/styles.css?v=92">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -73,7 +75,7 @@
                 <button id="btn-open-spending-analysis" class="header-icon-btn" aria-label="Phân tích dữ liệu sử dụng tiền" title="Phân tích dữ liệu sử dụng tiền">
                     <i data-lucide="pie-chart"></i>
                 </button>
-                <button id="btn-open-saver-modal" class="header-icon-btn" aria-label="Xem Biểu Đồ Tiết Kiệm" title="Saver - Tiết Kiệm" onclick="openSaverModal()" style="margin-left: 6px;">
+                <button id="btn-open-saver-modal" class="header-icon-btn" aria-label="Xem Biểu Đồ Tiết Kiệm" title="Saver - Tiết Kiệm" style="margin-left: 6px;">
                     <i data-lucide="piggy-bank"></i>
                 </button>
                 <button id="btn-logout" class="header-icon-btn" aria-label="Đăng xuất" title="Đăng xuất" style="margin-left: 6px; display: none;">
@@ -105,7 +107,38 @@
                     </div>
                 </div>
 
-
+                <!-- Quick Utility Shortcuts -->
+                <div class="section-card dashboard-shortcuts-card">
+                    <div class="dashboard-card-header">
+                        <div class="dashboard-card-title-group">
+                            <div class="dashboard-card-icon-bubble">
+                                <i data-lucide="sparkles"></i>
+                            </div>
+                            <div>
+                                <h3 class="dashboard-card-title">Tiện ích nhanh</h3>
+                                <span class="dashboard-card-sub">Lối tắt thao tác tiện dụng</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-shortcuts-grid">
+                        <button type="button" class="shortcut-pill shortcut-pill-add" onclick="openAddModal()">
+                            <i data-lucide="plus-circle"></i>
+                            <span>Ghi khoản chi mới</span>
+                        </button>
+                        <button type="button" class="shortcut-pill shortcut-pill-analysis" onclick="openSpendingAnalysisPage()">
+                            <i data-lucide="bar-chart-3"></i>
+                            <span>Toàn cảnh tài chính</span>
+                        </button>
+                        <button type="button" class="shortcut-pill shortcut-pill-saver" onclick="openSaverModal()">
+                            <i data-lucide="piggy-bank"></i>
+                            <span>Quản lý Tiết kiệm</span>
+                        </button>
+                        <button type="button" class="shortcut-pill shortcut-pill-home" onclick="showWelcomeHubPage()">
+                            <i data-lucide="layout-grid"></i>
+                            <span>Trung tâm chức năng</span>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Monthly Spending Calendar -->
                 <div class="section-card spending-calendar-card">
@@ -133,15 +166,32 @@
                         <!-- Dynamic monthly calendar -->
                     </div>
                 </div>
-
             </section>
 
             <!-- TAB 2: HISTORY (TRANSACTIONS) -->
             <section id="tab-history" class="tab-panel">
+                <div class="history-top-actions" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="history-back-btn" onclick="switchTab('dashboard')" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid rgba(52, 66, 55, 0.12); border-radius: 12px; background: #ffffff; color: var(--accent-olive); font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap;">
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                        <span>Quay lại Tổng quan</span>
+                    </button>
+                    <div class="history-month-selector" style="display: inline-flex; align-items: center; gap: 2px; padding: 3px 6px; border: 1px solid rgba(52, 66, 55, 0.14); border-radius: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.03); position: relative;">
+                        <button type="button" id="btn-history-prev-month" class="history-month-nav-btn" aria-label="Tháng trước" title="Tháng trước" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: rgba(52, 66, 55, 0.05); border: none; border-radius: 8px; color: var(--accent-olive); cursor: pointer;">
+                            <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <button type="button" id="btn-open-history-month-modal" class="history-month-display-btn" title="Bấm để chọn nhanh tháng năm hoặc Tất cả thời gian" style="background: none; border: none; padding: 3px 8px; font-size: 0.82rem; font-weight: 700; color: var(--accent-olive); min-width: 96px; text-align: center; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px; border-radius: 8px; transition: background 0.15s ease;">
+                            <span id="history-month-label">Tháng 10/2026</span>
+                            <i data-lucide="chevron-down" style="width: 13px; height: 13px; opacity: 0.65; pointer-events: none;"></i>
+                        </button>
+                        <button type="button" id="btn-history-next-month" class="history-month-nav-btn" aria-label="Tháng sau" title="Tháng sau" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: rgba(52, 66, 55, 0.05); border: none; border-radius: 8px; color: var(--accent-olive); cursor: pointer;">
+                            <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
                 <div class="history-controls">
                     <div class="search-bar">
                         <i data-lucide="search" class="search-icon"></i>
-                        <input type="text" id="search-input" placeholder="Tìm kiếm chi tiêu...">
+                        <input type="text" id="search-input" placeholder="Tìm nội dung, số tiền hoặc ngày/tháng/năm..." autocomplete="off">
                     </div>
                 </div>
 
@@ -162,7 +212,6 @@
                 <div class="analysis-page-title">
                     <h2>Toàn cảnh tài chính</h2>
                 </div>
-                <div class="analysis-header-icon"><i data-lucide="bar-chart-3"></i></div>
             </header>
 
             <div class="analysis-page-scroll">
@@ -291,32 +340,11 @@
             </div>
         </div>
 
-        <!-- BOTTOM NAVIGATION BAR -->
-        <nav class="app-nav">
-            <button class="nav-item active" data-tab="dashboard">
-                <i data-lucide="layout-dashboard"></i>
-                <span>Tổng quan</span>
-            </button>
-            <button class="nav-item" data-tab="history">
-                <i data-lucide="receipt"></i>
-                <span>Lịch sử</span>
-            </button>
-            <!-- Center Add button -->
-            <button class="nav-item-add" id="btn-open-add-modal" aria-label="Thêm chi tiêu">
-                <i data-lucide="plus"></i>
-            </button>
-            <button class="nav-item" id="btn-open-analysis-nav" aria-label="Phân tích tài chính" title="Phân tích" onclick="openSpendingAnalysisPage()">
-                <i data-lucide="pie-chart"></i>
-                <span>Phân tích</span>
-            </button>
-            <button class="nav-item" id="btn-open-hub-nav" aria-label="Quay lại" title="Quay lại" onclick="showWelcomeHubPage()">
-                <i data-lucide="arrow-left"></i>
-                <span>Quay lại</span>
-            </button>
-            <!-- Giữ lại các ID cũ để bảo đảm tương thích ngược 100% với mã nguồn JS có sẵn -->
-            <button id="btn-open-ckkn-modal" style="display: none;" aria-hidden="true"></button>
-            <button id="btn-open-todo-modal" style="display: none;" aria-hidden="true"></button>
-        </nav>
+        <!-- Hidden fallback buttons for legacy script compatibility -->
+        <div style="display: none;" aria-hidden="true">
+            <button id="btn-open-ckkn-modal"></button>
+            <button id="btn-open-todo-modal"></button>
+        </div>
 
     <!-- BOTTOM SHEET MODAL (ADD EXPENSE) -->
     <div class="modal-overlay" id="add-expense-modal">
@@ -382,10 +410,28 @@
 
                     <!-- Date -->
                     <div class="form-group">
-                        <label for="expense-date">Ngày chi tiêu</label>
-                        <div class="input-wrapper">
-                            <i data-lucide="calendar" class="field-icon"></i>
-                            <input type="date" id="expense-date" required>
+                        <label for="expense-date-display">Ngày chi tiêu</label>
+                        <div class="input-wrapper date-picker-wrapper" style="position: relative; display: flex; align-items: center;">
+                            <i data-lucide="calendar" class="field-icon" style="pointer-events: none;"></i>
+                            <input type="text" 
+                                   id="expense-date-display" 
+                                   class="form-input" 
+                                   placeholder="dd/mm/yyyy" 
+                                   maxlength="10" 
+                                   autocomplete="off" 
+                                   required 
+                                   style="cursor: text; padding-right: 48px;">
+                            <div class="date-picker-trigger-wrap" 
+                                 id="btn-trigger-date-picker-wrap" 
+                                 title="Bấm để mở lịch chọn ngày" 
+                                 style="position: absolute; right: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 8px;">
+                                <i data-lucide="calendar-days" style="width: 18px; height: 18px; color: var(--accent-olive); pointer-events: none;"></i>
+                                <input type="date" 
+                                       id="expense-date" 
+                                       tabindex="-1" 
+                                       aria-label="Chọn ngày từ lịch" 
+                                       style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 3; border: none; padding: 0; margin: 0;">
+                            </div>
                         </div>
                     </div>
                     </div>
@@ -550,6 +596,61 @@
         </div>
     </div><!-- End #calendar-expense-modal -->
 
+    <!-- MODAL CHỌN NHANH THÁNG NĂM & ALL TIME CHO LỊCH SỬ THU CHI -->
+    <div class="modal-overlay history-month-modal-overlay" id="history-month-modal" aria-hidden="true">
+        <div class="modal-sheet history-month-modal-sheet" style="max-width: 360px; padding: 20px; border-radius: 24px; background: #FAF7F2; box-shadow: 0 20px 60px rgba(35,44,37,0.25);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(52,66,55,0.08); display: flex; align-items: center; justify-content: center; color: var(--accent-olive);">
+                        <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--accent-olive);">Chọn thời gian</h3>
+                </div>
+                <button type="button" id="btn-close-history-month-modal" aria-label="Đóng" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(52,66,55,0.06); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+
+            <!-- Option All Time (Tất cả thời gian) -->
+            <div style="margin-bottom: 14px;">
+                <button type="button" id="btn-history-select-all-time" class="history-all-time-btn" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-radius: 14px; border: 1.5px solid rgba(52,66,55,0.14); background: #ffffff; cursor: pointer; transition: all 0.2s ease;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="infinity" style="width: 20px; height: 20px; color: var(--accent-olive);"></i>
+                        <div style="text-align: left;">
+                            <div style="font-weight: 800; font-size: 0.88rem; color: var(--accent-olive);">Tất cả thời gian (All Time)</div>
+                            <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px;">Xem &amp; tìm kiếm toàn bộ giao dịch</div>
+                        </div>
+                    </div>
+                    <i data-lucide="check" class="history-all-time-check" style="width: 18px; height: 18px; color: var(--accent-olive); display: none;"></i>
+                </button>
+            </div>
+
+            <!-- Năm selector -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: #ffffff; border-radius: 14px; border: 1px solid rgba(52,66,55,0.1); margin-bottom: 12px;">
+                <button type="button" id="btn-history-modal-prev-year" aria-label="Năm trước" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(52,66,55,0.06); color: var(--accent-olive); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+                </button>
+                <span id="history-modal-year-label" style="font-size: 0.98rem; font-weight: 800; color: var(--accent-olive);">2026</span>
+                <button type="button" id="btn-history-modal-next-year" aria-label="Năm sau" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(52,66,55,0.06); color: var(--accent-olive); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+
+            <!-- 12 Tháng Grid -->
+            <div id="history-modal-months-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+                <!-- Dynamically generated -->
+            </div>
+
+            <!-- Footer: Về tháng hiện tại -->
+            <div style="display: flex; justify-content: center; border-top: 1px dashed rgba(52,66,55,0.12); padding-top: 10px;">
+                <button type="button" id="btn-history-jump-current-month" style="background: none; border: none; font-size: 0.78rem; font-weight: 700; color: var(--accent-olive); opacity: 0.85; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px;">
+                    <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i>
+                    <span>Về tháng hiện tại</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- CKKN (SỨC KHỎE CÁ NHÂN) FULL-SCREEN PAGE -->
     <div class="modal-overlay ckkn-page-modal" id="ckkn-modal" aria-hidden="true">
         <div class="modal-sheet ckkn-page-sheet" role="dialog" aria-modal="true" aria-label="Sức khỏe cá nhân">
@@ -594,36 +695,39 @@
     <div class="modal-overlay support-page-modal" id="support-modal" aria-hidden="true">
         <div class="modal-sheet support-page-sheet" role="dialog" aria-modal="true" aria-label="Hỗ trợ">
             <div class="ckkn-page-header support-page-header">
-                <button class="modal-close-btn ckkn-back-btn" id="btn-close-support-modal" aria-label="Quay lại tổng quan" title="Quay lại">
-                    <i data-lucide="arrow-left"></i>
-                </button>
-                <div class="support-page-title">
-                    <span>HƯỚNG DẪN &amp; TRA CỨU</span>
-                    <h2>Hỗ trợ</h2>
+                <div class="support-header-left">
+                    <button class="modal-close-btn ckkn-back-btn support-header-back-btn" id="btn-close-support-modal" aria-label="Quay lại tổng quan" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div class="support-brand-badge">
+                        <i data-lucide="life-buoy"></i>
+                    </div>
+                    <div class="support-page-title">
+                        <span>HƯỚNG DẪN &amp; TRA CỨU</span>
+                        <h2>Hỗ trợ</h2>
+                    </div>
                 </div>
                 <div class="support-header-actions" aria-label="Thao tác hỗ trợ">
+                    <button type="button" class="support-action-btn support-delete-btn" id="btn-delete-support-entry" aria-label="Chọn mục để xóa" title="Chế độ xóa">
+                        <i data-lucide="trash-2"></i>
+                    </button>
                     <button type="button" class="support-action-btn support-add-btn" id="btn-add-support-entry" aria-label="Thêm mới" title="Thêm mới">
                         <i data-lucide="plus"></i>
-                    </button>
-                    <button type="button" class="support-action-btn support-edit-btn" id="btn-edit-support-entry" aria-label="Chọn mục để chỉnh sửa" title="Chỉnh sửa">
-                        <i data-lucide="pencil"></i>
-                    </button>
-                    <button type="button" class="support-action-btn support-delete-btn" id="btn-delete-support-entry" aria-label="Chọn mục để xóa" title="Xóa">
-                        <i data-lucide="trash-2"></i>
+                        <span class="support-add-btn-text">Thêm mới</span>
                     </button>
                 </div>
             </div>
 
             <!-- Thanh tìm kiếm + số lượng -->
             <div class="support-toolbar">
-                <label class="support-search" for="support-search-input">
-                    <i data-lucide="search"></i>
-                    <input type="search" id="support-search-input" placeholder="Tìm “Cần này” hoặc “Đi đây”..." autocomplete="off" enterkeyhint="search">
+                <div class="support-search-wrapper">
+                    <i data-lucide="search" class="support-search-icon"></i>
+                    <input type="search" id="support-search-input" placeholder="Tìm kiếm theo 'Cần này' hoặc 'Đi đây'..." autocomplete="off" enterkeyhint="search">
                     <button type="button" class="support-search-clear" id="btn-clear-support-search" aria-label="Xóa tìm kiếm" hidden>
                         <i data-lucide="x"></i>
                     </button>
-                </label>
-                <div class="support-count" title="Số mục">
+                </div>
+                <div class="support-count" id="support-count-pill" title="Số lượng mục hỗ trợ">
                     <strong id="support-entry-count">0</strong>
                     <span>mục</span>
                 </div>
@@ -635,15 +739,15 @@
                 <table class="support-table" aria-label="Danh sách hỗ trợ">
                     <thead>
                         <tr>
-                            <th class="support-col-index">#</th>
-                            <th>
+                            <th class="support-col-index">STT</th>
+                            <th class="support-col-need">
                                 <span class="support-th-label support-th-need">
                                     <i data-lucide="help-circle"></i> Cần này
                                 </span>
                             </th>
-                            <th>
+                            <th class="support-col-go">
                                 <span class="support-th-label support-th-go">
-                                    <i data-lucide="compass"></i> Đi đây
+                                    <i data-lucide="compass"></i> Đi đây / Liên hệ
                                 </span>
                             </th>
                         </tr>
@@ -701,29 +805,31 @@
     <div class="modal-overlay support-page-modal wishlist-page-modal" id="wishlist-modal" aria-hidden="true">
         <div class="modal-sheet support-page-sheet wishlist-page-sheet" role="dialog" aria-modal="true" aria-label="Wishlist">
             <div class="ckkn-page-header support-page-header wishlist-page-header">
-                <button class="modal-close-btn ckkn-back-btn" id="btn-close-wishlist-modal" aria-label="Quay lại tổng quan" title="Quay lại">
-                    <i data-lucide="arrow-left"></i>
-                </button>
-                <div class="wishlist-page-title">
-                    <span>ƯU TIÊN CỦA BẠN</span>
-                    <h2>Wishlist</h2>
+                <div class="support-header-left wishlist-header-left">
+                    <button class="modal-close-btn ckkn-back-btn support-header-back-btn wishlist-header-back-btn" id="btn-close-wishlist-modal" aria-label="Quay lại" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div class="support-brand-badge wishlist-brand-badge">
+                        <i data-lucide="heart"></i>
+                    </div>
+                    <div class="wishlist-page-title">
+                        <span>ƯU TIÊN CỦA BẠN</span>
+                        <h2>Wishlist</h2>
+                    </div>
                 </div>
-                <div class="support-header-actions" aria-label="Thao tác Wishlist">
-                    <button type="button" class="support-action-btn wishlist-add-btn" id="btn-add-wishlist-entry" aria-label="Thêm Wishlist" title="Thêm">
-                        <i data-lucide="plus"></i>
-                    </button>
-                    <button type="button" class="support-action-btn wishlist-edit-btn" id="btn-edit-wishlist-entry" aria-label="Chọn Wishlist để chỉnh sửa" title="Chỉnh sửa">
-                        <i data-lucide="pencil"></i>
-                    </button>
-                    <button type="button" class="support-action-btn wishlist-delete-btn" id="btn-delete-wishlist-entry" aria-label="Chọn Wishlist để xóa" title="Xóa">
+                <div class="support-header-actions wishlist-header-actions" aria-label="Thao tác Wishlist">
+                    <div class="support-count wishlist-count-pill" id="wishlist-count-pill" title="Số lượng mục Wishlist">
+                        <strong id="wishlist-entry-count">0</strong>
+                        <span>mục</span>
+                    </div>
+                    <button type="button" class="support-action-btn wishlist-action-btn wishlist-delete-btn" id="btn-delete-wishlist-entry" aria-label="Chọn Wishlist để xóa" title="Chế độ xóa">
                         <i data-lucide="trash-2"></i>
                     </button>
+                    <button type="button" class="support-action-btn wishlist-action-btn wishlist-add-btn" id="btn-add-wishlist-entry" aria-label="Thêm Wishlist" title="Thêm mới">
+                        <i data-lucide="plus"></i>
+                        <span class="wishlist-add-btn-text">Thêm mới</span>
+                    </button>
                 </div>
-            </div>
-
-            <div class="wishlist-toolbar">
-                <span><i data-lucide="grip-vertical"></i> Kéo biểu tượng để thay đổi thứ tự TOP</span>
-                <strong id="wishlist-entry-count">0 mục</strong>
             </div>
             <p class="support-storage-notice" id="wishlist-storage-notice" role="status" aria-live="polite" hidden></p>
 
@@ -731,8 +837,9 @@
                 <table class="support-table wishlist-table" aria-label="Danh sách Wishlist">
                     <thead>
                         <tr>
-                            <th class="support-col-index">TOP</th>
-                            <th><span class="support-th-label"><i data-lucide="heart"></i> Wishlist</span></th>
+                            <th class="wishlist-col-rank">TOP</th>
+                            <th class="wishlist-col-content">NỘI DUNG WISHLIST</th>
+                            <th class="wishlist-col-action" title="Thứ tự"></th>
                         </tr>
                     </thead>
                     <tbody id="wishlist-table-body" aria-live="polite"></tbody>
@@ -743,12 +850,12 @@
 
     <!-- FORM THÊM / SỬA WISHLIST -->
     <div class="modal-overlay support-entry-form-overlay wishlist-entry-form-overlay" id="wishlist-entry-modal" aria-hidden="true">
-        <div class="support-entry-form-sheet" role="dialog" aria-modal="true" aria-labelledby="wishlist-entry-form-title">
-            <div class="support-modal-header">
+        <div class="support-entry-form-sheet wishlist-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="wishlist-entry-form-title">
+            <div class="support-modal-header wishlist-modal-header">
                 <div class="support-modal-title-wrap">
-                    <span class="support-modal-eyebrow">DANH SÁCH ƯU TIÊN</span>
+                    <span class="support-modal-eyebrow wishlist-modal-eyebrow">DANH SÁCH ƯU TIÊN</span>
                     <h2 id="wishlist-entry-form-title">Thêm Wishlist</h2>
-                    <p>Thêm điều bạn muốn theo dõi hoặc thực hiện.</p>
+                    <p>Thêm điều bạn mong ước hoặc ưu tiên thực hiện.</p>
                 </div>
                 <button class="modal-close-btn" id="btn-close-wishlist-entry-modal" aria-label="Đóng form Wishlist" title="Đóng">
                     <i data-lucide="x"></i>
@@ -756,13 +863,19 @@
             </div>
             <form id="wishlist-entry-form" class="support-entry-form">
                 <div class="support-form-field wishlist-form-field">
-                    <label for="wishlist-entry-title"><span class="support-field-icon"><i data-lucide="heart"></i></span>Tên Wishlist</label>
-                    <input type="text" id="wishlist-entry-title" maxlength="160" placeholder="Ví dụ: Mua máy ảnh mới" required>
+                    <label for="wishlist-entry-title">
+                        <span class="support-field-icon wishlist-field-icon"><i data-lucide="heart"></i></span>
+                        Tên Wishlist / Mục tiêu
+                    </label>
+                    <input type="text" id="wishlist-entry-title" maxlength="160" placeholder="Ví dụ: Mua máy ảnh mới, Đi Đà Lạt..." required>
                 </div>
                 <p class="support-entry-form-error" id="wishlist-entry-form-error" role="alert" hidden></p>
                 <div class="support-entry-form-actions">
                     <button type="button" class="support-cancel-btn" id="btn-cancel-wishlist-entry">Hủy</button>
-                    <button type="submit" class="support-save-btn"><i data-lucide="check"></i><span>Lưu</span></button>
+                    <button type="submit" class="support-save-btn wishlist-save-btn">
+                        <i data-lucide="check"></i>
+                        <span>Lưu</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -772,28 +885,35 @@
     <div class="modal-overlay support-page-modal list-page-modal" id="list-modal" aria-hidden="true">
         <div class="modal-sheet support-page-sheet list-page-sheet" role="dialog" aria-modal="true" aria-label="Danh sách">
             <div class="ckkn-page-header support-page-header list-page-header">
-                <button class="modal-close-btn ckkn-back-btn" id="btn-close-list-modal" aria-label="Quay lại tổng quan" title="Quay lại">
-                    <i data-lucide="arrow-left"></i>
-                </button>
-                <div class="list-page-title">
-                    <span>CHỦ ĐỀ CỦA BẠN</span>
-                    <h2>Danh sách</h2>
-                </div>
-                <div class="support-header-actions" aria-label="Thao tác Danh sách">
-                    <button type="button" class="support-action-btn list-add-btn" id="btn-add-list-entry" aria-label="Thêm mục danh sách" title="Thêm">
-                        <i data-lucide="plus"></i>
+                <div class="support-header-left list-header-left">
+                    <button class="modal-close-btn ckkn-back-btn support-header-back-btn list-header-back-btn" id="btn-close-list-modal" aria-label="Quay lại" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
                     </button>
-                    <button type="button" class="support-action-btn list-edit-btn" id="btn-edit-list-entry" aria-label="Chọn mục để chỉnh sửa" title="Chỉnh sửa">
+                    <div class="support-brand-badge list-brand-badge">
+                        <i data-lucide="layers-3"></i>
+                    </div>
+                    <div class="list-page-title">
+                        <div class="list-title-wrap">
+                            <h2>Danh sách</h2>
+                            <span class="list-count-badge" id="list-count-pill" title="Số lượng chủ đề">
+                                <strong id="list-topic-count">0</strong>
+                                <span>chủ đề</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="support-header-actions list-header-actions" aria-label="Thao tác Danh sách">
+                    <button type="button" class="support-action-btn list-action-btn list-edit-btn" id="btn-edit-list-entry" aria-label="Chọn mục để chỉnh sửa" title="Chế độ sửa">
                         <i data-lucide="pencil"></i>
                     </button>
-                    <button type="button" class="support-action-btn list-delete-btn" id="btn-delete-list-entry" aria-label="Chọn mục để xóa" title="Xóa">
+                    <button type="button" class="support-action-btn list-action-btn list-delete-btn" id="btn-delete-list-entry" aria-label="Chọn mục để xóa" title="Chế độ xóa">
                         <i data-lucide="trash-2"></i>
                     </button>
+                    <button type="button" class="support-action-btn list-action-btn list-add-btn" id="btn-add-list-entry" aria-label="Thêm mục danh sách" title="Thêm mới">
+                        <i data-lucide="plus"></i>
+                        <span class="list-add-btn-text">Thêm mới</span>
+                    </button>
                 </div>
-            </div>
-            <div class="list-toolbar">
-                <span><i data-lucide="layers-3"></i> Mở chủ đề để xem các mục con</span>
-                <strong id="list-topic-count">0 chủ đề</strong>
             </div>
             <p class="support-storage-notice" id="list-storage-notice" role="status" aria-live="polite" hidden></p>
             <div class="list-topics-list" id="list-topics-list" aria-live="polite"></div>
@@ -802,10 +922,10 @@
 
     <!-- FORM THÊM / SỬA DANH SÁCH -->
     <div class="modal-overlay support-entry-form-overlay list-entry-form-overlay" id="list-entry-modal" aria-hidden="true">
-        <div class="support-entry-form-sheet" role="dialog" aria-modal="true" aria-labelledby="list-entry-form-title">
-            <div class="support-modal-header">
+        <div class="support-entry-form-sheet list-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="list-entry-form-title">
+            <div class="support-modal-header list-modal-header">
                 <div class="support-modal-title-wrap">
-                    <span class="support-modal-eyebrow">DANH SÁCH CỦA BẠN</span>
+                    <span class="support-modal-eyebrow list-modal-eyebrow">DANH SÁCH CỦA BẠN</span>
                     <h2 id="list-entry-form-title">Thêm mục</h2>
                     <p id="list-entry-form-description">Chọn chủ đề hoặc tạo chủ đề mới.</p>
                 </div>
@@ -815,7 +935,7 @@
             </div>
             <form id="list-entry-form" class="support-entry-form">
                 <div class="support-form-field list-form-field list-topic-choice-field">
-                    <label id="list-entry-topic-label" for="list-entry-topic-select"><span class="support-field-icon"><i data-lucide="folder"></i></span>Chủ đề</label>
+                    <label id="list-entry-topic-label" for="list-entry-topic-select"><span class="support-field-icon list-field-icon"><i data-lucide="folder"></i></span>Chủ đề</label>
                     <div class="list-topic-choice-row">
                         <select id="list-entry-topic-select" required></select>
                         <button type="button" class="list-create-topic-btn" id="btn-create-list-topic" aria-label="Tạo chủ đề mới" title="Tạo chủ đề mới">
@@ -828,13 +948,13 @@
                     </div>
                 </div>
                 <div class="support-form-field list-form-field list-item-field" id="list-item-field">
-                    <label for="list-entry-item"><span class="support-field-icon"><i data-lucide="list"></i></span>Mục con</label>
+                    <label for="list-entry-item"><span class="support-field-icon list-field-icon"><i data-lucide="list"></i></span>Mục con</label>
                     <input type="text" id="list-entry-item" maxlength="180" placeholder="Ví dụ: One Piece" required>
                 </div>
                 <p class="support-entry-form-error" id="list-entry-form-error" role="alert" hidden></p>
                 <div class="support-entry-form-actions">
                     <button type="button" class="support-cancel-btn" id="btn-cancel-list-entry">Hủy</button>
-                    <button type="submit" class="support-save-btn"><i data-lucide="check"></i><span>Lưu</span></button>
+                    <button type="submit" class="support-save-btn list-save-btn"><i data-lucide="check"></i><span>Lưu</span></button>
                 </div>
             </form>
         </div>
@@ -844,22 +964,25 @@
     <div class="modal-overlay support-page-modal quote-page-modal" id="quote-modal" aria-hidden="true">
         <div class="modal-sheet support-page-sheet quote-page-sheet" role="dialog" aria-modal="true" aria-label="Trích dẫn">
             <div class="ckkn-page-header support-page-header quote-page-header">
-                <button class="modal-close-btn ckkn-back-btn" id="btn-close-quote-modal" aria-label="Quay lại tổng quan" title="Quay lại">
-                    <i data-lucide="arrow-left"></i>
-                </button>
-                <div class="quote-page-title">
-                    <span>TRUYỀN CẢM HỨNG</span>
-                    <h2>Trích dẫn</h2>
+                <div class="support-header-left quote-header-left">
+                    <button class="modal-close-btn ckkn-back-btn support-header-back-btn quote-header-back-btn" id="btn-close-quote-modal" aria-label="Quay lại" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div class="quote-page-title">
+                        <h2>Trích dẫn</h2>
+                    </div>
                 </div>
-                <div class="support-header-actions" aria-label="Thao tác Trích dẫn">
-                    <button type="button" class="support-action-btn quote-add-btn" id="btn-add-quote-entry" aria-label="Thêm câu quote" title="Thêm mới">
-                        <i data-lucide="plus"></i>
-                    </button>
-                    <button type="button" class="support-action-btn quote-edit-btn" id="btn-edit-quote-entry" aria-label="Chọn câu quote để chỉnh sửa" title="Chỉnh sửa">
-                        <i data-lucide="pencil"></i>
-                    </button>
-                    <button type="button" class="support-action-btn quote-delete-btn" id="btn-delete-quote-entry" aria-label="Chọn câu quote để xóa" title="Xóa">
+                <div class="support-header-actions quote-header-actions" aria-label="Thao tác Trích dẫn">
+                    <div class="support-count quote-count-pill" id="quote-count-pill" title="Số lượng trích dẫn">
+                        <strong id="quote-entry-count">0</strong>
+                        <span>câu</span>
+                    </div>
+                    <button type="button" class="support-action-btn quote-action-btn quote-delete-btn" id="btn-delete-quote-entry" aria-label="Chọn câu quote để xóa" title="Chế độ xóa">
                         <i data-lucide="trash-2"></i>
+                    </button>
+                    <button type="button" class="support-action-btn quote-action-btn quote-add-btn" id="btn-add-quote-entry" aria-label="Thêm câu quote" title="Thêm mới">
+                        <i data-lucide="plus"></i>
+                        <span class="quote-add-btn-text">Thêm mới</span>
                     </button>
                 </div>
             </div>
@@ -873,18 +996,11 @@
                             <i data-lucide="sparkles"></i>
                             <span>CẢM HỨNG HÔM NAY</span>
                         </div>
-                        <button type="button" class="quote-hero-shuffle-btn" id="btn-shuffle-hero-quote" title="Đổi câu khác" aria-label="Đổi câu ngẫu nhiên">
-                            <i data-lucide="shuffle"></i>
-                            <span>Đổi câu</span>
-                        </button>
                     </div>
                     <div class="quote-hero-body">
                         <p class="quote-hero-text" id="quote-hero-text">“Hành trình vạn dặm bắt đầu từ một bước chân.”</p>
                         <div class="quote-hero-footer">
                             <span class="quote-hero-author" id="quote-hero-author">— Lão Tử</span>
-                            <button type="button" class="quote-hero-copy-btn" id="btn-copy-hero-quote" title="Sao chép câu này" aria-label="Sao chép">
-                                <i data-lucide="copy"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -911,10 +1027,6 @@
                                 <span class="quote-tab-badge" id="quote-count-fav">0</span>
                             </button>
                         </div>
-                        <button type="button" class="quote-load-samples-btn" id="btn-load-sample-quotes" title="Thêm danh ngôn mẫu truyền cảm hứng">
-                            <i data-lucide="sparkle"></i>
-                            <span>Mẫu hay</span>
-                        </button>
                     </div>
                 </div>
 
@@ -972,36 +1084,60 @@
     </div><!-- End #quote-entry-modal -->
 
     <!-- MODAL 10: SỔ TAY BÀI VIẾT / MẸO SỨC KHỎE -->
-    <div class="modal-overlay handbook-page-modal" id="handbook-modal" aria-hidden="true">
-        <div class="modal-sheet handbook-page-sheet" role="dialog" aria-modal="true" aria-label="Sổ tay">
-            <div class="handbook-page-header">
-                <button class="modal-close-btn handbook-back-btn" id="btn-close-handbook-modal" aria-label="Quay lại trang chức năng" title="Quay lại">
-                    <i data-lucide="arrow-left"></i>
-                </button>
-                <div class="handbook-header-actions">
-                    <button type="button" class="handbook-add-btn" id="btn-add-handbook-entry" title="Thêm bài mới"><i data-lucide="plus"></i><span>Thêm bài</span></button>
+    <!-- MODAL 10: SỔ TAY BÀI VIẾT / MẸO SỨC KHỎE -->
+    <div class="modal-overlay support-page-modal handbook-page-modal" id="handbook-modal" aria-hidden="true">
+        <div class="modal-sheet support-page-sheet handbook-page-sheet" role="dialog" aria-modal="true" aria-label="Sổ tay">
+            <!-- Header chuẩn Florenté Luxury -->
+            <div class="ckkn-page-header support-page-header handbook-page-header">
+                <div class="support-header-left handbook-header-left">
+                    <button class="modal-close-btn ckkn-back-btn support-header-back-btn handbook-header-back-btn" id="btn-close-handbook-modal" aria-label="Quay lại trang chức năng" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div class="handbook-page-title">
+                        <h2>Sổ tay</h2>
+                    </div>
+                </div>
+                <div class="support-header-actions handbook-header-actions" aria-label="Thao tác Sổ tay">
+                    <div class="support-count handbook-count-pill" id="handbook-header-count-pill" title="Tổng số bài trong Sổ tay">
+                        <strong id="handbook-header-count">0</strong>
+                        <span>bài</span>
+                    </div>
+                    <button type="button" class="support-action-btn handbook-action-btn handbook-add-btn" id="btn-add-handbook-entry" aria-label="Thêm bài mới" title="Thêm mới">
+                        <i data-lucide="plus"></i>
+                        <span class="handbook-add-btn-text">Thêm bài</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="handbook-page-scroll">
-                <div class="handbook-intro-card">
-                    <div class="handbook-intro-icon"><i data-lucide="notebook-pen"></i></div>
-                    <div>
-                        <strong>Ghi lại điều hữu ích cho cả nhà</strong>
-                        <p>Tìm nhanh theo tên bài, công dụng hoặc nguyên liệu.</p>
+            <div class="handbook-page-scroll" id="handbook-page-scroll">
+                <!-- Hero Banner: CẢM HỨNG & SỨC KHỎE GIA ĐÌNH -->
+                <div class="handbook-intro-card" id="handbook-intro-card">
+                    <div class="handbook-intro-top-row">
+                        <div class="handbook-intro-badge">
+                            <i data-lucide="sparkles"></i>
+                            <span>MẸO HAY &amp; SỨC KHỎE GIA ĐÌNH</span>
+                        </div>
                         <span class="handbook-sync-status" id="handbook-sync-status">Đang kiểm tra lưu trữ...</span>
+                    </div>
+                    <div class="handbook-intro-body">
+                        <h3 class="handbook-intro-title">Ghi lại điều hữu ích cho cả nhà</h3>
+                        <p class="handbook-intro-desc">Tra cứu nhanh công dụng, nguyên liệu &amp; bài thuốc dân gian chăm sóc sức khỏe.</p>
                     </div>
                 </div>
 
+                <!-- Thanh tìm kiếm & bộ lọc phân loại -->
                 <div class="handbook-toolbar">
-                    <label class="handbook-search" for="handbook-search-input">
-                        <i data-lucide="search"></i>
-                        <input type="search" id="handbook-search-input" placeholder="Tìm theo tên, công dụng, nguyên liệu..." autocomplete="off">
-                        <button type="button" id="btn-clear-handbook-search" aria-label="Xóa tìm kiếm" title="Xóa tìm kiếm" hidden><i data-lucide="x"></i></button>
-                    </label>
+                    <div class="handbook-search-bar">
+                        <i data-lucide="search" class="handbook-search-icon"></i>
+                        <input type="search" id="handbook-search-input" placeholder="Tìm theo tên bài, công dụng, nguyên liệu..." autocomplete="off">
+                        <button type="button" class="handbook-search-clear-btn" id="btn-clear-handbook-search" aria-label="Xóa tìm kiếm" title="Xóa tìm kiếm" hidden>
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
                     <div class="handbook-filter-row">
-                        <label class="handbook-category-filter" for="handbook-category-filter">
-                            <i data-lucide="layers-3"></i>
+                        <div class="handbook-category-wrap">
+                            <i data-lucide="layers-3" class="handbook-filter-icon"></i>
                             <select id="handbook-category-filter" aria-label="Lọc theo danh mục">
                                 <option value="all">Tất cả danh mục</option>
                                 <option value="Ho/cảm cúm">Ho/cảm cúm</option>
@@ -1011,64 +1147,878 @@
                                 <option value="Mẹo vặt gia đình">Mẹo vặt gia đình</option>
                                 <option value="Khác">Khác</option>
                             </select>
-                        </label>
-                        <label class="handbook-favorite-filter">
+                        </div>
+                        <label class="handbook-favorite-filter" title="Lọc các bài đánh dấu sao yêu thích">
                             <input type="checkbox" id="handbook-favorite-filter">
-                            <span><i data-lucide="star"></i> Chỉ xem bài yêu thích</span>
+                            <i data-lucide="star"></i>
+                            <span>Yêu thích</span>
                         </label>
                         <span class="handbook-count" id="handbook-entry-count">0 bài</span>
                     </div>
                 </div>
 
+                <!-- Danh sách bài viết Sổ tay -->
                 <div class="handbook-cards-grid" id="handbook-cards-container" aria-live="polite"></div>
             </div>
-            <div class="handbook-disclaimer">Thông tin chỉ mang tính tham khảo, không thay thế tư vấn y tế. Hãy hỏi ý kiến bác sĩ nếu triệu chứng kéo dài hoặc nặng.</div>
+
+            <div class="handbook-disclaimer">
+                <i data-lucide="info"></i>
+                <span>Thông tin chỉ mang tính tham khảo, không thay thế tư vấn y tế. Hãy hỏi ý kiến bác sĩ nếu triệu chứng kéo dài hoặc nặng.</span>
+            </div>
         </div>
     </div>
 
-    <!-- Modal xem chi tiết một bài trong Sổ tay -->
-    <div class="modal-overlay handbook-detail-modal" id="handbook-detail-modal" aria-hidden="true">
-        <div class="handbook-detail-sheet" role="dialog" aria-modal="true" aria-labelledby="handbook-detail-title">
-            <div class="handbook-detail-header">
-                <span class="handbook-detail-category" id="handbook-detail-category">Danh mục</span>
-                <button class="modal-close-btn" id="btn-close-handbook-detail" aria-label="Đóng chi tiết" title="Đóng"><i data-lucide="x"></i></button>
+    <!-- MODAL 10B: TRANG CHI TIẾT BÀI VIẾT SỔ TAY (Full Page View) -->
+    <div class="modal-overlay support-page-modal handbook-page-modal handbook-detail-page-modal" id="handbook-detail-modal" aria-hidden="true">
+        <div class="modal-sheet support-page-sheet handbook-page-sheet handbook-detail-page-sheet" role="dialog" aria-modal="true" aria-labelledby="handbook-detail-title">
+            <!-- Header chi tiết chuẩn Florenté Luxury -->
+            <div class="ckkn-page-header support-page-header handbook-page-header handbook-detail-page-header">
+                <div class="support-header-left handbook-header-left">
+                    <button class="modal-close-btn ckkn-back-btn support-header-back-btn handbook-header-back-btn" id="btn-close-handbook-detail" aria-label="Quay lại danh sách" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div class="handbook-page-title handbook-detail-page-heading">
+                        <span class="handbook-detail-eyebrow" id="handbook-detail-category">Danh mục</span>
+                        <h2>Chi tiết bài viết</h2>
+                    </div>
+                </div>
+                <div class="support-header-actions handbook-header-actions handbook-detail-header-actions" aria-label="Thao tác bài viết">
+                    <button type="button" class="support-action-btn handbook-action-btn handbook-detail-action-btn handbook-print-btn" id="btn-print-handbook-detail" aria-label="In hoặc lưu bài" title="In / Lưu PDF">
+                        <i data-lucide="printer"></i>
+                    </button>
+                    <button type="button" class="support-action-btn handbook-action-btn handbook-detail-action-btn handbook-edit-btn" id="btn-edit-handbook-detail" aria-label="Chỉnh sửa bài viết" title="Chỉnh sửa">
+                        <i data-lucide="pencil"></i>
+                    </button>
+                    <button type="button" class="support-action-btn handbook-action-btn handbook-detail-action-btn handbook-delete-btn" id="btn-delete-handbook-detail" aria-label="Xóa bài viết" title="Xóa bài">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
             </div>
-            <h2 id="handbook-detail-title">Tên bài</h2>
-            <div class="handbook-detail-body" id="handbook-detail-body"></div>
-            <div class="handbook-detail-actions">
-                <button type="button" class="handbook-secondary-btn" id="btn-print-handbook-detail"><i data-lucide="printer"></i> In</button>
-                <button type="button" class="handbook-secondary-btn" id="btn-edit-handbook-detail"><i data-lucide="pencil"></i> Sửa</button>
-                <button type="button" class="handbook-danger-btn" id="btn-delete-handbook-detail"><i data-lucide="trash-2"></i> Xóa</button>
+
+            <!-- Vùng cuộn đọc chi tiết bài viết -->
+            <div class="handbook-page-scroll handbook-detail-page-scroll" id="handbook-detail-page-scroll">
+                <div class="handbook-detail-hero">
+                    <h1 id="handbook-detail-title" class="handbook-detail-title">Tên bài</h1>
+                </div>
+                <div class="handbook-detail-body" id="handbook-detail-body"></div>
             </div>
         </div>
     </div>
 
     <!-- Form thêm / sửa bài trong Sổ tay -->
-    <div class="modal-overlay handbook-entry-modal" id="handbook-entry-modal" aria-hidden="true">
-        <div class="handbook-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="handbook-entry-form-title">
-            <div class="handbook-entry-header">
-                <div>
-                    <span class="handbook-form-eyebrow">SỔ TAY</span>
+    <div class="modal-overlay support-entry-form-overlay handbook-entry-modal" id="handbook-entry-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet handbook-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="handbook-entry-form-title">
+            <div class="handbook-detail-drag-bar" aria-hidden="true"></div>
+            <div class="support-modal-header handbook-entry-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow handbook-form-eyebrow">SỔ TAY GIA ĐÌNH</span>
                     <h2 id="handbook-entry-form-title">Thêm bài mới</h2>
-                    <p>Ghi lại kinh nghiệm để dễ tìm và dùng lại sau này.</p>
+                    <p id="handbook-entry-form-description">Ghi lại kinh nghiệm &amp; mẹo hay để dễ tìm và dùng lại sau này.</p>
                 </div>
-                <button class="modal-close-btn" id="btn-close-handbook-entry" aria-label="Đóng form" title="Đóng"><i data-lucide="x"></i></button>
+                <button class="modal-close-btn support-modal-close" id="btn-close-handbook-entry" aria-label="Đóng form" title="Đóng"><i data-lucide="x"></i></button>
             </div>
             <form id="handbook-entry-form" class="handbook-entry-form">
                 <input type="hidden" id="handbook-entry-id" value="">
                 <div class="handbook-form-grid">
-                    <div class="handbook-form-field handbook-field-wide"><label for="handbook-entry-title"><i data-lucide="bookmark"></i>Tên bài <span>*</span></label><input id="handbook-entry-title" type="text" maxlength="180" required placeholder="Ví dụ: Nước gừng ấm giảm ho"></div>
-                    <div class="handbook-form-field"><label for="handbook-entry-category"><i data-lucide="tag"></i>Danh mục <span>*</span></label><select id="handbook-entry-category" required><option value="Ho/cảm cúm">Ho/cảm cúm</option><option value="Tiêu hóa">Tiêu hóa</option><option value="Da liễu">Da liễu</option><option value="Xương khớp">Xương khớp</option><option value="Mẹo vặt gia đình">Mẹo vặt gia đình</option><option value="Khác">Khác</option></select></div>
-                    <div class="handbook-form-field"><label for="handbook-entry-use"><i data-lucide="sparkles"></i>Công dụng</label><textarea id="handbook-entry-use" rows="3" maxlength="1200" placeholder="Bài này dùng để làm gì?"></textarea></div>
-                    <div class="handbook-form-field"><label for="handbook-entry-ingredients"><i data-lucide="leaf"></i>Nguyên liệu</label><textarea id="handbook-entry-ingredients" rows="3" maxlength="1200" placeholder="Ví dụ: gừng tươi, mật ong..."></textarea></div>
-                    <div class="handbook-form-field handbook-field-wide"><label for="handbook-entry-method"><i data-lucide="list-ordered"></i>Cách làm / cách dùng</label><textarea id="handbook-entry-method" rows="5" maxlength="3000" placeholder="Viết từng bước, liều lượng hoặc cách sử dụng..."></textarea></div>
-                    <div class="handbook-form-field"><label for="handbook-entry-warning"><i data-lucide="triangle-alert"></i>Lưu ý / chống chỉ định</label><textarea id="handbook-entry-warning" rows="3" maxlength="1600" placeholder="Ai không nên dùng? Khi nào cần dừng?"></textarea></div>
-                    <div class="handbook-form-field"><label for="handbook-entry-source"><i data-lucide="link"></i>Nguồn</label><input id="handbook-entry-source" type="text" maxlength="300" placeholder="Sách, người thân, website..."></div>
-                    <div class="handbook-form-field handbook-field-wide"><label for="handbook-entry-personal"><i data-lucide="heart"></i>Ghi chú cá nhân</label><textarea id="handbook-entry-personal" rows="3" maxlength="1600" placeholder="Kinh nghiệm hoặc điều cần nhớ của riêng bạn..."></textarea></div>
+                    <div class="handbook-form-field handbook-field-wide">
+                        <label for="handbook-entry-title"><i data-lucide="bookmark"></i>Tên bài <span>*</span></label>
+                        <input id="handbook-entry-title" type="text" maxlength="180" required placeholder="Ví dụ: Nước gừng ấm giảm ho">
+                    </div>
+                    <div class="handbook-form-field">
+                        <label for="handbook-entry-category"><i data-lucide="tag"></i>Danh mục <span>*</span></label>
+                        <select id="handbook-entry-category" required>
+                            <option value="Ho/cảm cúm">Ho/cảm cúm</option>
+                            <option value="Tiêu hóa">Tiêu hóa</option>
+                            <option value="Da liễu">Da liễu</option>
+                            <option value="Xương khớp">Xương khớp</option>
+                            <option value="Mẹo vặt gia đình">Mẹo vặt gia đình</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="handbook-form-field">
+                        <label for="handbook-entry-use"><i data-lucide="sparkles"></i>Công dụng</label>
+                        <textarea id="handbook-entry-use" rows="3" maxlength="1200" placeholder="Bài này dùng để làm gì?"></textarea>
+                    </div>
+                    <div class="handbook-form-field">
+                        <label for="handbook-entry-ingredients"><i data-lucide="leaf"></i>Nguyên liệu</label>
+                        <textarea id="handbook-entry-ingredients" rows="3" maxlength="1200" placeholder="Ví dụ: gừng tươi, mật ong..."></textarea>
+                    </div>
+                    <div class="handbook-form-field handbook-field-wide">
+                        <label for="handbook-entry-method"><i data-lucide="list-ordered"></i>Cách làm / cách dùng</label>
+                        <textarea id="handbook-entry-method" rows="4" maxlength="3000" placeholder="Viết từng bước, liều lượng hoặc cách sử dụng..."></textarea>
+                    </div>
+                    <div class="handbook-form-field">
+                        <label for="handbook-entry-warning"><i data-lucide="triangle-alert"></i>Lưu ý / chống chỉ định</label>
+                        <textarea id="handbook-entry-warning" rows="3" maxlength="1600" placeholder="Ai không nên dùng? Khi nào cần dừng?"></textarea>
+                    </div>
+                    <div class="handbook-form-field">
+                        <label for="handbook-entry-source"><i data-lucide="link"></i>Nguồn</label>
+                        <input id="handbook-entry-source" type="text" maxlength="300" placeholder="Sách, người thân, website...">
+                    </div>
+                    <div class="handbook-form-field handbook-field-wide">
+                        <label for="handbook-entry-personal"><i data-lucide="heart"></i>Ghi chú cá nhân</label>
+                        <textarea id="handbook-entry-personal" rows="3" maxlength="1600" placeholder="Kinh nghiệm hoặc điều cần nhớ của riêng bạn..."></textarea>
+                    </div>
                 </div>
                 <p class="handbook-form-error" id="handbook-form-error" role="alert" hidden></p>
-                <div class="handbook-entry-actions"><button type="button" class="support-cancel-btn" id="btn-cancel-handbook-entry">Hủy</button><button type="submit" class="support-save-btn"><i data-lucide="check"></i><span id="handbook-save-text">Lưu bài</span></button></div>
+                <div class="support-form-actions handbook-entry-actions">
+                    <button type="button" class="support-cancel-btn" id="btn-cancel-handbook-entry">Hủy</button>
+                    <button type="submit" class="support-save-btn handbook-save-btn"><i data-lucide="check"></i><span id="handbook-save-text">Lưu bài</span></button>
+                </div>
             </form>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         MODAL 11: CÔ ẤY / KÉT BÍ MẬT (HER VAULT)
+         ===================================================================== -->
+    <div class="modal-overlay support-page-modal her-page-modal" id="her-modal" aria-hidden="true">
+        <div class="modal-sheet support-page-sheet her-page-sheet" role="dialog" aria-modal="true" aria-label="Két bí mật về cô ấy">
+            
+            <!-- Header chuẩn Két Bí Mật (coral/mint dynamic theme) -->
+            <div class="her-page-header theme-coral" id="her-page-header">
+                <div class="her-header-left">
+                    <button type="button" class="modal-close-btn ckkn-back-btn her-header-back-btn" id="btn-close-her-modal" aria-label="Quay lại" title="Quay lại">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <div class="her-header-vault-badge" id="her-vault-shield-badge">
+                        <svg class="her-shield-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L4 5V11C4 16.55 7.4 21.74 12 23C16.6 21.74 20 16.55 20 11V5L12 2Z" fill="currentColor"/>
+                            <path d="M12 8C10.9 8 10 8.9 10 10V11H9.5C9.22 11 9 11.22 9 11.5V15.5C9 15.78 9.22 16 9.5 16H14.5C14.78 16 15 15.78 15 15.5V11.5C15 11.22 14.78 11 14.5 11H14V10C14 8.9 13.1 8 12 8ZM13 11H11V10C11 9.45 11.45 9 12 9C12.55 9 13 9.45 13 10V11Z" fill="#FFFFFF"/>
+                        </svg>
+                    </div>
+                    <div class="her-header-title-block">
+                        <h2 class="her-header-title" id="her-header-title-text">Két Bí Mật</h2>
+                        <span class="her-header-subtitle" id="her-header-subtitle-text">Bí mật về cô ấy</span>
+                    </div>
+                </div>
+                <div class="her-header-right"></div>
+            </div>
+
+            <!-- 5 Navigation Tabs -->
+            <div class="her-nav-tabs-wrapper">
+                <div class="her-nav-tabs" role="tablist">
+                    <button type="button" class="her-tab-btn active" id="her-tab-btn-info" data-tab="info" role="tab" aria-selected="true">
+                        <div class="her-tab-bubble">
+                            <span class="her-tab-emoji">🎀</span>
+                        </div>
+                        <span class="her-tab-label">Thông tin</span>
+                        <div class="her-tab-indicator"></div>
+                    </button>
+                    <button type="button" class="her-tab-btn" id="her-tab-btn-food" data-tab="food" role="tab" aria-selected="false">
+                        <div class="her-tab-bubble">
+                            <span class="her-tab-emoji">🍽️</span>
+                            <span class="her-tab-count-badge" id="her-tab-count-food" style="display:none;">0</span>
+                        </div>
+                        <span class="her-tab-label">Đồ ăn</span>
+                        <div class="her-tab-indicator"></div>
+                    </button>
+                    <button type="button" class="her-tab-btn" id="her-tab-btn-notes" data-tab="notes" role="tab" aria-selected="false">
+                        <div class="her-tab-bubble">
+                            <span class="her-tab-emoji">📝</span>
+                            <span class="her-tab-count-badge" id="her-tab-count-notes" style="display:none;">0</span>
+                        </div>
+                        <span class="her-tab-label">Ghi chú</span>
+                        <div class="her-tab-indicator"></div>
+                    </button>
+                    <button type="button" class="her-tab-btn" id="her-tab-btn-dates" data-tab="dates" role="tab" aria-selected="false">
+                        <div class="her-tab-bubble">
+                            <span class="her-tab-emoji">💝</span>
+                            <span class="her-tab-count-badge" id="her-tab-count-dates" style="display:none;">0</span>
+                        </div>
+                        <span class="her-tab-label">Kỷ niệm</span>
+                        <div class="her-tab-indicator"></div>
+                    </button>
+                    <button type="button" class="her-tab-btn" id="her-tab-btn-mood" data-tab="mood" role="tab" aria-selected="false">
+                        <div class="her-tab-bubble">
+                            <span class="her-tab-emoji">🌸</span>
+                            <span class="her-tab-count-badge" id="her-tab-count-mood" style="display:none;">0</span>
+                        </div>
+                        <span class="her-tab-label">Tâm trạng</span>
+                        <div class="her-tab-indicator"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Page Body -->
+            <div class="her-page-scroll" id="her-page-scroll">
+
+                <!-- Profile Hero Card (Thẻ Hồ Sơ Ngọt Ngào) -->
+                <div class="her-hero-profile-card" id="her-hero-profile-card">
+                    <div class="her-hero-avatar-wrap" id="btn-edit-avatar-trigger" title="Đổi avatar cô ấy">
+                        <div class="her-hero-avatar" id="her-hero-avatar">🌸</div>
+                        <div class="her-hero-avatar-badge"><i data-lucide="heart"></i></div>
+                    </div>
+                    <div class="her-hero-info">
+                        <div class="her-hero-top-row">
+                            <h3 class="her-hero-name" id="her-hero-name">Cô ấy</h3>
+                            <button type="button" class="her-hero-edit-btn" id="btn-edit-her-hero-profile" title="Chỉnh sửa hồ sơ cô ấy">
+                                <i data-lucide="edit-3"></i> <span>Chỉnh sửa</span>
+                            </button>
+                        </div>
+                        <div class="her-hero-meta-row">
+                            <span class="her-hero-chip" id="her-hero-days-chip">
+                                <i data-lucide="heart"></i> <span id="her-hero-days-text">Bên nhau mỗi ngày</span>
+                            </span>
+                            <span class="her-hero-chip her-hero-bday-chip" id="her-hero-bday-chip" style="display:none;">
+                                <i data-lucide="cake"></i> <span id="her-hero-bday-text">Sinh nhật</span>
+                            </span>
+                        </div>
+                        <p class="her-hero-quote" id="her-hero-quote">Lưu lại những điều nhỏ bé để yêu thương cô ấy nhiều hơn ✨</p>
+                    </div>
+                </div>
+
+                <!-- 1. TAB THÔNG TIN (SIZE, SỐ ĐO & SỞ THÍCH) -->
+                <div class="her-tab-panel active" id="her-tab-content-info" role="tabpanel">
+                    
+                    <!-- 1.1 Size của cô ấy -->
+                    <div class="her-section-heading">
+                        <span class="her-section-icon">📐</span>
+                        <h3 class="her-section-title">Size của cô ấy</h3>
+                    </div>
+
+                    <div class="her-tiles-grid">
+                        <!-- Áo -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">👕</span>
+                                <span class="her-tile-name">Áo</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-pink">
+                                <input type="text" class="her-capsule-input" id="her-size-shirt" placeholder="Nhập size...">
+                            </div>
+                            <div class="her-quick-suggesters" data-target="her-size-shirt">
+                                <button type="button" class="her-quick-chip" data-val="XS">XS</button>
+                                <button type="button" class="her-quick-chip" data-val="S">S</button>
+                                <button type="button" class="her-quick-chip" data-val="M">M</button>
+                                <button type="button" class="her-quick-chip" data-val="L">L</button>
+                                <button type="button" class="her-quick-chip" data-val="Freesize">Free</button>
+                            </div>
+                        </div>
+
+                        <!-- Quần -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">👖</span>
+                                <span class="her-tile-name">Quần</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-mint">
+                                <input type="text" class="her-capsule-input" id="her-size-pants" placeholder="Nhập size...">
+                            </div>
+                            <div class="her-quick-suggesters" data-target="her-size-pants">
+                                <button type="button" class="her-quick-chip" data-val="26">26</button>
+                                <button type="button" class="her-quick-chip" data-val="27">27</button>
+                                <button type="button" class="her-quick-chip" data-val="28">28</button>
+                                <button type="button" class="her-quick-chip" data-val="29">29</button>
+                                <button type="button" class="her-quick-chip" data-val="S">S</button>
+                                <button type="button" class="her-quick-chip" data-val="M">M</button>
+                            </div>
+                        </div>
+
+                        <!-- Giày -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">👟</span>
+                                <span class="her-tile-name">Giày</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-pink">
+                                <input type="text" class="her-capsule-input" id="her-size-shoes" placeholder="Nhập size...">
+                            </div>
+                            <div class="her-quick-suggesters" data-target="her-size-shoes">
+                                <button type="button" class="her-quick-chip" data-val="35">35</button>
+                                <button type="button" class="her-quick-chip" data-val="36">36</button>
+                                <button type="button" class="her-quick-chip" data-val="37">37</button>
+                                <button type="button" class="her-quick-chip" data-val="38">38</button>
+                                <button type="button" class="her-quick-chip" data-val="39">39</button>
+                            </div>
+                        </div>
+
+                        <!-- Bra -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">👙</span>
+                                <span class="her-tile-name">Bra</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-pink">
+                                <input type="text" class="her-capsule-input" id="her-size-bra" placeholder="Nhập size...">
+                            </div>
+                            <div class="her-quick-suggesters" data-target="her-size-bra">
+                                <button type="button" class="her-quick-chip" data-val="70A">70A</button>
+                                <button type="button" class="her-quick-chip" data-val="70B">70B</button>
+                                <button type="button" class="her-quick-chip" data-val="75A">75A</button>
+                                <button type="button" class="her-quick-chip" data-val="75B">75B</button>
+                                <button type="button" class="her-quick-chip" data-val="80A">80A</button>
+                            </div>
+                        </div>
+
+                        <!-- Nhẫn (Wide Bento Tile: Size chung & Chi tiết từng ngón) -->
+                        <div class="her-tile-card her-tile-card-wide her-ring-card">
+                            <div class="her-ring-card-header">
+                                <div class="her-ring-header-left">
+                                    <div class="her-ring-icon-badge">
+                                        <span class="her-tile-emoji">💍</span>
+                                    </div>
+                                    <div class="her-ring-header-text">
+                                        <h4 class="her-tile-name">Size Nhẫn của cô ấy</h4>
+                                        <span class="her-ring-subtitle">Size nhẫn thường đeo &amp; chi tiết từng ngón tay</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="her-btn-add-ring" id="btn-add-her-ring" title="Thêm ghi chú size từng ngón">
+                                    <i data-lucide="plus"></i> <span>Thêm ngón tay</span>
+                                </button>
+                            </div>
+
+                            <div class="her-ring-card-body">
+                                <!-- Cột 1: Size thường đeo / Chung -->
+                                <div class="her-ring-general-col">
+                                    <label class="her-ring-col-label" for="her-size-ring-general">
+                                        <i data-lucide="sparkles"></i> <span>Size thường đeo / Chung:</span>
+                                    </label>
+                                    <div class="her-capsule-box her-capsule-pink">
+                                        <input type="text" class="her-capsule-input" id="her-size-ring-general" placeholder="Ví dụ: Size 10 (đường kính 16mm)...">
+                                    </div>
+                                    <div class="her-quick-suggesters" data-target="her-size-ring-general">
+                                        <button type="button" class="her-quick-chip" data-val="Size 9">Size 9</button>
+                                        <button type="button" class="her-quick-chip" data-val="Size 10">Size 10</button>
+                                        <button type="button" class="her-quick-chip" data-val="Size 11">Size 11</button>
+                                        <button type="button" class="her-quick-chip" data-val="Size 12">Size 12</button>
+                                        <button type="button" class="her-quick-chip" data-val="Size 14">Size 14</button>
+                                    </div>
+                                </div>
+
+                                <!-- Cột 2: Chi tiết theo từng ngón tay -->
+                                <div class="her-ring-detail-col">
+                                    <div class="her-ring-col-label">
+                                        <i data-lucide="gem"></i> <span>Chi tiết theo từng ngón:</span>
+                                    </div>
+                                    <div class="her-ring-list" id="her-ring-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.2 Số đo cơ thể -->
+                    <div class="her-section-heading her-mt-heading">
+                        <span class="her-section-icon">📐</span>
+                        <h3 class="her-section-title">Số đo cơ thể</h3>
+                    </div>
+
+                    <!-- Dynamic Body Ratio & BMI Box -->
+                    <div class="her-bmi-summary-box" id="her-bmi-summary-box" style="display:none;">
+                        <div class="her-bmi-icon"><i data-lucide="sparkles"></i></div>
+                        <div class="her-bmi-content">
+                            <span class="her-bmi-title" id="her-bmi-title">Đánh giá vóc dáng</span>
+                            <span class="her-bmi-desc" id="her-bmi-desc">Nhập chiều cao và cân nặng để xem tỉ lệ</span>
+                        </div>
+                    </div>
+
+                    <div class="her-tiles-grid">
+                        <!-- Chiều cao -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">✏️</span>
+                                <span class="her-tile-name">Chiều cao</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-mint her-flex-capsule">
+                                    <input type="number" step="0.5" class="her-capsule-input" id="her-body-height" placeholder="Ví dụ: 162">
+                                </div>
+                                <span class="her-measure-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Cân nặng -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">⚖️</span>
+                                <span class="her-tile-name">Cân nặng</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-pink her-flex-capsule">
+                                    <input type="number" step="0.5" class="her-capsule-input" id="her-body-weight" placeholder="Ví dụ: 48">
+                                </div>
+                                <span class="her-measure-unit">kg</span>
+                            </div>
+                        </div>
+
+                        <!-- Vòng ngực -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">👗</span>
+                                <span class="her-tile-name">Vòng ngực</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-mint her-flex-capsule">
+                                    <input type="number" class="her-capsule-input" id="her-body-bust" placeholder="Ví dụ: 84">
+                                </div>
+                                <span class="her-measure-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Vòng eo -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">🎀</span>
+                                <span class="her-tile-name">Vòng eo</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-pink her-flex-capsule">
+                                    <input type="number" class="her-capsule-input" id="her-body-waist" placeholder="Ví dụ: 60">
+                                </div>
+                                <span class="her-measure-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Vòng mông -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">🍑</span>
+                                <span class="her-tile-name">Vòng mông</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-pink her-flex-capsule">
+                                    <input type="number" class="her-capsule-input" id="her-body-hips" placeholder="Ví dụ: 90">
+                                </div>
+                                <span class="her-measure-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Vai -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">📐</span>
+                                <span class="her-tile-name">Vai</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-mint her-flex-capsule">
+                                    <input type="number" class="her-capsule-input" id="her-body-shoulder" placeholder="Ví dụ: 37">
+                                </div>
+                                <span class="her-measure-unit">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- Bắp tay -->
+                        <div class="her-tile-card her-tile-card-wide">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">💪</span>
+                                <span class="her-tile-name">Bắp tay</span>
+                            </div>
+                            <div class="her-measure-row">
+                                <div class="her-capsule-box her-capsule-mint her-flex-capsule">
+                                    <input type="number" class="her-capsule-input" id="her-body-bicep" placeholder="Ví dụ: 24">
+                                </div>
+                                <span class="her-measure-unit">cm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1.3 Sở thích & Phong cách cá nhân -->
+                    <div class="her-section-heading her-mt-heading">
+                        <span class="her-section-icon">💄</span>
+                        <h3 class="her-section-title">Sở thích &amp; Gu của cô ấy</h3>
+                    </div>
+
+                    <div class="her-tiles-grid">
+                        <!-- Màu sắc yêu thích -->
+                        <div class="her-tile-card her-tile-card-wide">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">🎨</span>
+                                <span class="her-tile-name">Màu sắc yêu thích</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-pink">
+                                <input type="text" class="her-capsule-input" id="her-fav-colors" placeholder="Ví dụ: Hồng pastel, Be, Trắng kem, Xanh bơ...">
+                            </div>
+                            <div class="her-quick-suggesters" data-target="her-fav-colors">
+                                <button type="button" class="her-quick-chip" data-val="Hồng pastel">🌸 Hồng</button>
+                                <button type="button" class="her-quick-chip" data-val="Trắng kem">🤍 Trắng</button>
+                                <button type="button" class="her-quick-chip" data-val="Xanh bơ">🥑 Xanh bơ</button>
+                                <button type="button" class="her-quick-chip" data-val="Màu Be">🤎 Be</button>
+                                <button type="button" class="her-quick-chip" data-val="Đen basic">🖤 Đen</button>
+                            </div>
+                        </div>
+
+                        <!-- Mùi hương / Nước hoa -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">🌸</span>
+                                <span class="her-tile-name">Mùi hương</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-mint">
+                                <input type="text" class="her-capsule-input" id="her-fav-scent" placeholder="Ví dụ: Vani, Hoa hồng...">
+                            </div>
+                        </div>
+
+                        <!-- Loại da / Mỹ phẩm -->
+                        <div class="her-tile-card">
+                            <div class="her-tile-top">
+                                <span class="her-tile-emoji">✨</span>
+                                <span class="her-tile-name">Loại da / Tone</span>
+                            </div>
+                            <div class="her-capsule-box her-capsule-pink">
+                                <input type="text" class="her-capsule-input" id="her-skin-type" placeholder="Ví dụ: Da khô, Da dầu, Tone ấm...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút lưu thông tin -->
+                    <div class="her-save-row">
+                        <button type="button" class="her-btn-save-info" id="btn-save-her-info">
+                            <i data-lucide="check"></i> <span>Lưu thông tin</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- 2. TAB ĐỒ ĂN (PHẢI MUA & KHÔNG NÊN MUA) -->
+                <div class="her-tab-panel" id="her-tab-content-food" role="tabpanel">
+                    
+                    <!-- Segmented Control Phải mua / Không mua -->
+                    <div class="her-segmented-control">
+                        <button type="button" class="her-segment-btn active" id="btn-food-subtab-must" data-subtab="must_buy">
+                            <span class="her-segment-check">✅</span>
+                            <span class="her-segment-text">Phải mua</span>
+                        </button>
+                        <button type="button" class="her-segment-btn" id="btn-food-subtab-avoid" data-subtab="should_not_buy">
+                            <span class="her-segment-cross">❌</span>
+                            <span class="her-segment-text">Không mua</span>
+                        </button>
+                    </div>
+
+                    <!-- Action Bar Row (Thêm món + Quay ngẫu nhiên) -->
+                    <div class="her-food-action-row">
+                        <button type="button" class="her-action-bar-btn her-action-mint" id="btn-add-her-food">
+                            <svg class="her-plus-circle-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                            </svg>
+                            <span id="her-add-food-btn-text">Thêm món nên mua</span>
+                        </button>
+                        <button type="button" class="her-random-food-btn" id="btn-random-her-food" title="Hôm nay mua gì cho cô ấy? Gợi ý ngẫu nhiên!">
+                            <i data-lucide="dices"></i> <span>Hôm nay ăn gì?</span>
+                        </button>
+                    </div>
+
+                    <!-- Search & Filter bar -->
+                    <div class="her-filter-wrapper">
+                        <div class="her-search-box">
+                            <i data-lucide="search" class="her-search-icon"></i>
+                            <input type="text" class="her-search-input" id="her-food-search" placeholder="Tìm kiếm món ăn, thức uống, quán quen...">
+                            <button type="button" class="her-search-clear" id="btn-clear-food-search" style="display:none;"><i data-lucide="x"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Food Items List -->
+                    <div class="her-items-list" id="her-food-list"></div>
+
+                </div>
+
+                <!-- 3. TAB GHI CHÚ -->
+                <div class="her-tab-panel" id="her-tab-content-notes" role="tabpanel">
+                    
+                    <!-- Flat Pill Action Button -->
+                    <button type="button" class="her-action-bar-btn her-action-coral" id="btn-add-her-note">
+                        <svg class="her-plus-circle-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        <span>Thêm ghi chú mới</span>
+                    </button>
+
+                    <!-- Search & Filter bar -->
+                    <div class="her-filter-wrapper">
+                        <div class="her-search-box">
+                            <i data-lucide="search" class="her-search-icon"></i>
+                            <input type="text" class="her-search-input" id="her-notes-search" placeholder="Tìm kiếm trong ghi chú...">
+                            <button type="button" class="her-search-clear" id="btn-clear-notes-search" style="display:none;"><i data-lucide="x"></i></button>
+                        </div>
+                        <div class="her-filter-chips" id="her-notes-filter-chips">
+                            <button type="button" class="her-filter-chip active" data-cat="all">Tất cả</button>
+                            <button type="button" class="her-filter-chip" data-cat="Sở thích">🎀 Sở thích</button>
+                            <button type="button" class="her-filter-chip" data-cat="Thói quen">☕ Thói quen</button>
+                            <button type="button" class="her-filter-chip" data-cat="Bí kíp">💡 Bí kíp</button>
+                            <button type="button" class="her-filter-chip" data-cat="Dặn dò">📌 Dặn dò</button>
+                        </div>
+                    </div>
+
+                    <div class="her-items-list" id="her-notes-list"></div>
+
+                </div>
+
+                <!-- 4. TAB KỶ NIỆM (KỶ NIỆM, WISHLIST & MEMORY) -->
+                <div class="her-tab-panel" id="her-tab-content-dates" role="tabpanel">
+                    
+                    <!-- Segmented Control Kỷ niệm / Wishlist / Memory -->
+                    <div class="her-segmented-control">
+                        <button type="button" class="her-segment-btn active" id="btn-dates-subtab-anniversary" data-subtab="anniversary">
+                            <span class="her-segment-icon">📅</span>
+                            <span class="her-segment-text">Kỷ niệm</span>
+                        </button>
+                        <button type="button" class="her-segment-btn" id="btn-dates-subtab-wishlist" data-subtab="wishlist">
+                            <span class="her-segment-icon">🎁</span>
+                            <span class="her-segment-text">Wishlist</span>
+                        </button>
+                        <button type="button" class="her-segment-btn" id="btn-dates-subtab-memory" data-subtab="memory">
+                            <span class="her-segment-icon">📸</span>
+                            <span class="her-segment-text">Memory</span>
+                        </button>
+                    </div>
+
+                    <!-- Countdown Hero Banner cho Kỷ niệm gần nhất -->
+                    <div class="her-anniversary-hero-card" id="her-anniversary-hero-card" style="display:none;">
+                        <div class="her-anni-icon-wrap"><i data-lucide="calendar-heart"></i></div>
+                        <div class="her-anni-body">
+                            <span class="her-anni-eyebrow">Dịp kỷ niệm sắp tới</span>
+                            <h4 class="her-anni-title" id="her-anni-hero-title">Sinh nhật cô ấy</h4>
+                            <span class="her-anni-badge" id="her-anni-hero-badge">Còn 12 ngày nữa</span>
+                        </div>
+                    </div>
+
+                    <!-- Wishlist Summary Box (Khi ở subtab Wishlist) -->
+                    <div class="her-wishlist-summary-card" id="her-wishlist-summary-card" style="display:none;">
+                        <div class="her-wish-summary-left">
+                            <span class="her-wish-summary-label">Món quà đang mong muốn</span>
+                            <strong class="her-wish-summary-count" id="her-wish-count-text">0 món</strong>
+                        </div>
+                        <div class="her-wish-filter-tabs">
+                            <button type="button" class="her-wish-filter-btn active" data-wish-filter="all">Tất cả</button>
+                            <button type="button" class="her-wish-filter-btn" data-wish-filter="pending">Chưa tặng 🎁</button>
+                            <button type="button" class="her-wish-filter-btn" data-wish-filter="gifted">Đã tặng ✨</button>
+                        </div>
+                    </div>
+
+                    <!-- Memory Summary Box (Khi ở subtab Memory) -->
+                    <div class="her-memory-summary-card" id="her-memory-summary-card" style="display:none;">
+                        <div class="her-mem-summary-left">
+                            <span class="her-mem-summary-eyebrow">DẤU MỐC YÊU THƯƠNG 💕</span>
+                            <h4 class="her-mem-summary-title">Kỷ niệm đáng nhớ của hai đứa</h4>
+                        </div>
+                        <div class="her-mem-summary-badge" id="her-mem-count-badge">0 kỷ niệm</div>
+                    </div>
+
+                    <!-- Dynamic Flat Pill Action Button -->
+                    <button type="button" class="her-action-bar-btn her-action-coral" id="btn-add-her-date-wish">
+                        <svg class="her-plus-circle-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        <span id="her-add-date-wish-btn-text">Thêm ngày kỷ niệm</span>
+                    </button>
+
+                    <div class="her-items-list" id="her-dates-list"></div>
+
+                </div>
+
+                <!-- 5. TAB TÂM TRẠNG (NHẬT KÝ & SOS DỖ DÀNH) -->
+                <div class="her-tab-panel" id="her-tab-content-mood" role="tabpanel">
+                    
+                    <!-- SOS Dỗ Dành Drawer Toggle -->
+                    <div class="her-sos-card" id="her-sos-card">
+                        <div class="her-sos-header" id="btn-toggle-her-sos">
+                            <div class="her-sos-header-left">
+                                <span class="her-sos-pulse-dot"></span>
+                                <span class="her-sos-title">🌸 Bí kíp cấp cứu: Khi cô ấy giận / đến ngày "dâu"</span>
+                            </div>
+                            <button type="button" class="her-sos-toggle-btn" aria-label="Mở/đóng cẩm nang cấp cứu">
+                                <i data-lucide="chevron-down" id="her-sos-chevron"></i>
+                            </button>
+                        </div>
+                        <div class="her-sos-body" id="her-sos-body" style="display:none;">
+                            <div class="her-sos-item">
+                                <div class="her-sos-item-title">🌸 Ngày "dâu rụng":</div>
+                                <p class="her-sos-item-text">Pha nước ấm hoặc trà gừng đường nâu. Đặt túi chườm bụng, massage nhẹ vùng lưng dưới. Chuẩn bị socola hoặc đồ ngọt cô ấy thích. Tuyệt đối không cáu gắt, nhường nhịn và chăm sóc tối đa!</p>
+                            </div>
+                            <div class="her-sos-item">
+                                <div class="her-sos-item-title">😤 Khi cô ấy giận dỗi:</div>
+                                <p class="her-sos-item-text">Lắng nghe hết câu, không cướp lời giải thích lý lẽ. Ôm cô ấy thật chặt và nói: "Anh xin lỗi vì đã làm em buồn". Mua món ăn cô ấy thích hoặc trà sữa. Đừng bao giờ im lặng bỏ đi!</p>
+                            </div>
+                            <div class="her-sos-item">
+                                <div class="her-sos-item-title">😴 Khi cô ấy mệt mỏi / áp lực:</div>
+                                <p class="her-sos-item-text">Chủ động lấy nước ấm, gội đầu hoặc sấy tóc cho cô ấy. Bật nhạc nhẹ, tắt đèn chói, xoa bóp vai gáy. Không hỏi dồn dập, chỉ cần ở bên cạnh để cô ấy tựa vào.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flat Pill Action Button -->
+                    <button type="button" class="her-action-bar-btn her-action-coral" id="btn-add-her-mood">
+                        <svg class="her-plus-circle-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        <span>Ghi lại tâm trạng cô ấy</span>
+                    </button>
+
+                    <!-- Filter by Mood Type -->
+                    <div class="her-filter-wrapper">
+                        <div class="her-filter-chips" id="her-mood-filter-chips">
+                            <button type="button" class="her-filter-chip active" data-mood="all">Tất cả</button>
+                            <button type="button" class="her-filter-chip" data-mood="happy">😊 Vui vẻ</button>
+                            <button type="button" class="her-filter-chip" data-mood="love">🥰 Ngọt ngào</button>
+                            <button type="button" class="her-filter-chip" data-mood="period">🌸 Ngày dâu</button>
+                            <button type="button" class="her-filter-chip" data-mood="sad">🥺 Buồn bã</button>
+                            <button type="button" class="her-filter-chip" data-mood="angry">😤 Giận dỗi</button>
+                            <button type="button" class="her-filter-chip" data-mood="tired">😴 Mệt mỏi</button>
+                        </div>
+                    </div>
+
+                    <div class="her-items-list" id="her-mood-list"></div>
+
+                </div>
+
+            </div> <!-- End her-page-scroll -->
+
+            <!-- Toast thông báo nhỏ xinh bên trong Her Vault -->
+            <div class="her-inline-toast" id="her-toast" role="status" aria-live="polite"></div>
+
+        </div>
+    </div> <!-- End #her-modal -->
+
+    <!-- POPUP / SHEET THÊM & SỬA ITEM TRONG KÉT BÍ MẬT -->
+    <div class="modal-overlay support-entry-form-overlay her-entry-modal" id="her-entry-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet her-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="her-entry-title">
+            <div class="handbook-detail-drag-bar" aria-hidden="true"></div>
+            <div class="support-modal-header her-entry-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow her-form-eyebrow"><i data-lucide="sparkles"></i> KÉT BÍ MẬT VỀ CÔ ẤY</span>
+                    <h2 id="her-entry-title">Thêm thông tin</h2>
+                </div>
+                <button type="button" class="modal-close-btn support-modal-close" id="btn-close-her-entry" aria-label="Đóng form" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="her-entry-form" class="her-entry-form">
+                <div id="her-entry-fields-container" class="her-entry-fields-container">
+                    <!-- Form fields dynamically rendered based on type -->
+                </div>
+                <div class="support-form-actions her-form-actions">
+                    <button type="button" class="support-cancel-btn her-cancel-btn" id="btn-cancel-her-entry">
+                        <i data-lucide="x"></i> <span>Hủy</span>
+                    </button>
+                    <button type="submit" class="support-save-btn her-save-btn">
+                        <i data-lucide="check"></i> <span>Lưu dữ liệu</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POPUP CHỈNH SỬA HỒ SƠ CÔ ẤY (NICKNAME, AVATAR, SINH NHẬT, NGÀY YÊU) -->
+    <div class="modal-overlay support-entry-form-overlay her-entry-modal" id="her-profile-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet her-entry-sheet" role="dialog" aria-modal="true" aria-labelledby="her-profile-modal-title">
+            <div class="handbook-detail-drag-bar" aria-hidden="true"></div>
+            <div class="support-modal-header her-entry-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow her-form-eyebrow"><i data-lucide="sparkles"></i> HỒ SƠ CÔ ẤY</span>
+                    <h2 id="her-profile-modal-title">Cá nhân hóa Két Bí Mật</h2>
+                </div>
+                <button type="button" class="modal-close-btn support-modal-close" id="btn-close-her-profile" aria-label="Đóng form" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="her-profile-form" class="her-entry-form">
+                <div class="her-entry-fields-container">
+                    <div class="her-form-group">
+                        <label><i data-lucide="smile" class="her-field-icon"></i> Chọn biểu tượng đại diện</label>
+                        <div class="her-avatar-picker-grid" id="her-avatar-picker-grid">
+                            <button type="button" class="her-avatar-option active" data-avatar="🌸" title="Hoa đào">🌸</button>
+                            <button type="button" class="her-avatar-option" data-avatar="🐰" title="Thỏ con">🐰</button>
+                            <button type="button" class="her-avatar-option" data-avatar="🎀" title="Nơ hồng">🎀</button>
+                            <button type="button" class="her-avatar-option" data-avatar="🐱" title="Mèo con">🐱</button>
+                            <button type="button" class="her-avatar-option" data-avatar="👑" title="Công chúa">👑</button>
+                            <button type="button" class="her-avatar-option" data-avatar="🧸" title="Gấu bông">🧸</button>
+                            <button type="button" class="her-avatar-option" data-avatar="🍓" title="Dâu tây">🍓</button>
+                            <button type="button" class="her-avatar-option" data-avatar="✨" title="Ngôi sao lấp lánh">✨</button>
+                            <button type="button" class="her-avatar-option" data-avatar="💖" title="Trái tim">💖</button>
+                            <button type="button" class="her-avatar-option" data-avatar="🌷" title="Hoa tulip">🌷</button>
+                        </div>
+                    </div>
+                    <div class="her-form-group">
+                        <label for="her-profile-nickname-input"><i data-lucide="heart" class="her-field-icon"></i> Biệt danh / Tên bạn gọi cô ấy <span>*</span></label>
+                        <input type="text" id="her-profile-nickname-input" class="her-form-input" required placeholder="Ví dụ: Bé iu, Em Bé, Công Chúa, Vợ Yêu...">
+                        <div class="her-quick-suggesters" data-target="her-profile-nickname-input">
+                            <button type="button" class="her-quick-chip" data-val="Bé iu">💕 Bé iu</button>
+                            <button type="button" class="her-quick-chip" data-val="Bé Yêu">🌸 Bé Yêu</button>
+                            <button type="button" class="her-quick-chip" data-val="Em Bé">🐰 Em Bé</button>
+                            <button type="button" class="her-quick-chip" data-val="Công Chúa">👑 Công Chúa</button>
+                            <button type="button" class="her-quick-chip" data-val="Vợ Yêu">💍 Vợ Yêu</button>
+                        </div>
+                    </div>
+                    <div class="her-form-group">
+                        <label for="her-profile-bday-input_display"><i data-lucide="cake" class="her-field-icon"></i> Sinh nhật cô ấy (dd/mm/yyyy)</label>
+                        <div class="her-date-picker-wrap">
+                            <input type="text"
+                                   id="her-profile-bday-input_display"
+                                   class="her-form-input her-date-display-input"
+                                   placeholder="dd/mm/yyyy"
+                                   maxlength="10"
+                                   autocomplete="off">
+                            <div class="her-date-picker-trigger" title="Mở lịch chọn ngày">
+                                <i data-lucide="calendar"></i>
+                                <input type="date"
+                                       id="her-profile-bday-input"
+                                       class="her-native-date-input"
+                                       tabindex="-1"
+                                       aria-label="Sinh nhật cô ấy">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="her-form-group">
+                        <label for="her-profile-anni-input_display"><i data-lucide="calendar-heart" class="her-field-icon"></i> Ngày bắt đầu yêu / Kỷ niệm (dd/mm/yyyy)</label>
+                        <div class="her-date-picker-wrap">
+                            <input type="text"
+                                   id="her-profile-anni-input_display"
+                                   class="her-form-input her-date-display-input"
+                                   placeholder="dd/mm/yyyy"
+                                   maxlength="10"
+                                   autocomplete="off">
+                            <div class="her-date-picker-trigger" title="Mở lịch chọn ngày">
+                                <i data-lucide="calendar"></i>
+                                <input type="date"
+                                       id="her-profile-anni-input"
+                                       class="her-native-date-input"
+                                       tabindex="-1"
+                                       aria-label="Ngày bắt đầu yêu / Kỷ niệm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="her-form-group">
+                        <label for="her-profile-quote-input"><i data-lucide="message-square-heart" class="her-field-icon"></i> Lời nhắn gửi / Châm ngôn tình yêu</label>
+                        <textarea id="her-profile-quote-input" class="her-form-textarea" rows="2" placeholder="Ví dụ: Người con gái quan trọng nhất của anh ✨"></textarea>
+                    </div>
+                </div>
+                <div class="support-form-actions her-form-actions">
+                    <button type="button" class="support-cancel-btn her-cancel-btn" id="btn-cancel-her-profile">
+                        <i data-lucide="x"></i> <span>Hủy</span>
+                    </button>
+                    <button type="submit" class="support-save-btn her-save-btn">
+                        <i data-lucide="check"></i> <span>Lưu hồ sơ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POPUP RANDOM FOOD PICKER: HÔM NAY ĂN GÌ? 🎲 -->
+    <div class="modal-overlay support-entry-form-overlay her-entry-modal" id="her-random-food-modal" aria-hidden="true">
+        <div class="support-entry-form-sheet her-entry-sheet her-random-food-sheet" role="dialog" aria-modal="true">
+            <div class="handbook-detail-drag-bar" aria-hidden="true"></div>
+            <div class="support-modal-header her-entry-header">
+                <div class="support-modal-title-wrap">
+                    <span class="support-modal-eyebrow her-form-eyebrow">HÔM NAY MUA GÌ CHO CÔ ẤY? 🎲</span>
+                    <h2>Gợi ý ngẫu nhiên</h2>
+                </div>
+                <button type="button" class="modal-close-btn support-modal-close" id="btn-close-her-random-food" aria-label="Đóng" title="Đóng">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="her-random-food-content">
+                <div class="her-random-card-display" id="her-random-card-display">
+                    <div class="her-random-icon-ring">🍽️</div>
+                    <h3 class="her-random-dish-name" id="her-random-dish-name">Đang chọn món...</h3>
+                    <p class="her-random-dish-note" id="her-random-dish-note">Bấm nút bên dưới để quay ngẫu nhiên từ danh sách món cô ấy thích!</p>
+                    <div class="her-random-dish-place" id="her-random-dish-place" style="display:none;"></div>
+                </div>
+                <div class="her-random-actions">
+                    <button type="button" class="her-btn-spin-dish" id="btn-spin-dish">
+                        <i data-lucide="sparkles"></i> <span>Quay món khác 🎲</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1086,7 +2036,7 @@
                     <button class="btn btn-primary btn-add-saver" id="btn-open-add-saver" aria-label="Thêm mục tiết kiệm" title="Thêm mục tiết kiệm" onclick="openAddSaverModal()">
                         <i data-lucide="plus"></i>
                     </button>
-                    <button class="modal-close-btn saver-back-btn" id="btn-close-saver" aria-label="Quay lại" title="Quay lại" onclick="closeSaverModal()"><i data-lucide="arrow-left"></i></button>
+                    <button class="modal-close-btn saver-back-btn" id="btn-close-saver" aria-label="Quay lại" title="Quay lại"><i data-lucide="arrow-left"></i></button>
                 </div>
             </div>
 
@@ -1454,7 +2404,48 @@
                 </div>
             </button>
 
-            <!-- 3. Sức Khỏe -->
+            <!-- 3. Cô ấy (Két bí mật) -->
+            <button type="button" class="welcome-card welcome-card-her" id="welcome-opt-her">
+                <div class="welcome-card-icon-wrap icon-her" title="Cô ấy - Két bí mật">
+                    <svg class="icon-her-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="herShieldGradWelcome" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FF5E7E"/>
+                                <stop offset="100%" stop-color="#FF3358"/>
+                            </linearGradient>
+                            <linearGradient id="herHeartGradWelcome" x1="10" y1="12" x2="22" y2="24" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#FFFFFF"/>
+                                <stop offset="100%" stop-color="#FFF0F3"/>
+                            </linearGradient>
+                            <filter id="herGlowWelcome" x="0" y="0" width="32" height="32" filterUnits="userSpaceOnUse">
+                                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#FF3358" flood-opacity="0.3"/>
+                            </filter>
+                        </defs>
+                        <!-- Outer Shield with Soft Glow -->
+                        <path d="M16 2.5L5 6.5V14.5C5 21.8 9.7 28.5 16 30C22.3 28.5 27 21.8 27 14.5V6.5L16 2.5Z" fill="url(#herShieldGradWelcome)" filter="url(#herGlowWelcome)"/>
+                        <!-- Inner Accent Rim -->
+                        <path d="M16 4.3L6.8 7.6V14.5C6.8 20.8 10.7 26.6 16 28C21.3 26.6 25.2 20.8 25.2 14.5V7.6L16 4.3Z" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" fill="none"/>
+                        <!-- Padlock Shackle -->
+                        <path d="M12.5 13.5V11C12.5 9.07 14.07 7.5 16 7.5C17.93 7.5 19.5 9.07 19.5 11V13.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"/>
+                        <!-- Heart Lock Body -->
+                        <path d="M16 23.5C16 23.5 10 19.8 10 16.2C10 14.4 11.4 13 13.2 13C14.3 13 15.3 13.6 16 14.5C16.7 13.6 17.7 13 18.8 13C20.6 13 22 14.4 22 16.2C22 19.8 16 23.5 16 23.5Z" fill="url(#herHeartGradWelcome)"/>
+                        <!-- Keyhole -->
+                        <circle cx="16" cy="16.5" r="1.3" fill="#FF3358"/>
+                        <path d="M15.4 17.5H16.6L17 19.5H15L15.4 17.5Z" fill="#FF3358"/>
+                        <!-- Sparkle Star -->
+                        <path d="M24 4L24.6 5.4L26 6L24.6 6.6L24 8L23.4 6.6L22 6L23.4 5.4L24 4Z" fill="#FFD166"/>
+                    </svg>
+                </div>
+                <div class="welcome-card-body">
+                    <div class="welcome-card-title-row">
+                        <span class="welcome-card-name">Cô ấy</span>
+                        <span class="welcome-card-badge-pink">Két bí mật</span>
+                    </div>
+                </div>
+                <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
+            </button>
+
+            <!-- 4. Sức Khỏe -->
             <button type="button" class="welcome-card welcome-card-suckhoe" id="welcome-opt-suckhoe" onclick="navigateToFeature('suckhoe')">
                 <div class="welcome-card-icon-wrap icon-suckhoe">
                     <i data-lucide="heart-pulse"></i>
@@ -1470,7 +2461,7 @@
                 </div>
             </button>
 
-            <!-- 4. Công Việc -->
+            <!-- 5. Công Việc -->
             <button type="button" class="welcome-card welcome-card-congviec" id="welcome-opt-congviec" onclick="navigateToFeature('congviec')">
                 <div class="welcome-card-icon-wrap icon-congviec">
                     <i data-lucide="list-checks"></i>
@@ -1486,7 +2477,7 @@
                 </div>
             </button>
 
-            <!-- 5. Ghi Chú -->
+            <!-- 6. Ghi Chú -->
             <button type="button" class="welcome-card welcome-card-ghichu" id="welcome-opt-ghichu" onclick="navigateToFeature('ghichu')">
                 <div class="welcome-card-icon-wrap icon-ghichu">
                     <i data-lucide="sticky-note"></i>
@@ -1502,7 +2493,7 @@
                 </div>
             </button>
 
-            <!-- 6. Hỗ trợ -->
+            <!-- 7. Hỗ trợ -->
             <button type="button" class="welcome-card welcome-card-hotro" id="welcome-opt-hotro">
                 <div class="welcome-card-icon-wrap icon-hotro">
                     <i data-lucide="life-buoy"></i>
@@ -1518,7 +2509,7 @@
                 </div>
             </button>
 
-            <!-- 7. Wishlist -->
+            <!-- 8. Wishlist -->
             <button type="button" class="welcome-card welcome-card-wishlist" id="welcome-opt-wishlist">
                 <div class="welcome-card-icon-wrap icon-wishlist">
                     <i data-lucide="heart"></i>
@@ -1532,7 +2523,7 @@
                 <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
             </button>
 
-            <!-- 8. Danh sách -->
+            <!-- 9. Danh sách -->
             <button type="button" class="welcome-card welcome-card-list" id="welcome-opt-list">
                 <div class="welcome-card-icon-wrap icon-list">
                     <i data-lucide="layers-3"></i>
@@ -1546,7 +2537,7 @@
                 <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
             </button>
 
-            <!-- 9. Trích dẫn -->
+            <!-- 10. Trích dẫn -->
             <button type="button" class="welcome-card welcome-card-quote" id="welcome-opt-quote">
                 <div class="welcome-card-icon-wrap icon-quote">
                     <i data-lucide="quote"></i>
@@ -1560,7 +2551,7 @@
                 <div class="welcome-card-arrow"><i data-lucide="chevron-right"></i></div>
             </button>
 
-            <!-- 10. Sổ tay -->
+            <!-- 11. Sổ tay -->
             <button type="button" class="welcome-card welcome-card-handbook" id="welcome-opt-handbook">
                 <div class="welcome-card-icon-wrap icon-handbook">
                     <i data-lucide="book-open"></i>
@@ -1642,9 +2633,24 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=50" defer></script>
+    <script src="main/js/app.js?v=75" defer></script>
     <script src="main/js/notes.js?v=3" defer></script>
-    <script src="main/js/handbook.js?v=3" defer></script>
+    <script src="main/js/handbook.js?v=6" defer></script>
+    <script src="main/js/her.js?v=11" defer></script>
     <script src="main/js/feature-integration.js?v=3" defer></script>
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('✅ PWA Service Worker đã kích hoạt thành công:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.warn('⚠️ Đăng ký Service Worker thất bại:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>

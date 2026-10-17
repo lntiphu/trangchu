@@ -1,15 +1,62 @@
-﻿{
-  "name": "Trang chủ - Làm chủ mọi thứ",
+{
+  "name": "Làm chủ mọi thứ",
   "short_name": "Làm chủ mọi thứ",
+  "description": "Ứng dụng quản lý tài chính và cuộc sống cá nhân",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#FAF7F2",
+  "theme_color": "#344237",
+  "categories": ["finance", "lifestyle", "productivity"],
   "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "assets/pwa-icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Thêm khoản chi",
+      "short_name": "Thêm chi",
+      "description": "Ghi nhận nhanh khoản chi tiêu mới",
+      "url": "./index.html#add",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Phân tích tài chính",
+      "short_name": "Phân tích",
+      "description": "Xem biểu đồ và toàn cảnh chi tiêu",
+      "url": "./index.html#analysis",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Trang chủ chức năng",
+      "short_name": "Chức năng",
+      "description": "Mở trung tâm quản lý mọi thứ",
+      "url": "./index.html#hub",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
