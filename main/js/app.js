@@ -37,6 +37,8 @@ const state = {
 };
 let supabaseClient = null;
 let supabaseSubscription = null;
+let supabaseSubscriptionUserId = null;
+const realtimeChannelInstanceId = Math.random().toString(36).slice(2);
 let expenseRevision = 0;
 let expenseFetchSequence = 0;
 let expenseWriteBusy = false;
@@ -5450,32 +5452,34 @@ async function checkAuthSession() {
 
 // Đăng ký nhận sự thay đổi dữ liệu thời gian thực (Real-time listener)
 function setupRealtimeSubscription() {
-    if (!supabaseClient) return;
+    if (!supabaseClient || !state.currentUserId) return;
+    if (supabaseSubscription && supabaseSubscriptionUserId === state.currentUserId) return;
     if (supabaseSubscription) {
-        try { supabaseSubscription.unsubscribe(); } catch(e){}
+        try { supabaseClient.removeChannel(supabaseSubscription); }
+        catch (error) { console.warn('Không thể đóng kênh Realtime cũ:', error); }
+        supabaseSubscription = null;
+        supabaseSubscriptionUserId = null;
     }
-    
-    if (!state.currentUserId) return;
 
-    supabaseSubscription = supabaseClient
-        .channel(`money-data-realtime-${state.currentUserId}`)
-        .on('postgres_changes', {
-            event: '*',
-            schema: 'public',
-            table: 'expenses',
-            filter: `user_id=eq.${state.currentUserId}`
-        }, payload => {
-            handleRealtimeDbChange(payload);
-        })
-        .on('postgres_changes', {
-            event: '*',
-            schema: 'public',
-            table: 'savers',
-            filter: `user_id=eq.${state.currentUserId}`
-        }, payload => {
-            handleRealtimeSaverChange(payload);
-        })
-        .subscribe();
+    let channel;
+    try {
+        channel = supabaseClient.channel(`money-data-realtime-main-${realtimeChannelInstanceId}-${state.currentUserId}`);
+        channel.on('postgres_changes', {
+            event: '*', schema: 'public', table: 'expenses', filter: `user_id=eq.${state.currentUserId}`
+        }, handleRealtimeDbChange);
+        channel.on('postgres_changes', {
+            event: '*', schema: 'public', table: 'savers', filter: `user_id=eq.${state.currentUserId}`
+        }, handleRealtimeSaverChange);
+        channel.subscribe();
+        supabaseSubscription = channel;
+        supabaseSubscriptionUserId = state.currentUserId;
+    } catch (error) {
+        if (channel) {
+            try { supabaseClient.removeChannel(channel); }
+            catch (cleanupError) { console.warn('Không thể đóng kênh Realtime lỗi:', cleanupError); }
+        }
+        console.warn('Không thể đăng ký Realtime cho Thu chi; dữ liệu vẫn được tải trực tiếp:', error);
+    }
 }
 
 // Xử lý Sự kiện Submit Form Đăng nhập Meta/Supabase Auth
@@ -5594,17 +5598,19 @@ function initSupabase() {
         // Lắng nghe sự thay đổi trạng thái xác thực từ Supabase Auth
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
+                const userChanged = state.currentUserId !== session.user.id;
                 setCurrentSupabaseUser(session.user);
                 hideLoginScreen();
                 showLogoutButton();
                 setupRealtimeSubscription();
-                if (event === 'SIGNED_IN') fetchExpensesFromSupabase();
+                if (userChanged || event === 'SIGNED_IN') fetchExpensesFromSupabase();
                 fetchSaversFromSupabase();
             } else if (event === 'SIGNED_OUT') {
                 setCurrentSupabaseUser(null);
                 if (supabaseSubscription) {
                     supabaseClient.removeChannel(supabaseSubscription);
                     supabaseSubscription = null;
+                    supabaseSubscriptionUserId = null;
                 }
                 showLoginScreen();
                 hideLogoutButton();
