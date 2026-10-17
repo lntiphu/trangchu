@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=93">
+    <link rel="stylesheet" href="main/css/styles.css?v=95">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -60,27 +60,31 @@
         <!-- iOS Status Bar Background Spacer for viewport-fit=cover -->
         <div class="ios-status-bar-spacer"></div>
         <!-- HEADER -->
-        <header class="app-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <header class="app-header header-overview">
             <div class="header-left">
-                <span class="date-today" id="current-date">Thứ Ba, 21 Tháng 7</span>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <img src="assets/web-avatar.png" alt="Logo Làm chủ mọi thứ" onerror="this.onerror=null; this.src='assets/logo-chu-dong.svg';" style="width: 32px; height: 32px; object-fit: contain;">
-                    <h1 class="header-title" style="font-size: 1.6rem; font-weight: 800; margin: 0;">Làm chủ mọi thứ</h1>
+                <div class="header-eyebrow">
+                    <span class="header-status-badge">
+                        <span class="status-pulse-dot"></span>
+                        <span>Hôm nay</span>
+                    </span>
+                    <span class="header-clock-wrap">
+                        <i data-lucide="clock"></i>
+                        <span id="header-live-clock">--:--:--</span>
+                    </span>
+                </div>
+                <h1 class="header-main-date" id="current-date">Thứ Bảy, ngày 17 tháng 10 năm 2026</h1>
+                <div class="header-date-sub">
+                    <span class="header-sub-tag"><i data-lucide="wallet"></i> Sổ Thu Chi</span>
+                    <span class="header-sub-sep">·</span>
+                    <span class="header-sub-desc">Quản lý dòng tiền & ngân sách chi tiêu</span>
                 </div>
             </div>
             <div class="header-right">
-                <button id="btn-open-hub-header" class="header-icon-btn" aria-label="Mở trang chủ chọn chức năng" title="Trang chủ chức năng" onclick="showWelcomeHubPage()" style="margin-right: 4px;">
-                    <i data-lucide="layout-grid"></i>
-                </button>
-                <button id="btn-open-spending-analysis" class="header-icon-btn" aria-label="Phân tích dữ liệu sử dụng tiền" title="Phân tích dữ liệu sử dụng tiền">
-                    <i data-lucide="pie-chart"></i>
-                </button>
-                <button id="btn-open-saver-modal" class="header-icon-btn" aria-label="Xem Biểu Đồ Tiết Kiệm" title="Saver - Tiết Kiệm" style="margin-left: 6px;">
-                    <i data-lucide="piggy-bank"></i>
-                </button>
-                <button id="btn-logout" class="header-icon-btn" aria-label="Đăng xuất" title="Đăng xuất" style="margin-left: 6px; display: none;">
-                    <i data-lucide="log-out"></i>
-                </button>
+                <div class="header-calendar-badge" title="Lịch hôm nay">
+                    <div class="calendar-badge-top" id="header-calendar-month">Thg 10</div>
+                    <div class="calendar-badge-day" id="header-calendar-day">17</div>
+                    <div class="calendar-badge-bottom" id="header-calendar-weekday">Thứ 7</div>
+                </div>
             </div>
         </header>
 
@@ -122,20 +126,28 @@
                     </div>
                     <div class="dashboard-shortcuts-grid">
                         <button type="button" class="shortcut-pill shortcut-pill-add" onclick="openAddModal()">
-                            <i data-lucide="plus-circle"></i>
-                            <span>Ghi khoản chi mới</span>
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="plus-circle"></i>
+                            </div>
+                            <span class="shortcut-label">Ghi khoản chi mới</span>
                         </button>
-                        <button type="button" class="shortcut-pill shortcut-pill-analysis" onclick="openSpendingAnalysisPage()">
-                            <i data-lucide="bar-chart-3"></i>
-                            <span>Toàn cảnh tài chính</span>
+                        <button type="button" id="btn-open-spending-analysis" class="shortcut-pill shortcut-pill-analysis" onclick="openSpendingAnalysisPage()">
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="bar-chart-3"></i>
+                            </div>
+                            <span class="shortcut-label">Toàn cảnh tài chính</span>
                         </button>
-                        <button type="button" class="shortcut-pill shortcut-pill-saver" onclick="openSaverModal()">
-                            <i data-lucide="piggy-bank"></i>
-                            <span>Quản lý Tiết kiệm</span>
+                        <button type="button" class="shortcut-pill shortcut-pill-history" onclick="switchTab('history')">
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="receipt"></i>
+                            </div>
+                            <span class="shortcut-label">Xem lịch sử chi</span>
                         </button>
                         <button type="button" class="shortcut-pill shortcut-pill-home" onclick="showWelcomeHubPage()">
-                            <i data-lucide="layout-grid"></i>
-                            <span>Trung tâm chức năng</span>
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="layout-grid"></i>
+                            </div>
+                            <span class="shortcut-label">Trung tâm chức năng</span>
                         </button>
                     </div>
                 </div>
@@ -2023,6 +2035,7 @@
     </div>
 
     <!-- SAVER (QUẢN LÝ TIẾT KIỆM) FULL-SCREEN PAGE -->
+    <button id="btn-open-saver-modal" style="display: none;" aria-hidden="true"></button>
     <div class="modal-overlay" id="saver-page-modal" aria-hidden="true">
         <div class="modal-sheet saver-modal-sheet">
             <!-- Header của Saver -->
@@ -2633,7 +2646,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=76" defer></script>
+    <script src="main/js/app.js?v=77" defer></script>
     <script src="main/js/notes.js?v=3" defer></script>
     <script src="main/js/handbook.js?v=6" defer></script>
     <script src="main/js/her.js?v=11" defer></script>
