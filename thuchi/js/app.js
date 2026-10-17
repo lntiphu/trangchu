@@ -17,6 +17,9 @@ let supabaseClient = null;
 let supabaseSubscription = null;
 let supabaseSubscriptionUserId = null;
 const realtimeChannelInstanceId = Math.random().toString(36).slice(2);
+let realtimeChannelSequence = 0;
+let realtimeRetryTimer = null;
+let expenseResumeListenersBound = false;
 let expenseRevision = 0;
 let expenseFetchSequence = 0;
 let expenseWriteBusy = false;
@@ -437,7 +440,16 @@ function initUI() {
     if (dateEl) {
         dateEl.innerText = `${currentDay}, ngày ${currentDateVal} tháng ${currentMonthVal} năm ${currentYearVal}`;
     }
+    const dayNumEl = document.getElementById('header-calendar-day');
+    if (dayNumEl) dayNumEl.innerText = currentDateVal;
+    const monthNumEl = document.getElementById('header-calendar-month');
+    if (monthNumEl) monthNumEl.innerText = `Thg ${currentMonthVal}`;
+    const weekdayEl = document.getElementById('header-calendar-weekday');
+    if (weekdayEl) weekdayEl.innerText = currentDay.startsWith('Thứ ') ? `T${currentDay.split(' ')[1]}` : (currentDay === 'Chủ Nhật' ? 'CN' : currentDay);
     updateWelcomeDate();
+    if (!window._welcomeDateInterval) {
+        window._welcomeDateInterval = setInterval(updateWelcomeDate, 1000);
+    }
 
     // Đặt ngày mặc định cho form nhập là ngày hôm nay và đồng bộ dd/mm/yyyy
     syncExpenseDateDisplay(getTodayDateString());
@@ -2555,14 +2567,22 @@ function navigateToFeature(featureName) {
 
 function updateWelcomeDate() {
     const dateEl = document.getElementById('welcome-current-date');
-    if (!dateEl) return;
+    const headerClockEl = document.getElementById('header-live-clock');
     const now = new Date();
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
     const dayName = days[now.getDay()];
     const day = now.getDate();
     const month = now.getMonth() + 1;
     const year = now.getFullYear();
-    dateEl.textContent = `${dayName}, ${day} Tháng ${month}, ${year}`;
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    if (dateEl) {
+        dateEl.textContent = `${dayName}, ${day} Tháng ${month}, ${year}`;
+    }
+    if (headerClockEl) {
+        headerClockEl.textContent = `${hours}:${minutes}:${seconds}`;
+    }
 }
 
 window.showWelcomeHubPage = showWelcomeHubPage;
@@ -2616,6 +2636,11 @@ function setCurrentSupabaseUser(user) {
     const nextUserId = user && user.id ? user.id : null;
     if (state.currentUserId === nextUserId) return;
 
+    if (!nextUserId && realtimeRetryTimer !== null) {
+        clearTimeout(realtimeRetryTimer);
+        realtimeRetryTimer = null;
+    }
+
     expenseFetchSequence++;
     expenseRevision++;
     state.currentUserId = nextUserId;
@@ -2663,36 +2688,91 @@ async function checkAuthSession() {
     }
 }
 
+function scheduleRealtimeRetry(userId, channel) {
+    if (realtimeRetryTimer !== null) return;
+    realtimeRetryTimer = setTimeout(() => {
+        realtimeRetryTimer = null;
+        if (state.currentUserId !== userId) return;
+        if (channel && supabaseSubscription !== channel) return;
+        setupRealtimeSubscription(true);
+    }, 5000);
+    // Không giữ tiến trình kiểm thử Node chỉ vì bộ hẹn giờ kết nối lại.
+    realtimeRetryTimer?.unref?.();
+}
+
 // Đăng ký nhận sự thay đổi dữ liệu thời gian thực (Real-time listener)
-function setupRealtimeSubscription() {
+function setupRealtimeSubscription(force = false) {
     if (!supabaseClient || !state.currentUserId) return;
-    if (supabaseSubscription && supabaseSubscriptionUserId === state.currentUserId) return;
+    if (!force && supabaseSubscription && supabaseSubscriptionUserId === state.currentUserId) return;
+    if (realtimeRetryTimer !== null) {
+        clearTimeout(realtimeRetryTimer);
+        realtimeRetryTimer = null;
+    }
     if (supabaseSubscription) {
-        try { supabaseClient.removeChannel(supabaseSubscription); }
-        catch (error) { console.warn('Không thể đóng kênh Realtime cũ:', error); }
+        const oldChannel = supabaseSubscription;
         supabaseSubscription = null;
         supabaseSubscriptionUserId = null;
+        try { supabaseClient.removeChannel(oldChannel); }
+        catch (error) { console.warn('Không thể đóng kênh Realtime cũ:', error); }
     }
 
     let channel;
+    const userId = state.currentUserId;
     try {
-        channel = supabaseClient.channel(`money-data-realtime-thuchi-${realtimeChannelInstanceId}-${state.currentUserId}`);
+        channel = supabaseClient.channel(`money-data-realtime-thuchi-${realtimeChannelInstanceId}-${++realtimeChannelSequence}-${userId}`);
         channel.on('postgres_changes', {
-            event: '*', schema: 'public', table: 'expenses', filter: `user_id=eq.${state.currentUserId}`
-        }, handleRealtimeDbChange);
+            event: 'INSERT', schema: 'public', table: 'expenses', filter: `user_id=eq.${userId}`
+        }, payload => {
+            if (supabaseSubscription === channel && state.currentUserId === userId) handleRealtimeDbChange(payload);
+        });
         channel.on('postgres_changes', {
-            event: '*', schema: 'public', table: 'savers', filter: `user_id=eq.${state.currentUserId}`
+            event: 'UPDATE', schema: 'public', table: 'expenses', filter: `user_id=eq.${userId}`
+        }, payload => {
+            if (supabaseSubscription === channel && state.currentUserId === userId) handleRealtimeDbChange(payload);
+        });
+        // Supabase không áp dụng bộ lọc user_id cho DELETE; chỉ xử lý ID đang hiển thị.
+        channel.on('postgres_changes', {
+            event: 'DELETE', schema: 'public', table: 'expenses'
+        }, payload => {
+            if (supabaseSubscription === channel && state.currentUserId === userId) handleRealtimeDbChange(payload);
+        });
+        channel.on('postgres_changes', {
+            event: '*', schema: 'public', table: 'savers', filter: `user_id=eq.${userId}`
         }, handleRealtimeSaverChange);
-        channel.subscribe();
         supabaseSubscription = channel;
-        supabaseSubscriptionUserId = state.currentUserId;
+        supabaseSubscriptionUserId = userId;
+        channel.subscribe(status => {
+            if (supabaseSubscription !== channel || state.currentUserId !== userId) return;
+            if (status === 'SUBSCRIBED') {
+                if (realtimeRetryTimer !== null) {
+                    clearTimeout(realtimeRetryTimer);
+                    realtimeRetryTimer = null;
+                }
+                // Bù các thay đổi xảy ra giữa lần tải đầu và lúc kênh thực sự hoạt động.
+                fetchExpensesFromSupabase();
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                fetchExpensesFromSupabase();
+                scheduleRealtimeRetry(userId, channel);
+            }
+        });
     } catch (error) {
+        if (supabaseSubscription === channel) {
+            supabaseSubscription = null;
+            supabaseSubscriptionUserId = null;
+        }
         if (channel) {
             try { supabaseClient.removeChannel(channel); }
             catch (cleanupError) { console.warn('Không thể đóng kênh Realtime lỗi:', cleanupError); }
         }
         console.warn('Không thể đăng ký Realtime cho Thu chi; dữ liệu vẫn được tải trực tiếp:', error);
+        scheduleRealtimeRetry(userId, null);
     }
+}
+
+function refreshExpensesOnResume() {
+    if (document.visibilityState === 'hidden' || !state.currentUserId) return;
+    if (!supabaseSubscription && realtimeRetryTimer === null) setupRealtimeSubscription();
+    fetchExpensesFromSupabase();
 }
 
 // Xử lý Sự kiện Submit Form Đăng nhập Meta/Supabase Auth
@@ -2807,6 +2887,12 @@ function initSupabase() {
             realtime: { timeout: 5000 }
         });
         clientOwner.__QLCT_SUPABASE_CLIENT = supabaseClient;
+
+        if (!expenseResumeListenersBound) {
+            document.addEventListener('visibilitychange', refreshExpensesOnResume);
+            window.addEventListener('online', refreshExpensesOnResume);
+            expenseResumeListenersBound = true;
+        }
         
         // Lắng nghe sự thay đổi trạng thái xác thực từ Supabase Auth
         supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -2821,9 +2907,10 @@ function initSupabase() {
             } else if (event === 'SIGNED_OUT') {
                 setCurrentSupabaseUser(null);
                 if (supabaseSubscription) {
-                    supabaseClient.removeChannel(supabaseSubscription);
+                    const oldChannel = supabaseSubscription;
                     supabaseSubscription = null;
                     supabaseSubscriptionUserId = null;
+                    supabaseClient.removeChannel(oldChannel);
                 }
                 showLoginScreen();
                 hideLogoutButton();
@@ -2905,21 +2992,27 @@ function handleRealtimeDbChange(payload) {
     const newRecord = payload.new;
     const oldRecord = payload.old;
 
-    if (eventType === 'DELETE' && oldRecord && !oldRecord.user_id) {
-        // Một số cấu hình Realtime chỉ gửi khóa chính của dòng đã xóa.
-        fetchExpensesFromSupabase();
+    if (eventType === 'DELETE') {
+        if (!oldRecord?.id) {
+            fetchExpensesFromSupabase();
+            return;
+        }
+        if (oldRecord.user_id && oldRecord.user_id !== state.currentUserId) return;
+        const deletedId = String(oldRecord.id);
+        if (!state.expenses.some(item => item.id === deletedId)) return;
+        state.expenses = state.expenses.filter(item => item.id !== deletedId);
+        expenseRevision++;
+        saveData();
+        updateUI();
         return;
     }
-    const changedRecord = eventType === 'DELETE' ? oldRecord : newRecord;
-    if (!changedRecord || changedRecord.user_id !== state.currentUserId) return;
+    if (!newRecord || newRecord.user_id !== state.currentUserId) return;
     
     if (eventType === 'INSERT') {
         if (!state.expenses.some(e => e.id === String(newRecord.id))) {
             state.expenses.unshift(normalizeExpenseRecord(newRecord));
             sortExpenses();
         }
-    } else if (eventType === 'DELETE') {
-        state.expenses = state.expenses.filter(e => e.id !== String(oldRecord.id));
     } else if (eventType === 'UPDATE') {
         const idx = state.expenses.findIndex(e => e.id === String(newRecord.id));
         if (idx !== -1) {
@@ -2930,7 +3023,7 @@ function handleRealtimeDbChange(payload) {
             fetchExpensesFromSupabase();
             return;
         }
-    }
+    } else return;
     
     expenseRevision++;
     saveData();
