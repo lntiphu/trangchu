@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=5">
     <script>
         function goBackToHome() {
             try {
@@ -33,27 +33,39 @@
     <div class="notes-container">
         <!-- Top Header Bar -->
         <header class="notes-header-bar">
-            <button type="button" class="notes-header-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
-                <i data-lucide="arrow-left"></i>
-            </button>
-            <div class="notes-header-title-wrap">
-                <span class="notes-header-eyebrow">CHỨC NĂNG BỔ SUNG</span>
-                <h1 class="notes-header-heading">Ghi chú cá nhân</h1>
+            <div class="notes-header-left">
+                <button type="button" class="notes-header-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="notes-brand-badge">
+                    <i data-lucide="notebook-pen"></i>
+                </div>
+                <div class="notes-header-title-wrap">
+                    <span class="notes-header-eyebrow">SỔ TAY &amp; LƯU TRỮ</span>
+                    <h1 class="notes-header-heading">Ghi chú cá nhân</h1>
+                </div>
             </div>
             <button type="button" class="notes-header-add-btn" id="btn-header-add-note" title="Thêm ghi chú mới" aria-label="Thêm mới">
                 <i data-lucide="plus"></i>
+                <span class="notes-btn-text">Thêm ghi chú</span>
             </button>
         </header>
 
         <!-- Controls & Search -->
-        <div class="notes-list-header">
-            <div class="notes-count-info">
-                <span class="notes-section-title">Danh sách ghi chú</span>
-                <span class="notes-counter-badge" id="notes-counter-badge">0 ghi chú</span>
-            </div>
-            <div class="notes-search-wrapper" id="notes-search-wrapper">
+        <div class="notes-search-section">
+            <div class="notes-search-box">
                 <i data-lucide="search" class="notes-search-icon"></i>
-                <input type="text" id="notes-search-input" placeholder="Tìm theo tên hoặc mô tả...">
+                <input type="text" id="notes-search-input" placeholder="Tìm kiếm ghi chú theo tên, nội dung..." autocomplete="off">
+                <button type="button" class="notes-search-clear-btn" id="notes-clear-search-btn" title="Xóa tìm kiếm" aria-label="Xóa">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="notes-stats-row">
+                <div class="notes-stats-label">
+                    <i data-lucide="sticky-note"></i>
+                    <span>Danh sách ghi chú</span>
+                </div>
+                <span class="notes-counter-badge" id="notes-counter-badge">0 ghi chú</span>
             </div>
         </div>
 
@@ -99,24 +111,9 @@
         </div>
     </div>
 
-    <!-- FIXED BOTTOM NAVIGATION BAR -->
-    <nav class="notes-bottom-nav" aria-label="Thanh điều hướng">
-        <button type="button" class="notes-nav-item" id="btn-nav-search" title="Tìm kiếm ghi chú" aria-label="Tìm kiếm">
-            <i data-lucide="search"></i>
-            <span>Tìm kiếm</span>
-        </button>
-        <button type="button" class="notes-nav-add-btn" id="btn-toggle-add-note" title="Thêm ghi chú mới" aria-label="Thêm ghi chú">
-            <i data-lucide="plus"></i>
-        </button>
-        <button type="button" class="notes-nav-item" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
-            <i data-lucide="arrow-left"></i>
-            <span>Quay lại</span>
-        </button>
-    </nav>
-
     <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/app.js?v=2"></script>
+    <script src="js/app.js?v=4"></script>
 </body>
 </html>
