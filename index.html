@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=95">
+    <link rel="stylesheet" href="main/css/styles.css?v=96">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -610,53 +610,71 @@
 
     <!-- MODAL CHỌN NHANH THÁNG NĂM & ALL TIME CHO LỊCH SỬ THU CHI -->
     <div class="modal-overlay history-month-modal-overlay" id="history-month-modal" aria-hidden="true">
-        <div class="modal-sheet history-month-modal-sheet" style="max-width: 360px; padding: 20px; border-radius: 24px; background: #FAF7F2; box-shadow: 0 20px 60px rgba(35,44,37,0.25);">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(52,66,55,0.08); display: flex; align-items: center; justify-content: center; color: var(--accent-olive);">
-                        <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+        <div class="modal-sheet history-month-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="history-modal-title">
+            <!-- Header -->
+            <div class="history-modal-header">
+                <div class="history-modal-header-left">
+                    <div class="history-modal-icon-badge">
+                        <i data-lucide="calendar"></i>
                     </div>
-                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--accent-olive);">Chọn thời gian</h3>
+                    <div>
+                        <h3 id="history-modal-title" class="history-modal-title">Chọn thời gian</h3>
+                        <p class="history-modal-subtitle">Lọc giao dịch theo tháng hoặc toàn bộ</p>
+                    </div>
                 </div>
-                <button type="button" id="btn-close-history-month-modal" aria-label="Đóng" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(52,66,55,0.06); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                <button type="button" id="btn-close-history-month-modal" class="history-modal-close-btn" aria-label="Đóng">
+                    <i data-lucide="x"></i>
                 </button>
             </div>
 
             <!-- Option All Time (Tất cả thời gian) -->
-            <div style="margin-bottom: 14px;">
-                <button type="button" id="btn-history-select-all-time" class="history-all-time-btn" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-radius: 14px; border: 1.5px solid rgba(52,66,55,0.14); background: #ffffff; cursor: pointer; transition: all 0.2s ease;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i data-lucide="infinity" style="width: 20px; height: 20px; color: var(--accent-olive);"></i>
-                        <div style="text-align: left;">
-                            <div style="font-weight: 800; font-size: 0.88rem; color: var(--accent-olive);">Tất cả thời gian (All Time)</div>
-                            <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px;">Xem &amp; tìm kiếm toàn bộ giao dịch</div>
+            <div class="history-all-time-wrap">
+                <button type="button" id="btn-history-select-all-time" class="history-all-time-btn">
+                    <div class="history-all-time-left">
+                        <div class="history-all-time-icon-wrap">
+                            <i data-lucide="infinity"></i>
+                        </div>
+                        <div class="history-all-time-info">
+                            <div class="history-all-time-title">
+                                <span>Tất cả thời gian</span>
+                                <span class="history-all-time-tag">All Time</span>
+                            </div>
+                            <div class="history-all-time-desc">Xem &amp; tìm kiếm toàn bộ giao dịch</div>
                         </div>
                     </div>
-                    <i data-lucide="check" class="history-all-time-check" style="width: 18px; height: 18px; color: var(--accent-olive); display: none;"></i>
+                    <div class="history-all-time-status">
+                        <div class="history-all-time-check-bubble">
+                            <i data-lucide="check" class="history-all-time-check"></i>
+                        </div>
+                        <i data-lucide="chevron-right" class="history-all-time-arrow"></i>
+                    </div>
                 </button>
             </div>
 
             <!-- Năm selector -->
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: #ffffff; border-radius: 14px; border: 1px solid rgba(52,66,55,0.1); margin-bottom: 12px;">
-                <button type="button" id="btn-history-modal-prev-year" aria-label="Năm trước" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(52,66,55,0.06); color: var(--accent-olive); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+            <div class="history-year-selector-bar">
+                <button type="button" id="btn-history-modal-prev-year" class="history-year-nav-btn" aria-label="Năm trước" title="Năm trước">
+                    <i data-lucide="chevron-left"></i>
                 </button>
-                <span id="history-modal-year-label" style="font-size: 0.98rem; font-weight: 800; color: var(--accent-olive);">2026</span>
-                <button type="button" id="btn-history-modal-next-year" aria-label="Năm sau" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(52,66,55,0.06); color: var(--accent-olive); display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                    <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                <div class="history-year-center">
+                    <i data-lucide="calendar-days" class="history-year-center-icon"></i>
+                    <span class="history-year-prefix">Năm</span>
+                    <span id="history-modal-year-label" class="history-year-val">2026</span>
+                </div>
+                <button type="button" id="btn-history-modal-next-year" class="history-year-nav-btn" aria-label="Năm sau" title="Năm sau">
+                    <i data-lucide="chevron-right"></i>
                 </button>
             </div>
 
             <!-- 12 Tháng Grid -->
-            <div id="history-modal-months-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+            <div id="history-modal-months-grid" class="history-modal-months-grid">
                 <!-- Dynamically generated -->
             </div>
 
             <!-- Footer: Về tháng hiện tại -->
-            <div style="display: flex; justify-content: center; border-top: 1px dashed rgba(52,66,55,0.12); padding-top: 10px;">
-                <button type="button" id="btn-history-jump-current-month" style="background: none; border: none; font-size: 0.78rem; font-weight: 700; color: var(--accent-olive); opacity: 0.85; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px;">
-                    <i data-lucide="rotate-ccw" style="width: 13px; height: 13px;"></i>
+            <div class="history-modal-footer">
+                <button type="button" id="btn-history-jump-current-month" class="history-jump-current-btn">
+                    <i data-lucide="rotate-ccw"></i>
                     <span>Về tháng hiện tại</span>
                 </button>
             </div>
