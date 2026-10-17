@@ -1,5 +1,5 @@
 // Service Worker for "Làm chủ mọi thứ" PWA
-const CACHE_NAME = 'lam-chu-moi-thu-v68';
+const CACHE_NAME = 'lam-chu-moi-thu-v69';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -10,9 +10,11 @@ const STATIC_ASSETS = [
     './assets/pwa-icon-512.png',
     './assets/web-avatar.png',
     './assets/logo-chu-dong.svg',
-    './main/css/styles.css?v=93',
-    './main/js/app.js?v=76',
-    './main/js/her.js?v=11'
+    './main/css/styles.css?v=96',
+    './main/js/app.js?v=78',
+    './main/js/her.js?v=11',
+    './thuchi/index.html',
+    './thuchi/js/app.js?v=18'
 ];
 
 // Install: Cache static shell assets
@@ -58,8 +60,9 @@ self.addEventListener('fetch', (event) => {
         return; // Let browser perform direct network fetch
     }
 
-    // HTML navigation: Network-first with cache fallback
-    if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
+    // HTML navigation & same-origin JS/CSS: Network-first with cache fallback
+    const isSameOriginCode = url.origin === self.location.origin && (url.pathname.endsWith('.js') || url.pathname.endsWith('.css'));
+    if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html') || isSameOriginCode) {
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
@@ -71,7 +74,10 @@ self.addEventListener('fetch', (event) => {
                 })
                 .catch(() => {
                     return caches.match(request).then((cachedResponse) => {
-                        return cachedResponse || caches.match('./index.html');
+                        if (cachedResponse) return cachedResponse;
+                        return (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html'))
+                            ? caches.match('./index.html')
+                            : Response.error();
                     });
                 })
         );
