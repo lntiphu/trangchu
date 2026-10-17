@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=4">
     <script>
         function goBackToHome() {
             try {
@@ -31,6 +31,31 @@
 </head>
 <body>
     <div class="saver-container">
+        <!-- Header Quản lý Tiết kiệm -->
+        <header class="saver-header-row">
+            <div class="saver-header-left">
+                <button type="button" class="saver-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
+                    <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="saver-badge-icon">
+                    <i data-lucide="piggy-bank"></i>
+                </div>
+                <div class="saver-title-info">
+                    <h2>Quản lý Tiết kiệm</h2>
+                    <p>Theo dõi mục tiêu & số dư tài chính</p>
+                </div>
+            </div>
+            <div class="saver-header-actions">
+                <button type="button" class="saver-action-icon-btn" onclick="toggleSaverSearch()" title="Tìm kiếm mục tiêu" aria-label="Tìm kiếm">
+                    <i data-lucide="search"></i>
+                </button>
+                <button type="button" class="btn-add-saver" onclick="openAddSaverModal()" title="Thêm mục tiết kiệm mới" aria-label="Thêm mục tiết kiệm">
+                    <i data-lucide="plus"></i>
+                    <span>Thêm mục</span>
+                </button>
+            </div>
+        </header>
+
         <!-- Summary Grid -->
         <div class="saver-summary-grid">
             <div class="saver-sum-card card-momo">
@@ -67,21 +92,6 @@
             <!-- Dynamic Saver Cards -->
         </div>
     </div>
-
-    <!-- Bottom Navigation Bar with Center Add Button and Search -->
-    <nav class="saver-bottom-nav">
-        <button type="button" class="saver-nav-search-btn" onclick="toggleSaverSearch()" title="Tìm kiếm" aria-label="Tìm kiếm">
-            <i data-lucide="search"></i>
-            <span>Tìm kiếm</span>
-        </button>
-        <button type="button" class="saver-add-center-btn" onclick="openAddSaverModal()" title="Thêm mục tiết kiệm" aria-label="Thêm mục tiết kiệm">
-            <i data-lucide="plus"></i>
-        </button>
-        <button type="button" class="saver-nav-back-btn" onclick="goBackToHome()" title="Quay lại Trang chủ" aria-label="Quay lại">
-            <i data-lucide="arrow-left"></i>
-            <span>Quay lại</span>
-        </button>
-    </nav>
 
     <!-- MODAL THÊM / SỬA MỤC TIẾT KIỆM -->
     <div class="modal-overlay" id="add-saver-modal">
@@ -221,6 +231,6 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/app.js?v=3"></script>
+    <script src="js/app.js?v=4"></script>
 </body>
 </html>
