@@ -133,14 +133,206 @@ html, body {
 
 /* HEADER */
 .app-header {
-    padding: 10px 20px 12px 20px;
+    padding: 14px 20px 12px 20px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     background: transparent;
     border-bottom: 1px solid rgba(52, 66, 55, 0.06);
     flex-shrink: 0;
     z-index: 10;
+}
+
+/* HEADER OVERVIEW - DETAILED RICH HEADER */
+.header-overview {
+    gap: 16px;
+}
+
+.header-overview .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.header-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+
+.header-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px 3px 7px;
+    border-radius: 999px;
+    background: rgba(46, 125, 82, 0.1);
+    color: #2E7D52;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border: 1px solid rgba(46, 125, 82, 0.18);
+}
+
+.status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2E7D52;
+    box-shadow: 0 0 0 0 rgba(46, 125, 82, 0.5);
+    animation: livePulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes livePulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(46, 125, 82, 0.6);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(46, 125, 82, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(46, 125, 82, 0);
+    }
+}
+
+.header-clock-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(52, 66, 55, 0.05);
+    color: var(--accent-olive, #344237);
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid rgba(52, 66, 55, 0.08);
+}
+
+.header-clock-wrap i,
+.header-clock-wrap svg {
+    width: 12px;
+    height: 12px;
+    color: var(--text-secondary, #7A847C);
+}
+
+.header-main-date {
+    margin: 0;
+    font-family: var(--font-heading, inherit);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--accent-olive, #344237);
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+    word-break: break-word;
+}
+
+@media (min-width: 640px) {
+    .header-main-date {
+        font-size: 1.55rem;
+    }
+}
+
+.header-date-sub {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+    color: var(--text-secondary, #7A847C);
+    margin-top: 2px;
+    flex-wrap: wrap;
+}
+
+.header-sub-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 700;
+    color: #CF5A44;
+}
+
+.header-sub-tag i,
+.header-sub-tag svg {
+    width: 13px;
+    height: 13px;
+}
+
+.header-sub-sep {
+    color: rgba(52, 66, 55, 0.25);
+    font-weight: 700;
+}
+
+.header-sub-desc {
+    color: var(--text-secondary, #7A847C);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* MINI CALENDAR BADGE TILE */
+.header-overview .header-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.header-calendar-badge {
+    width: 50px;
+    border-radius: 14px;
+    background: #FFFFFF;
+    border: 1px solid rgba(52, 66, 55, 0.12);
+    box-shadow: 0 4px 14px rgba(52, 66, 55, 0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.header-calendar-badge:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 18px rgba(52, 66, 55, 0.1);
+}
+
+.calendar-badge-top {
+    background: linear-gradient(135deg, #E58570 0%, #CF5A44 100%);
+    color: #FFFFFF;
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 3px 0;
+    line-height: 1;
+}
+
+.calendar-badge-day {
+    color: var(--accent-olive, #344237);
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    padding: 3px 0 1px;
+    font-family: var(--font-heading, inherit);
+}
+
+.calendar-badge-bottom {
+    background: rgba(52, 66, 55, 0.04);
+    color: var(--text-secondary, #7A847C);
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 0 3px;
+    line-height: 1;
+    border-top: 1px dashed rgba(52, 66, 55, 0.08);
 }
 
 .date-today {
@@ -377,10 +569,80 @@ html, body {
     overflow: hidden;
 }
 
-/* DASHBOARD QUICK SHORTCUTS */
+/* DASHBOARD QUICK SHORTCUTS - PREMIUM MODERN DESIGN */
 .dashboard-shortcuts-card {
-    padding: 18px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 18px 20px 20px;
     margin-bottom: 16px;
+    border: 1px solid rgba(52, 66, 55, 0.08);
+    box-shadow: 0 4px 20px rgba(52, 66, 55, 0.04), 0 1px 3px rgba(52, 66, 55, 0.02);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-shortcuts-card::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 110px;
+    height: 110px;
+    background: radial-gradient(circle, rgba(229, 133, 112, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+}
+
+.dashboard-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(52, 66, 55, 0.06);
+}
+
+.dashboard-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-card-icon-bubble {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(229, 133, 112, 0.18) 0%, rgba(207, 90, 68, 0.1) 100%);
+    color: #CF5A44;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(207, 90, 68, 0.1);
+}
+
+.dashboard-card-icon-bubble i,
+.dashboard-card-icon-bubble svg {
+    width: 19px;
+    height: 19px;
+}
+
+.dashboard-card-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--accent-olive, #344237);
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+}
+
+.dashboard-card-sub {
+    font-size: 0.74rem;
+    font-weight: 500;
+    color: var(--text-secondary, #7A847C);
+    display: block;
+    margin-top: 2px;
 }
 
 .dashboard-shortcuts-grid {
@@ -389,16 +651,23 @@ html, body {
     gap: 10px;
 }
 
+@media (min-width: 640px) {
+    .dashboard-shortcuts-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+}
+
 .shortcut-pill {
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 14px;
+    gap: 11px;
+    padding: 11px 13px;
+    border-radius: 16px;
     border: 1px solid rgba(52, 66, 55, 0.08);
     background: #FFFFFF;
-    color: var(--accent-olive);
+    color: var(--accent-olive, #344237);
     font-family: inherit;
     font-size: 0.82rem;
     font-weight: 700;
@@ -407,60 +676,125 @@ html, body {
     transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px rgba(52, 66, 55, 0.03);
     text-align: left;
-}
-
-.shortcut-pill span {
-    min-width: 0;
-}
-
-.shortcut-pill i,
-.shortcut-pill svg {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .shortcut-pill:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(52, 66, 55, 0.1);
-    border-color: var(--accent-olive);
+    box-shadow: 0 8px 22px rgba(52, 66, 55, 0.08);
 }
 
 .shortcut-pill:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
 }
 
+.shortcut-icon-bubble {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.shortcut-pill:hover .shortcut-icon-bubble {
+    transform: scale(1.08);
+}
+
+.shortcut-icon-bubble i,
+.shortcut-icon-bubble svg,
+.shortcut-pill > i,
+.shortcut-pill > svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.shortcut-label,
+.shortcut-pill > span {
+    min-width: 0;
+    word-break: break-word;
+    letter-spacing: -0.15px;
+}
+
+/* Individual Pill Flavors */
 .shortcut-pill-add {
-    background: linear-gradient(135deg, rgba(229, 133, 112, 0.12) 0%, rgba(207, 90, 68, 0.12) 100%);
-    border-color: rgba(207, 90, 68, 0.25);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(255, 245, 242, 0.85) 100%);
+    border-color: rgba(207, 90, 68, 0.22);
+}
+.shortcut-pill-add .shortcut-icon-bubble {
+    background: linear-gradient(135deg, rgba(229, 133, 112, 0.22) 0%, rgba(207, 90, 68, 0.16) 100%);
     color: #CF5A44;
+}
+.shortcut-pill-add .shortcut-label,
+.shortcut-pill-add span {
+    color: #CF5A44;
+}
+.shortcut-pill-add:hover {
+    border-color: #CF5A44;
+    box-shadow: 0 8px 24px rgba(207, 90, 68, 0.16);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(255, 241, 237, 0.95) 100%);
 }
 
 .shortcut-pill-analysis {
-    background: linear-gradient(135deg, rgba(247, 236, 225, 0.9) 0%, rgba(226, 174, 162, 0.16) 100%);
-    border-color: rgba(226, 174, 162, 0.4);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(254, 249, 243, 0.85) 100%);
+    border-color: rgba(217, 119, 6, 0.2);
+}
+.shortcut-pill-analysis .shortcut-icon-bubble {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.12) 100%);
+    color: #D97706;
+}
+.shortcut-pill-analysis:hover {
+    border-color: #D97706;
+    box-shadow: 0 8px 24px rgba(217, 119, 6, 0.14);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(254, 246, 237, 0.95) 100%);
 }
 
 .shortcut-pill-saver {
-    background: linear-gradient(135deg, rgba(237, 236, 229, 0.92) 0%, rgba(106, 123, 104, 0.12) 100%);
-    border-color: rgba(106, 123, 104, 0.28);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(243, 248, 244, 0.85) 100%);
+    border-color: rgba(46, 125, 82, 0.2);
+}
+.shortcut-pill-saver .shortcut-icon-bubble {
+    background: linear-gradient(135deg, rgba(46, 125, 82, 0.18) 0%, rgba(33, 94, 60, 0.12) 100%);
+    color: #2E7D52;
+}
+.shortcut-pill-saver:hover {
+    border-color: #2E7D52;
+    box-shadow: 0 8px 24px rgba(46, 125, 82, 0.14);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(239, 247, 241, 0.95) 100%);
+}
+
+.shortcut-pill-history {
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(245, 245, 255, 0.85) 100%);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+.shortcut-pill-history .shortcut-icon-bubble {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(79, 70, 229, 0.12) 100%);
+    color: #4F46E5;
+}
+.shortcut-pill-history:hover {
+    border-color: #4F46E5;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.14);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(240, 240, 255, 0.95) 100%);
 }
 
 .shortcut-pill-home {
-    background: linear-gradient(135deg, rgba(245, 221, 214, 0.78) 0%, rgba(220, 139, 120, 0.14) 100%);
-    border-color: rgba(220, 139, 120, 0.3);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(245, 247, 245, 0.85) 100%);
+    border-color: rgba(52, 66, 55, 0.16);
 }
-
-.shortcut-pill-add:hover {
-    background: linear-gradient(135deg, #E58570 0%, #CF5A44 100%);
-    color: #FFFFFF;
-    border-color: transparent;
+.shortcut-pill-home .shortcut-icon-bubble {
+    background: linear-gradient(135deg, rgba(52, 66, 55, 0.14) 0%, rgba(74, 92, 78, 0.1) 100%);
+    color: #344237;
 }
-
-@media (min-width: 640px) {
-    .dashboard-shortcuts-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+.shortcut-pill-home:hover {
+    border-color: #344237;
+    box-shadow: 0 8px 24px rgba(52, 66, 55, 0.14);
+    background: linear-gradient(135deg, #FFFFFF 0%, rgba(241, 244, 241, 0.95) 100%);
 }
 
 .section-header {
