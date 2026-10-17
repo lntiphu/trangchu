@@ -24,18 +24,39 @@ let expenseRevision = 0;
 let expenseFetchSequence = 0;
 let expenseWriteBusy = false;
 let expensePreviewUserId = null;
-let calendarYear = new Date().getFullYear();
-let calendarMonth = new Date().getMonth();
+const VN_TIMEZONE_OFFSET_MS = 7 * 60 * 60 * 1000; // UTC+7 (Hà Nội)
+
+function getVietnamDateParts(input = Date.now()) {
+    const ms = input instanceof Date
+        ? input.getTime()
+        : (typeof input === 'number' ? input : new Date(input).getTime());
+    if (Number.isNaN(ms)) return null;
+    const shifted = new Date(ms + VN_TIMEZONE_OFFSET_MS);
+    return {
+        year: shifted.getUTCFullYear(),
+        month: shifted.getUTCMonth(), // 0-11
+        day: shifted.getUTCDate(),
+        dayOfWeek: shifted.getUTCDay(), // 0-6
+        hours: shifted.getUTCHours(),
+        minutes: shifted.getUTCMinutes(),
+        seconds: shifted.getUTCSeconds(),
+        isoDate: shifted.toISOString().slice(0, 10)
+    };
+}
+
+const initialVnDate = getVietnamDateParts();
+let calendarYear = initialVnDate.year;
+let calendarMonth = initialVnDate.month;
 let calendarSelectedDay = null;
-let dashboardCalendarYear = new Date().getFullYear();
-let dashboardCalendarMonth = new Date().getMonth();
-let analysisYear = new Date().getFullYear();
-let analysisMonth = new Date().getMonth();
-let historyYear = new Date().getFullYear();
-let historyMonth = new Date().getMonth();
+let dashboardCalendarYear = initialVnDate.year;
+let dashboardCalendarMonth = initialVnDate.month;
+let analysisYear = initialVnDate.year;
+let analysisMonth = initialVnDate.month;
+let historyYear = initialVnDate.year;
+let historyMonth = initialVnDate.month;
 let hasUserChangedHistoryMonth = false;
 let isHistoryAllTime = false;
-let historyModalYear = new Date().getFullYear();
+let historyModalYear = initialVnDate.year;
 let currentAdjustingSaverId = null;
 let currentAdjustingField = null;
 
@@ -512,21 +533,22 @@ function formatSummaryCurrency(amount) {
 }
 
 function getTodayDateString() {
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000; // offset in milliseconds
-    const localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0, 10);
-    return localISOTime;
+    return getVietnamDateParts().isoDate;
 }
 
 function getDateOffsetString(offsetDays) {
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-    const date = new Date(Date.now() - tzoffset + (offsetDays * 24 * 60 * 60 * 1000));
-    return date.toISOString().slice(0, 10);
+    return getVietnamDateParts(Date.now() + (offsetDays * 24 * 60 * 60 * 1000)).isoDate;
 }
 
 function getVietnameseDayOfWeek(dateStr) {
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const date = new Date(dateStr);
-    return days[date.getDay()];
+    const parts = String(dateStr || '').split('T')[0].split('-').map(Number);
+    if (parts.length === 3 && !parts.some(Number.isNaN)) {
+        const utcDay = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2])).getUTCDay();
+        return days[utcDay];
+    }
+    const vn = getVietnamDateParts(dateStr);
+    return vn ? days[vn.dayOfWeek] : '';
 }
 
 function formatDateStringVietnamese(dateStr) {
@@ -666,7 +688,8 @@ function formatDateTimeVietnamese(exp) {
         }
     }
     
-    if (!d || isNaN(d.getTime())) {
+    const vn = d && !isNaN(d.getTime()) ? getVietnamDateParts(d) : null;
+    if (!vn) {
         if (exp.date) {
             const parts = exp.date.split('-');
             if (parts.length === 3) {
@@ -676,29 +699,29 @@ function formatDateTimeVietnamese(exp) {
         return exp.date || '';
     }
 
-    let hours = d.getHours();
-    const minutes = d.getMinutes().toString().padStart(2, '0');
+    let hours = vn.hours;
+    const minutes = vn.minutes.toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
     hours = hours ? hours : 12;
     const hoursStr = hours.toString().padStart(2, '0');
 
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const year = d.getFullYear().toString().slice(-2);
+    const day = vn.day.toString().padStart(2, '0');
+    const month = (vn.month + 1).toString().padStart(2, '0');
+    const year = vn.year.toString().slice(-2);
 
     return `${hoursStr}:${minutes} ${ampm} ${day}/${month}/${year}`;
 }
 
 // KHỞI TẠO CÁC PHẦN TỬ UI BAN ĐẦU
 function initUI() {
-    // Cập nhật ngày tháng trên header
+    // Cập nhật ngày tháng trên header theo múi giờ UTC+7 Hà Nội
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const now = new Date();
-    const currentDay = days[now.getDay()];
-    const currentDateVal = now.getDate();
-    const currentMonthVal = now.getMonth() + 1;
-    const currentYearVal = now.getFullYear();
+    const now = getVietnamDateParts();
+    const currentDay = days[now.dayOfWeek];
+    const currentDateVal = now.day;
+    const currentMonthVal = now.month + 1;
+    const currentYearVal = now.year;
     const dateEl = document.getElementById('current-date');
     if (dateEl) {
         dateEl.innerText = `${currentDay}, ngày ${currentDateVal} tháng ${currentMonthVal} năm ${currentYearVal}`;
@@ -908,8 +931,8 @@ function registerEventListeners() {
     const btnHistoryJumpCurrentMonth = document.getElementById('btn-history-jump-current-month');
     if (btnHistoryJumpCurrentMonth) {
         btnHistoryJumpCurrentMonth.addEventListener('click', () => {
-            const now = new Date();
-            selectHistoryMonth(now.getFullYear(), now.getMonth());
+            const now = getVietnamDateParts();
+            selectHistoryMonth(now.year, now.month);
         });
     }
 
@@ -1520,13 +1543,13 @@ function renderDashboardCalendar() {
         grid.appendChild(emptyCell);
     }
 
-    const today = new Date();
+    const today = getVietnamDateParts();
     for (let day = 1; day <= daysInMonth; day++) {
         const amount = dayTotals[day] || 0;
-        const dayOfWeek = new Date(dashboardCalendarYear, dashboardCalendarMonth, day).getDay();
-        const isToday = today.getFullYear() === dashboardCalendarYear
-            && today.getMonth() === dashboardCalendarMonth
-            && today.getDate() === day;
+        const dayOfWeek = new Date(Date.UTC(dashboardCalendarYear, dashboardCalendarMonth, day)).getUTCDay();
+        const isToday = today.year === dashboardCalendarYear
+            && today.month === dashboardCalendarMonth
+            && today.day === day;
         const cell = document.createElement('div');
         cell.className = `calendar-day-cell${isToday ? ' today' : ''}${amount > 0 ? ' has-expense' : ''}${dayOfWeek === 0 ? ' sunday' : ''}`;
 
@@ -1565,9 +1588,9 @@ function openCalendarModal(e) {
         modalEl.classList.add('active');
     }
 
-    const today = new Date();
-    calendarYear = today.getFullYear();
-    calendarMonth = today.getMonth();
+    const today = getVietnamDateParts();
+    calendarYear = today.year;
+    calendarMonth = today.month;
 
     try {
         renderCalendar();
@@ -1735,11 +1758,11 @@ function renderCalendar() {
         monthTotalEl.innerText = formatCurrency(monthTotal);
     }
 
-    // Ngày hôm nay để highlight
-    const todayObj = new Date();
-    const isCurrentYear = todayObj.getFullYear() === calendarYear;
-    const isCurrentMonth = todayObj.getMonth() === calendarMonth;
-    const todayDate = todayObj.getDate();
+    // Ngày hôm nay để highlight (theo múi giờ UTC+7 Hà Nội)
+    const todayObj = getVietnamDateParts();
+    const isCurrentYear = todayObj.year === calendarYear;
+    const isCurrentMonth = todayObj.month === calendarMonth;
+    const todayDate = todayObj.day;
 
     // 1. Các ô trống padding đầu tháng
     for (let i = 0; i < firstDayOffset; i++) {
@@ -1754,7 +1777,7 @@ function renderCalendar() {
         let classNames = 'calendar-day-cell';
 
         // Xác định thứ trong tuần của ngày này (0=CN, 6=T7)
-        const dayOfWeek = new Date(calendarYear, calendarMonth, day).getDay();
+        const dayOfWeek = new Date(Date.UTC(calendarYear, calendarMonth, day)).getUTCDay();
         if (dayOfWeek === 0) classNames += ' sunday'; // Chủ Nhật - màu đỏ
 
         const isToday = isCurrentYear && isCurrentMonth && day === todayDate;
@@ -1984,24 +2007,19 @@ function renderRecentExpensesDashboard() {
 
 // TÍNH TOÁN VÀ HIỂN THỊ CÁC THẺ TỔNG KẾT
 function calculateAndRenderSummaries() {
-    const today = getTodayDateString();
+    const vnToday = getVietnamDateParts();
+    const today = vnToday.isoDate;
     
-    // Xác định phạm vi Tuần này (Thứ Hai -> Chủ Nhật)
-    const todayObj = new Date();
-    const dayOfWeek = todayObj.getDay(); // 0: Chủ nhật, 1: T2, 6: T7
-    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Tính ngày chênh lệch để tìm T2
+    // Xác định phạm vi Tuần này (Thứ Hai -> Chủ Nhật) theo UTC+7 Hà Nội
+    const dayOfWeek = vnToday.dayOfWeek; // 0: Chủ nhật, 1: T2, 6: T7
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     
-    const startOfWeek = new Date(todayObj);
-    startOfWeek.setDate(todayObj.getDate() + diffToMonday);
-    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfWeekMs = Date.UTC(vnToday.year, vnToday.month, vnToday.day + diffToMonday, 0, 0, 0, 0);
+    const endOfWeekMs = Date.UTC(vnToday.year, vnToday.month, vnToday.day + diffToMonday + 6, 23, 59, 59, 999);
 
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    endOfWeek.setHours(23, 59, 59, 999);
-
-    // Xác định Tháng này
-    const currentYear = todayObj.getFullYear();
-    const currentMonth = todayObj.getMonth(); // 0 -> 11
+    // Xác định Tháng này theo UTC+7 Hà Nội
+    const currentYear = vnToday.year;
+    const currentMonth = vnToday.month; // 0 -> 11
 
     let totalToday = 0;
     let totalWeek = 0;
@@ -2010,7 +2028,7 @@ function calculateAndRenderSummaries() {
     state.expenses.forEach(exp => {
         const parts = getExpenseDateParts(exp);
         if (!parts) return;
-        const expDate = new Date(parts.year, parts.month, parts.day);
+        const expDateMs = Date.UTC(parts.year, parts.month, parts.day, 12, 0, 0, 0);
         const amount = Number(exp.amount) || 0;
         
         // So sánh Ngày hôm nay
@@ -2019,12 +2037,12 @@ function calculateAndRenderSummaries() {
         }
 
         // So sánh Tuần này
-        if (expDate >= startOfWeek && expDate <= endOfWeek) {
+        if (expDateMs >= startOfWeekMs && expDateMs <= endOfWeekMs) {
             totalWeek += amount;
         }
 
         // So sánh Tháng này
-        if (expDate.getFullYear() === currentYear && expDate.getMonth() === currentMonth) {
+        if (parts.year === currentYear && parts.month === currentMonth) {
             totalMonth += amount;
         }
     });
@@ -2432,9 +2450,9 @@ function expenseBelongsToMonth(exp, targetYear, targetMonth) {
 function ensureHistoryMonthInitialized() {
     if (isHistoryAllTime) return;
     if (hasUserChangedHistoryMonth) return;
-    const now = new Date();
-    const currentY = now.getFullYear();
-    const currentM = now.getMonth();
+    const now = getVietnamDateParts();
+    const currentY = now.year;
+    const currentM = now.month;
 
     // Nếu tháng hiện tại có giao dịch hoặc chưa có dữ liệu giao dịch nào
     const hasCurrentMonth = state.expenses && state.expenses.some(exp => expenseBelongsToMonth(exp, currentY, currentM));
@@ -2458,9 +2476,9 @@ function ensureHistoryMonthInitialized() {
 function changeHistoryMonth(delta) {
     if (isHistoryAllTime) {
         isHistoryAllTime = false;
-        const now = new Date();
-        historyYear = now.getFullYear();
-        historyMonth = now.getMonth();
+        const now = getVietnamDateParts();
+        historyYear = now.year;
+        historyMonth = now.month;
     }
     hasUserChangedHistoryMonth = true;
     historyMonth += delta;
@@ -2490,7 +2508,7 @@ function handleHistoryMonthPickerChange(e) {
 function openHistoryMonthModal() {
     const modal = document.getElementById('history-month-modal');
     if (!modal) return;
-    historyModalYear = isHistoryAllTime ? new Date().getFullYear() : historyYear;
+    historyModalYear = isHistoryAllTime ? getVietnamDateParts().year : historyYear;
     renderHistoryModalContent();
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
@@ -2541,9 +2559,9 @@ function renderHistoryModalContent() {
     if (!grid) return;
     grid.innerHTML = '';
 
-    const now = new Date();
-    const currY = now.getFullYear();
-    const currM = now.getMonth();
+    const now = getVietnamDateParts();
+    const currY = now.year;
+    const currM = now.month;
 
     const monthNames = [
         'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
@@ -2706,8 +2724,7 @@ function exportData() {
         version: "1.0"
     }, null, 2);
 
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '_');
+    const dateStr = getTodayDateString().replace(/-/g, '_');
     const filename = `ispend_backup_${dateStr}.json`;
 
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -2874,15 +2891,15 @@ function navigateToFeature(featureName) {
 function updateWelcomeDate() {
     const dateEl = document.getElementById('welcome-current-date');
     const headerClockEl = document.getElementById('header-live-clock');
-    const now = new Date();
+    const now = getVietnamDateParts();
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const dayName = days[now.getDay()];
-    const day = now.getDate();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const dayName = days[now.dayOfWeek];
+    const day = now.day;
+    const month = now.month + 1;
+    const year = now.year;
+    const hours = String(now.hours).padStart(2, '0');
+    const minutes = String(now.minutes).padStart(2, '0');
+    const seconds = String(now.seconds).padStart(2, '0');
     if (dateEl) {
         dateEl.textContent = `${dayName}, ${day} Tháng ${month}, ${year}`;
     }
