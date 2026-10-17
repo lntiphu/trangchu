@@ -256,7 +256,12 @@
         });
 
         if (counterEl) {
-            counterEl.textContent = `${filtered.length} / ${notes.length} ghi chú`;
+            counterEl.textContent = query ? `${filtered.length} / ${notes.length} ghi chú` : `${notes.length} ghi chú`;
+        }
+
+        const clearSearchBtn = document.getElementById('notes-clear-search-btn');
+        if (clearSearchBtn) {
+            clearSearchBtn.style.display = query ? 'flex' : 'none';
         }
 
         if (filtered.length === 0) {
@@ -271,9 +276,9 @@
             } else {
                 container.innerHTML = `
                     <div class="notes-empty-state">
-                        <i data-lucide="file-plus" class="notes-empty-icon"></i>
+                        <i data-lucide="notebook-pen" class="notes-empty-icon"></i>
                         <h4>Chưa có ghi chú nào</h4>
-                        <p>Chạm nút <strong>+</strong> để tạo ghi chú đầu tiên của bạn.</p>
+                        <p>Chạm nút <strong>+ Thêm ghi chú</strong> ở trên để tạo ghi chú đầu tiên của bạn.</p>
                     </div>
                 `;
             }
@@ -288,17 +293,20 @@
             const dateText = formatNoteDate(note.updatedAt || note.createdAt);
             const contentHtml = note.content 
                 ? escapeHtml(note.content).replace(/\n/g, '<br>') 
-                : '<em class="notes-no-content">(Không có mô tả)</em>';
+                : '<em class="notes-no-content">(Không có nội dung chi tiết)</em>';
             const isPinned = Boolean(note.isFavorite);
 
             html += `
-                <div class="note-card${isPinned ? ' is-pinned' : ''}" data-note-id="${escapeHtml(note.id)}">
+                <div class="note-card${isPinned ? ' is-pinned' : ''}" data-note-id="${escapeHtml(note.id)}" role="button" tabindex="0" title="Chạm để xem hoặc sửa ghi chú">
                     <div class="note-card-header">
                         <div class="note-card-title-group">
-                            <h4 class="note-card-title">${escapeHtml(note.title)}</h4>
-                            <span class="note-card-date"><i data-lucide="clock"></i> ${dateText}${isPinned ? ' · Đã ghim' : ''}</span>
+                            <div class="note-card-title-row">
+                                <h4 class="note-card-title">${escapeHtml(note.title)}</h4>
+                                ${isPinned ? '<span class="note-pinned-tag"><i data-lucide="pin"></i> Đã ghim</span>' : ''}
+                            </div>
+                            <span class="note-card-date"><i data-lucide="clock"></i> ${dateText}</span>
                         </div>
-                        <div class="note-card-actions">
+                        <div class="note-card-actions" onclick="event.stopPropagation()">
                             <button type="button" class="note-action-btn btn-pin-note${isPinned ? ' is-active' : ''}" data-id="${escapeHtml(note.id)}" title="${isPinned ? 'Bỏ ghim ghi chú' : 'Ghim ghi chú'}" aria-label="${isPinned ? 'Bỏ ghim' : 'Ghim'}" aria-pressed="${isPinned}">
                                 <i data-lucide="pin"></i>
                             </button>
@@ -306,21 +314,27 @@
                                 <i data-lucide="copy"></i>
                             </button>
                             <button type="button" class="note-action-btn btn-edit-note" data-id="${escapeHtml(note.id)}" title="Chỉnh sửa ghi chú" aria-label="Chỉnh sửa">
-                                <i data-lucide="edit-2"></i>
+                                <i data-lucide="pen-line"></i>
                             </button>
                             <button type="button" class="note-action-btn btn-delete-note" data-id="${escapeHtml(note.id)}" title="Xóa ghi chú" aria-label="Xóa">
                                 <i data-lucide="trash-2"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="note-card-content">
-                        ${contentHtml}
-                    </div>
+                    <div class="note-card-content">${contentHtml}</div>
                 </div>
             `;
         });
 
         container.innerHTML = html;
+
+        container.querySelectorAll('.note-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.note-card-actions') || e.target.closest('button')) return;
+                const id = card.getAttribute('data-note-id');
+                if (id) editNote(id);
+            });
+        });
 
         container.querySelectorAll('.btn-copy-note').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -626,6 +640,16 @@
 
         const searchInput = document.getElementById('notes-search-input');
         if (searchInput) searchInput.addEventListener('input', renderNotesList);
+
+        const clearSearchBtn = document.getElementById('notes-clear-search-btn');
+        if (clearSearchBtn && searchInput) {
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearchBtn.style.display = 'none';
+                renderNotesList();
+                searchInput.focus();
+            });
+        }
 
         const btnToggleAdd = document.getElementById('btn-toggle-add-note');
         if (btnToggleAdd) {
