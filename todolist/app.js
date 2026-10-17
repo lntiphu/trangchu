@@ -52,19 +52,34 @@ async function initTodoAuth() {
   }
 }
 
-function getRelativeDateTime(dayOffset, hours, minutes) {
-  const d = new Date();
-  d.setDate(d.getDate() + dayOffset);
-  d.setHours(hours, minutes, 0, 0);
-  return formatLocalDateTimeValue(d);
+const VN_TIMEZONE_OFFSET_MS = 7 * 60 * 60 * 1000; // UTC+7 (Hà Nội)
+
+function toVietnamShiftedDate(input = Date.now()) {
+  const ms = input instanceof Date ? input.getTime() : (typeof input === 'number' ? input : new Date(input).getTime());
+  return new Date(ms + VN_TIMEZONE_OFFSET_MS);
 }
 
-// datetime-local biểu diễn giờ địa phương, còn Supabase timestamptz cần một
-// thời điểm có múi giờ. Luôn đổi qua lại ở biên LocalStorage/Supabase để giờ
+function getRelativeDateTime(dayOffset, hours, minutes) {
+  const shiftedNow = toVietnamShiftedDate();
+  const targetMs = Date.UTC(
+    shiftedNow.getUTCFullYear(),
+    shiftedNow.getUTCMonth(),
+    shiftedNow.getUTCDate() + dayOffset,
+    hours,
+    minutes,
+    0,
+    0
+  ) - VN_TIMEZONE_OFFSET_MS;
+  return formatLocalDateTimeValue(new Date(targetMs));
+}
+
+// datetime-local biểu diễn giờ địa phương (UTC+7 Hà Nội), còn Supabase timestamptz
+// cần một thời điểm có múi giờ. Luôn đổi qua lại ở biên LocalStorage/Supabase để giờ
 // người dùng chọn không bị lệch sau khi đóng và mở lại ứng dụng.
 function formatLocalDateTimeValue(date) {
+  const shifted = toVietnamShiftedDate(date);
   const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
 }
 
 function localDateTimeToIso(value) {
@@ -73,11 +88,8 @@ function localDateTimeToIso(value) {
   if (!match) return value;
 
   const [, year, month, day, hour, minute] = match;
-  const localDate = new Date(
-    Number(year), Number(month) - 1, Number(day),
-    Number(hour), Number(minute), 0, 0
-  );
-  return Number.isNaN(localDate.getTime()) ? value : localDate.toISOString();
+  const vnDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00+07:00`);
+  return Number.isNaN(vnDate.getTime()) ? value : vnDate.toISOString();
 }
 
 function cloudDateTimeToLocal(value) {
@@ -288,12 +300,12 @@ function setModalCompletedAtValue(value) {
     if (timeInput) timeInput.value = '';
     return;
   }
-  const d = new Date(value);
+  const shifted = toVietnamShiftedDate(value);
   const pad = (n) => String(n).padStart(2, '0');
-  const isoDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const isoDate = `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
   if (dateInput) dateInput.value = isoDate;
   if (displayInput) displayInput.value = formatISODateToDisplay(isoDate);
-  if (timeInput) timeInput.value = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (timeInput) timeInput.value = `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
 }
 
 function getModalCompletedAtValue() {
@@ -315,7 +327,7 @@ function getModalCompletedAtValue() {
 
   const time = timeInput?.value.trim() || '12:00';
   if (!date) return '';
-  return new Date(`${date}T${time}:00`).toISOString();
+  return new Date(`${date}T${time}:00+07:00`).toISOString();
 }
 
 // Sắp xếp danh sách công việc:
@@ -873,21 +885,21 @@ function getTaskUrgency(dueDateIso) {
   }
 
   const now = new Date();
-  const due = new Date(dueDateIso);
+  const due = new Date(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(dueDateIso)) ? `${dueDateIso}:00+07:00` : dueDateIso);
   const diffHours = (due - now) / (1000 * 60 * 60);
 
   const todayKey = getDateKey(now);
   const dueKey = getDateKey(due);
   
-  // Tomorrow Date Key
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Tomorrow Date Key in UTC+7
+  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const tomorrowKey = getDateKey(tomorrow);
 
+  const shiftedDue = toVietnamShiftedDate(due);
   const pad = (n) => String(n).padStart(2, '0');
-  const timeStr = `${pad(due.getHours())}:${pad(due.getMinutes())}`;
-  const dateStr = `${pad(due.getDate())}/${pad(due.getMonth() + 1)}/${due.getFullYear()}`;
-  const shortDateStr = `${pad(due.getDate())}/${pad(due.getMonth() + 1)}`;
+  const timeStr = `${pad(shiftedDue.getUTCHours())}:${pad(shiftedDue.getUTCMinutes())}`;
+  const dateStr = `${pad(shiftedDue.getUTCDate())}/${pad(shiftedDue.getUTCMonth() + 1)}/${shiftedDue.getUTCFullYear()}`;
+  const shortDateStr = `${pad(shiftedDue.getUTCDate())}/${pad(shiftedDue.getUTCMonth() + 1)}`;
 
   // 1. Quá hạn -> Trễ hẹn (Giữ nguyên công việc, hiển thị rõ badge Trễ hẹn)
   if (due < now) {
@@ -1473,14 +1485,16 @@ function switchTab(tabName) {
   lucide.createIcons();
 }
 
-// Date Helpers
+// Date Helpers (UTC+7 Hà Nội)
 function getDateKey(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const shifted = toVietnamShiftedDate(d);
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-${String(shifted.getUTCDate()).padStart(2, '0')}`;
 }
 
 function formatFullDateTime(isoStr) {
-  const d = new Date(isoStr);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}, ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  const d = new Date(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(isoStr)) ? `${isoStr}:00+07:00` : isoStr);
+  const shifted = toVietnamShiftedDate(d);
+  return `${String(shifted.getUTCHours()).padStart(2, '0')}:${String(shifted.getUTCMinutes()).padStart(2, '0')}, ${String(shifted.getUTCDate()).padStart(2, '0')}/${String(shifted.getUTCMonth() + 1).padStart(2, '0')}/${shifted.getUTCFullYear()}`;
 }
 
 function escapeHtml(str) {
@@ -1513,13 +1527,14 @@ function toggleTheme() {
 // Background Reminder & Real-time Live Clock
 function startReminderService() {
   function updateClock() {
-    const now = new Date();
+    const shifted = toVietnamShiftedDate();
     const pad = (n) => String(n).padStart(2, '0');
-    const day = pad(now.getDate());
-    const month = pad(now.getMonth() + 1);
-    const year = now.getFullYear();
-    const weekday = now.toLocaleDateString('vi-VN', { weekday: 'short' });
-    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const day = pad(shifted.getUTCDate());
+    const month = pad(shifted.getUTCMonth() + 1);
+    const year = shifted.getUTCFullYear();
+    const weekdaysShort = ['CN', 'Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7'];
+    const weekday = weekdaysShort[shifted.getUTCDay()];
+    const timeStr = `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}`;
 
     const el = document.getElementById('live-clock-display');
     if (el) {
@@ -1529,7 +1544,7 @@ function startReminderService() {
     const dateEl = document.getElementById('live-date-text');
     if (dateEl) {
       const weekdaysFull = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-      dateEl.textContent = `${weekdaysFull[now.getDay()]}, ${day}/${month}/${year}`;
+      dateEl.textContent = `${weekdaysFull[shifted.getUTCDay()]}, ${day}/${month}/${year}`;
     }
   }
   updateClock();
