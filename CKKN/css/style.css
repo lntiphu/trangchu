@@ -120,107 +120,192 @@ body {
 }
 
 /* ══════════════════════════════════════
-   BOTTOM NAVIGATION BAR
+   TOP HEADER & SEGMENTED CONTROLS
 ══════════════════════════════════════ */
-.ckkn-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: auto;
-  min-height: 72px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 8px 16px max(10px, env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
-  z-index: 1000;
-  box-shadow: 0 -3px 16px rgba(0, 0, 0, 0.05);
+.ckkn-header-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg, #f4f4f6);
+  padding: max(14px, env(safe-area-inset-top, 0px)) 0 12px;
+  margin-bottom: 14px;
 }
 
-.ckkn-bottom-nav .tab-btn,
-.ckkn-bottom-nav .nav-back-btn {
-  flex: 1;
-  max-width: 110px;
-  height: 52px;
-  background: transparent;
-  border: none;
+.ckkn-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ckkn-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ckkn-back-btn {
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
-  display: flex;
-  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid var(--border, #e4e4e4);
+  color: var(--text, #3a3a3a);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  color: var(--subtext);
-  font-size: 0.75rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.18s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.ckkn-bottom-nav .nav-icon {
+.ckkn-back-btn:hover {
+  background: var(--primary-bg, #f5edf1);
+  color: var(--primary-dark, #8c3f5a);
+  border-color: rgba(176, 92, 122, 0.3);
+  transform: translateY(-1px);
+}
+
+.ckkn-back-btn:active {
+  transform: scale(0.95);
+}
+
+.ckkn-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ckkn-badge-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary-bg, #f5edf1);
+  color: var(--primary, #b05c7a);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.25rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.18s ease;
-}
-
-.ckkn-bottom-nav .nav-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.2px;
-}
-
-.ckkn-bottom-nav .tab-btn:hover,
-.ckkn-bottom-nav .nav-back-btn:hover {
-  color: var(--primary-dark);
-}
-
-.ckkn-bottom-nav .tab-btn:active,
-.ckkn-bottom-nav .nav-back-btn:active {
-  transform: scale(0.93);
-}
-
-.ckkn-bottom-nav .tab-btn.active {
-  color: var(--primary-dark);
-  background: var(--primary-bg);
-  font-weight: 700;
-}
-
-.ckkn-bottom-nav .tab-btn.active .nav-icon {
-  transform: scale(1.1);
-}
-
-.ckkn-bottom-nav .nav-back-btn {
-  color: var(--subtext);
-}
-
-.ckkn-bottom-nav .ckkn-nav-add-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: #FFFFFF;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(176, 92, 122, 0.4);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
 }
 
-.ckkn-bottom-nav .ckkn-nav-add-btn:active {
-  transform: scale(0.88);
+.ckkn-title-wrap h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text, #3a3a3a);
+  letter-spacing: -0.01em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ckkn-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ckkn-header-add-btn {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary, #b05c7a), var(--primary-dark, #8c3f5a));
+  color: #ffffff;
+  border: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(176, 92, 122, 0.35);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.ckkn-header-add-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 5px 16px rgba(176, 92, 122, 0.45);
+}
+
+.ckkn-header-add-btn:active {
+  transform: scale(0.96);
+}
+
+.ckkn-header-add-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Segmented Control for Tabs */
+.ckkn-segmented-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
+}
+
+.ckkn-segmented-tabs .tab-btn {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--subtext, #888);
+  font-size: 0.86rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.ckkn-segmented-tabs .tab-btn .nav-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.ckkn-segmented-tabs .tab-btn:hover {
+  color: var(--text, #3a3a3a);
+}
+
+.ckkn-segmented-tabs .tab-btn.active {
+  background: #ffffff;
+  color: var(--primary-dark, #8c3f5a);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+@media (max-width: 479px) {
+  .ckkn-title-wrap h1 {
+    font-size: 1.1rem;
+  }
+  .ckkn-badge-icon {
+    display: none;
+  }
+  .ckkn-header-add-btn span {
+    display: none;
+  }
+  .ckkn-header-add-btn {
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+  }
+}
+
+.ckkn-bottom-nav {
+  display: none !important;
 }
 
 /* ══════════════════════════════════════
@@ -389,7 +474,7 @@ body {
 .container {
   max-width: 860px;
   margin: 0 auto;
-  padding: max(28px, env(safe-area-inset-top, 0px)) 16px calc(76px + env(safe-area-inset-bottom, 0px));
+  padding: 0 16px max(32px, env(safe-area-inset-bottom, 0px));
 }
 
 .tab-content        { display: none; }
