@@ -23,6 +23,7 @@ let expenseResumeListenersBound = false;
 let expenseRevision = 0;
 let expenseFetchSequence = 0;
 let expenseWriteBusy = false;
+let expensePreviewUserId = null;
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 let calendarSelectedDay = null;
@@ -116,16 +117,46 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
 });
 
-// Khởi tạo: khoản chi chỉ xuất hiện sau khi tải thành công từ Supabase.
+// Hiển thị bản đồng bộ gần nhất ngay, Supabase cập nhật dữ liệu mới ở nền.
 function loadData() {
-    // Chỉ hiển thị khoản chi đã được Supabase xác nhận cho tài khoản đăng nhập.
-    state.expenses = [];
+    restoreExpensePreview();
 
     // Nạp dữ liệu Saver (Tiết kiệm)
     loadSaverData();
 
     // Tự động kết nối Supabase
     initSupabase();
+}
+
+function readCachedExpenses(userId) {
+    if (!userId) return [];
+    try {
+        const cached = JSON.parse(localStorage.getItem(`money_expenses_${userId}`) || '[]');
+        if (!Array.isArray(cached)) return [];
+        return cached
+            .filter(item => item && item.id && item.user_id === userId)
+            .map(normalizeExpenseRecord);
+    } catch (error) {
+        console.warn('Không thể đọc bản sao khoản chi trên thiết bị:', error);
+        return [];
+    }
+}
+
+function restoreExpensePreview() {
+    expensePreviewUserId = null;
+    state.expenses = [];
+    try {
+        const projectRef = new URL(state.supabaseUrl).hostname.split('.')[0];
+        const session = JSON.parse(localStorage.getItem(`sb-${projectRef}-auth-token`) || 'null');
+        if (!session?.user?.id || !session.access_token) return;
+
+        // Phiên đã lưu chỉ chọn bản xem trước; quyền đọc/ghi vẫn chờ Supabase Auth.
+        expensePreviewUserId = session.user.id;
+        state.expenses = readCachedExpenses(expensePreviewUserId);
+        sortExpenses();
+    } catch (error) {
+        console.warn('Không thể khôi phục bản xem trước khoản chi:', error);
+    }
 }
 
 // LƯU DỮ LIỆU XUỐNG LOCALSTORAGE
@@ -193,7 +224,9 @@ function preserveUnverifiedLocalExpenses(remoteData) {
 }
 
 function loadExpenseDataForCurrentUser() {
-    state.expenses = [];
+    state.expenses = readCachedExpenses(state.currentUserId);
+    expensePreviewUserId = null;
+    sortExpenses();
     expenseRevision++;
     updateUI();
 }
@@ -2638,7 +2671,8 @@ function showLoginError(msg) {
 
 function setCurrentSupabaseUser(user) {
     const nextUserId = user && user.id ? user.id : null;
-    if (state.currentUserId === nextUserId) return;
+    if (state.currentUserId === nextUserId && !expensePreviewUserId) return;
+    expensePreviewUserId = null;
 
     if (!nextUserId && realtimeRetryTimer !== null) {
         clearTimeout(realtimeRetryTimer);
@@ -2688,6 +2722,7 @@ async function checkAuthSession() {
         }
     } catch (e) {
         console.warn("Lỗi kiểm tra Auth session:", e);
+        if (expensePreviewUserId) setCurrentSupabaseUser(null);
         showLoginScreen();
     }
 }
@@ -3523,3 +3558,7 @@ window.openAdjustAmountModal = openAdjustAmountModal;
 window.closeAdjustAmountModal = closeAdjustAmountModal;
 window.quickAdjustAmount = quickAdjustAmount;
 window.applyCustomAdjust = applyCustomAdjust;
+
+// Script chạy cuối HTML, trước các thư viện CDN: số tiền có ngay từ bản đã lưu.
+restoreExpensePreview();
+calculateAndRenderSummaries();
