@@ -57,11 +57,12 @@
         try {
             const d = new Date(dateStr);
             if (isNaN(d.getTime())) return '';
-            const hours = String(d.getHours()).padStart(2, '0');
-            const mins = String(d.getMinutes()).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
+            const shifted = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+            const hours = String(shifted.getUTCHours()).padStart(2, '0');
+            const mins = String(shifted.getUTCMinutes()).padStart(2, '0');
+            const day = String(shifted.getUTCDate()).padStart(2, '0');
+            const month = String(shifted.getUTCMonth() + 1).padStart(2, '0');
+            const year = shifted.getUTCFullYear();
             return `${hours}:${mins} · ${day}/${month}/${year}`;
         } catch {
             return dateStr;
