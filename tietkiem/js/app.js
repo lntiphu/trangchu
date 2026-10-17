@@ -634,6 +634,10 @@
 
         ['saver-input-momo', 'saver-input-bank', 'saver-input-target', 'saver-input-debt', 'adjust-custom-input']
             .forEach(id => formatNumberInput(document.getElementById(id)));
+
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
     }
 
     if (document.readyState === 'loading') {
