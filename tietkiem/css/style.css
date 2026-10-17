@@ -58,7 +58,7 @@ body {
     width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
-    padding: max(76px, calc(env(safe-area-inset-top) + 16px)) 16px calc(84px + env(safe-area-inset-bottom));
+    padding: max(16px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -82,15 +82,8 @@ body::-webkit-scrollbar-thumb {
     border-radius: 999px;
 }
 
-/* Keep scrolling cards visually below the simulated Dynamic Island/status area. */
 body::before {
-    content: '';
-    position: fixed;
-    inset: 0 0 auto;
-    height: max(64px, calc(env(safe-area-inset-top) + 12px));
-    background: linear-gradient(180deg, var(--bg-cream) 78%, rgba(250, 247, 242, 0.94) 100%);
-    z-index: 900;
-    pointer-events: none;
+    display: none;
 }
 
 .saver-container {
@@ -107,76 +100,150 @@ body::before {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(52, 66, 55, 0.08);
+    padding-bottom: 6px;
 }
 
 .saver-header-left {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
-.saver-back-btn {
-    width: 38px;
-    height: 38px;
+.saver-back-btn,
+.saver-action-icon-btn {
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
-    background: rgba(52, 66, 55, 0.06);
-    border: none;
-    color: var(--text-primary);
-    display: flex;
+    background: #ffffff;
+    border: 1px solid rgba(52, 66, 55, 0.1);
+    color: var(--accent-olive);
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(52, 66, 55, 0.04);
 }
 
-.saver-back-btn:hover {
-    background: rgba(52, 66, 55, 0.12);
+.saver-back-btn:hover,
+.saver-action-icon-btn:hover {
+    background: rgba(52, 66, 55, 0.06);
+    border-color: rgba(52, 66, 55, 0.2);
+    transform: translateY(-1px);
+}
+
+.saver-back-btn:active,
+.saver-action-icon-btn:active {
+    transform: scale(0.95);
+}
+
+.saver-back-btn i,
+.saver-action-icon-btn i {
+    width: 19px;
+    height: 19px;
 }
 
 .saver-badge-icon {
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: rgba(200, 155, 103, 0.15);
-    color: var(--accent-gold);
-    display: flex;
+    background: rgba(220, 139, 120, 0.14);
+    color: var(--accent-coral, #DC8B78);
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.saver-badge-icon i {
+    width: 20px;
+    height: 20px;
+}
+
+.saver-title-info {
+    min-width: 0;
 }
 
 .saver-title-info h2 {
     font-size: 1.25rem;
     font-weight: 800;
-    color: var(--text-primary);
+    color: var(--accent-olive);
     line-height: 1.2;
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
 .saver-title-info p {
     font-size: 0.72rem;
     color: var(--text-secondary);
+    margin: 2px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.saver-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .btn-add-saver {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 14px;
-    font-size: 0.82rem;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 0.84rem;
     font-weight: 700;
-    background: var(--accent-olive);
+    background: linear-gradient(135deg, #E2AEA2 0%, #DC8B78 100%);
     border-radius: 12px;
-    color: #FFFFFF;
+    color: #344237;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(52, 66, 55, 0.2);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(220, 139, 120, 0.35);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+}
+
+.btn-add-saver:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 18px rgba(220, 139, 120, 0.45);
 }
 
 .btn-add-saver:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
+}
+
+.btn-add-saver i {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.4;
+}
+
+@media (max-width: 479px) {
+    .saver-title-info p {
+        display: none;
+    }
+    .saver-title-info h2 {
+        font-size: 1.1rem;
+    }
+    .btn-add-saver span {
+        display: none;
+    }
+    .btn-add-saver {
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+    }
+    .saver-badge-icon {
+        display: none;
+    }
 }
 
 /* Summary Grid */
@@ -577,118 +644,9 @@ body::before {
     color: var(--text-secondary);
 }
 
-/* Bottom Navigation Bar with Center Add Button (Florenté Palette - Same as Thu Chi) */
+/* Bottom Navigation Bar removed - Buttons moved to top header */
 .saver-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: auto;
-    min-height: 72px;
-    background: var(--accent-olive);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 24px max(10px, env(safe-area-inset-bottom));
-    z-index: 1000;
-    box-shadow: 0 -6px 25px rgba(52, 66, 55, 0.25);
-    box-sizing: border-box;
-}
-
-.saver-nav-spacer {
-    width: 60px;
-}
-
-.saver-add-center-btn {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: none;
-    background: linear-gradient(135deg, #E2AEA2 0%, #DC8B78 100%);
-    color: var(--accent-olive);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 20px rgba(220, 139, 120, 0.45);
-    cursor: pointer;
-    margin-top: -20px;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.saver-add-center-btn:hover {
-    transform: scale(1.06) translateY(-2px);
-    box-shadow: 0 8px 24px rgba(220, 139, 120, 0.55);
-}
-
-.saver-add-center-btn:active {
-    transform: scale(0.85);
-}
-
-.saver-add-center-btn i {
-    width: 26px;
-    height: 26px;
-    stroke-width: 2.5;
-}
-
-.saver-nav-search-btn {
-    background: none;
-    border: none;
-    color: rgba(250, 247, 242, 0.7);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    cursor: pointer;
-    width: 60px;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.saver-nav-search-btn:hover,
-.saver-nav-search-btn:active {
-    color: #FAF7F2;
-    transform: scale(1.05);
-}
-
-.saver-nav-search-btn i {
-    width: 22px;
-    height: 22px;
-}
-
-.saver-nav-search-btn span {
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-}
-
-.saver-nav-back-btn {
-    background: none;
-    border: none;
-    color: rgba(250, 247, 242, 0.7);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    cursor: pointer;
-    width: 60px;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.saver-nav-back-btn:hover,
-.saver-nav-back-btn:active {
-    color: #FAF7F2;
-    transform: scale(1.05);
-}
-
-.saver-nav-back-btn i {
-    width: 22px;
-    height: 22px;
-}
-
-.saver-nav-back-btn span {
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+    display: none !important;
 }
 
 /* ==========================================================================
