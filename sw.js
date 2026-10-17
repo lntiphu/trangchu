@@ -1,5 +1,5 @@
 // Service Worker for "Làm chủ mọi thứ" PWA
-const CACHE_NAME = 'lam-chu-moi-thu-v66';
+const CACHE_NAME = 'lam-chu-moi-thu-v67';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -10,7 +10,7 @@ const STATIC_ASSETS = [
     './assets/pwa-icon-512.png',
     './assets/web-avatar.png',
     './main/css/styles.css?v=92',
-    './main/js/app.js?v=75',
+    './main/js/app.js?v=76',
     './main/js/her.js?v=11'
 ];
 
@@ -18,9 +18,10 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS).catch((err) => {
-                console.warn('⚠️ Some static assets failed to cache:', err);
-            });
+            return Promise.all(STATIC_ASSETS.map(async (asset) => {
+                try { await cache.add(asset); }
+                catch (error) { console.warn('Không thể lưu tài nguyên vào cache:', asset, error); }
+            }));
         }).then(() => self.skipWaiting())
     );
 });
@@ -87,9 +88,7 @@ self.addEventListener('fetch', (event) => {
                     }
                     return networkResponse;
                 })
-                .catch(() => {
-                    // Network failed, nothing to do if cache exists
-                });
+                .catch(() => cachedResponse || Response.error());
 
             return cachedResponse || fetchPromise;
         })
