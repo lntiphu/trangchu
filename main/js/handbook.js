@@ -136,14 +136,14 @@
     function rowToEntry(row) {
         return {
             id: row.id,
-            title: row.title || '',
+            title: String(row.title || '').normalize('NFC'),
             category: CATEGORIES.includes(row.category) ? row.category : 'Khác',
-            use: row.benefits || '',
-            ingredients: row.ingredients || '',
-            method: row.method || '',
-            warning: row.warnings || '',
-            source: row.source || '',
-            personal: row.personal_note || '',
+            use: String(row.benefits || '').normalize('NFC'),
+            ingredients: String(row.ingredients || '').normalize('NFC'),
+            method: String(row.method || '').normalize('NFC'),
+            warning: String(row.warnings || '').normalize('NFC'),
+            source: String(row.source || '').normalize('NFC'),
+            personal: String(row.personal_note || '').normalize('NFC'),
             favorite: Boolean(row.is_favorite),
             createdAt: row.created_at || new Date().toISOString(),
             updatedAt: row.updated_at || new Date().toISOString()
@@ -278,26 +278,45 @@
     function renderEntries() {
         const container = document.getElementById('handbook-cards-container');
         const count = document.getElementById('handbook-entry-count');
+        const headerCount = document.getElementById('handbook-header-count');
         if (!container) return;
 
         const filtered = getFilteredEntries();
         if (count) count.textContent = `${filtered.length} / ${entries.length} bài`;
+        if (headerCount) headerCount.textContent = `${entries.length}`;
         const query = normalize(document.getElementById('handbook-search-input')?.value);
 
         if (!filtered.length) {
-            container.innerHTML = `<div class="handbook-empty-state"><i data-lucide="book-x"></i><h3>${query ? 'Không tìm thấy bài phù hợp' : 'Chưa có bài nào'}</h3><p>${query ? 'Thử từ khóa khác hoặc xóa bộ lọc để xem thêm.' : 'Bấm “Thêm bài” để bắt đầu lưu nội dung cho gia đình.'}</p></div>`;
+            container.innerHTML = `
+                <div class="handbook-empty-state">
+                    <div class="handbook-empty-icon-wrap"><i data-lucide="book-open"></i></div>
+                    <h3>${query ? 'Không tìm thấy bài phù hợp' : 'Chưa có bài viết nào'}</h3>
+                    <p>${query ? `Không có kết quả nào khớp với từ khóa “${escapeHtml(query)}”.` : 'Bấm “+ Thêm bài” để lưu các mẹo hay và bài thuốc gia đình.'}</p>
+                </div>
+            `;
             refreshIcons();
             return;
         }
 
         container.innerHTML = filtered.map((entry, index) => {
             const excerpt = entry.use || entry.ingredients || entry.method || 'Chưa có mô tả ngắn.';
+            const cleanTitle = String(entry.title || '').normalize('NFC');
+            const cleanExcerpt = String(excerpt).normalize('NFC');
             return `
-                <article class="handbook-card ${entry.favorite ? 'is-favorite' : ''}" data-handbook-id="${escapeHtml(entry.id)}" tabindex="0" role="button" aria-label="Mở bài ${escapeHtml(entry.title)}">
-                    <div class="handbook-card-topline"><span class="handbook-card-index">#${index + 1}</span><span class="handbook-card-category">${escapeHtml(entry.category)}</span><button type="button" class="handbook-star-btn ${entry.favorite ? 'is-active' : ''}" data-action="favorite" data-id="${escapeHtml(entry.id)}" aria-label="${entry.favorite ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}" title="${entry.favorite ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}">★</button></div>
-                    <h3>${escapeHtml(entry.title)}</h3>
-                    <p>${escapeHtml(excerpt)}</p>
-                    <div class="handbook-card-footer"><span><i data-lucide="calendar-days"></i>${formatDate(entry.updatedAt || entry.createdAt)}</span><span class="handbook-card-open">Xem chi tiết <i data-lucide="arrow-up-right"></i></span></div>
+                <article class="handbook-card ${entry.favorite ? 'is-favorite' : ''}" data-handbook-id="${escapeHtml(entry.id)}" tabindex="0" role="button" aria-label="Mở bài ${escapeHtml(cleanTitle)}">
+                    <div class="handbook-card-topline">
+                        <span class="handbook-card-index">#${String(index + 1).padStart(2, '0')}</span>
+                        <span class="handbook-card-category">${escapeHtml(entry.category)}</span>
+                        <button type="button" class="handbook-star-btn ${entry.favorite ? 'is-active' : ''}" data-action="favorite" data-id="${escapeHtml(entry.id)}" aria-label="${entry.favorite ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}" title="${entry.favorite ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}">
+                            <i data-lucide="star"></i>
+                        </button>
+                    </div>
+                    <h3>${escapeHtml(cleanTitle)}</h3>
+                    <p>${escapeHtml(cleanExcerpt)}</p>
+                    <div class="handbook-card-footer">
+                        <span><i data-lucide="calendar-days"></i>${formatDate(entry.updatedAt || entry.createdAt)}</span>
+                        <span class="handbook-card-open">Xem chi tiết <i data-lucide="arrow-up-right"></i></span>
+                    </div>
                 </article>
             `;
         }).join('');
@@ -349,21 +368,21 @@
     }
 
     function closeHandbookModal(returnToHub = true, fromHistory = false) {
-        closeDetail();
-        closeEntryModal();
+        closeEntryModal(true);
+        closeDetail(true);
         setModalState('handbook-modal', false);
-        if (returnToHub && !fromHistory && typeof leaveAppView === 'function') leaveAppView();
+        if (returnToHub && fromHistory !== true && typeof leaveAppView === 'function') leaveAppView();
     }
 
-    function openDetail(id) {
-        const entry = entries.find(item => item.id === id);
+    function renderDetailContent(entry) {
         if (!entry) return;
-        currentDetailId = id;
         const category = document.getElementById('handbook-detail-category');
         const title = document.getElementById('handbook-detail-title');
         const body = document.getElementById('handbook-detail-body');
-        if (category) category.textContent = `${entry.favorite ? '★ ' : ''}${entry.category}`;
-        if (title) title.textContent = entry.title;
+        if (category) {
+            category.innerHTML = entry.favorite ? `<i data-lucide="star" style="width:13px;height:13px;fill:currentColor;margin-right:4px;"></i>${escapeHtml(entry.category)}` : escapeHtml(entry.category);
+        }
+        if (title) title.textContent = String(entry.title || '').normalize('NFC');
         if (body) {
             const fields = [
                 ['Công dụng', entry.use, 'sparkles'],
@@ -373,32 +392,44 @@
                 ['Nguồn', entry.source, 'link'],
                 ['Ghi chú cá nhân', entry.personal, 'heart']
             ];
-            body.innerHTML = fields.map(([label, value, icon]) => `<section class="handbook-detail-section"><h3><i data-lucide="${icon}"></i>${label}</h3><p>${value ? escapeHtml(value).replace(/\r?\n/g, '<br>') : '<em>Chưa cập nhật</em>'}</p></section>`).join('');
+            body.innerHTML = fields.map(([label, value, icon]) => `<section class="handbook-detail-section"><h3><i data-lucide="${icon}"></i>${label}</h3><p>${value ? escapeHtml(String(value).normalize('NFC')).replace(/\r?\n/g, '<br>') : '<em>Chưa cập nhật</em>'}</p></section>`).join('');
         }
-        setModalState('handbook-detail-modal', true);
         refreshIcons();
     }
 
-    function closeDetail() {
+    function openDetail(id, pushHistory = true) {
+        const entry = entries.find(item => item.id === id);
+        if (!entry) return;
+        currentDetailId = id;
+        renderDetailContent(entry);
+        setModalState('handbook-detail-modal', true);
+        const scrollArea = document.getElementById('handbook-detail-page-scroll');
+        if (scrollArea) scrollArea.scrollTop = 0;
+        if (pushHistory && typeof pushAppView === 'function') pushAppView('handbook-detail-modal');
+    }
+
+    function closeDetail(fromHistory = false) {
+        if (!currentDetailId) return;
         currentDetailId = null;
         setModalState('handbook-detail-modal', false);
+        if (fromHistory !== true && typeof leaveAppView === 'function') leaveAppView();
     }
 
     function valueOf(id) {
-        return document.getElementById(id)?.value.trim() || '';
+        return (document.getElementById(id)?.value.trim() || '').normalize('NFC');
     }
 
     function fillEntryForm(entry) {
         const values = {
             'handbook-entry-id': entry?.id || '',
-            'handbook-entry-title': entry?.title || '',
+            'handbook-entry-title': String(entry?.title || '').normalize('NFC'),
             'handbook-entry-category': entry?.category || CATEGORIES[0],
-            'handbook-entry-use': entry?.use || '',
-            'handbook-entry-ingredients': entry?.ingredients || '',
-            'handbook-entry-method': entry?.method || '',
-            'handbook-entry-warning': entry?.warning || '',
-            'handbook-entry-source': entry?.source || '',
-            'handbook-entry-personal': entry?.personal || ''
+            'handbook-entry-use': String(entry?.use || '').normalize('NFC'),
+            'handbook-entry-ingredients': String(entry?.ingredients || '').normalize('NFC'),
+            'handbook-entry-method': String(entry?.method || '').normalize('NFC'),
+            'handbook-entry-warning': String(entry?.warning || '').normalize('NFC'),
+            'handbook-entry-source': String(entry?.source || '').normalize('NFC'),
+            'handbook-entry-personal': String(entry?.personal || '').normalize('NFC')
         };
         Object.entries(values).forEach(([id, value]) => {
             const input = document.getElementById(id);
@@ -416,14 +447,16 @@
         if (saveText) saveText.textContent = entry ? 'Cập nhật bài' : 'Lưu bài';
         document.getElementById('handbook-form-error')?.setAttribute('hidden', '');
         setModalState('handbook-entry-modal', true);
+        if (typeof pushAppView === 'function') pushAppView('handbook-entry-modal');
         refreshIcons();
         setTimeout(() => document.getElementById('handbook-entry-title')?.focus(), 120);
     }
 
-    function closeEntryModal() {
+    function closeEntryModal(fromHistory = false) {
         editingId = null;
         setModalState('handbook-entry-modal', false);
         document.getElementById('handbook-entry-form')?.reset();
+        if (fromHistory !== true && typeof leaveAppView === 'function') leaveAppView();
     }
 
     function showFormError(message) {
@@ -458,13 +491,29 @@
             updatedAt: new Date().toISOString()
         };
 
+        const wasViewingDetail = Boolean(currentDetailId && currentDetailId === item.id);
+
         if (old) entries = entries.map(entry => entry.id === old.id ? item : entry);
         else entries.unshift(item);
         saveEntriesLocally();
         void syncEntryToSupabase(item);
         renderEntries();
-        closeEntryModal();
-        openDetail(item.id);
+
+        if (wasViewingDetail) {
+            renderDetailContent(item);
+            setModalState('handbook-detail-modal', true);
+            closeEntryModal();
+        } else {
+            closeEntryModal(true);
+            openDetail(item.id, false);
+            if (typeof history !== 'undefined' && history.replaceState) {
+                history.replaceState({
+                    ...(history.state || {}),
+                    qlctAppView: 'handbook-detail-modal',
+                    qlctAppDepth: appViewDepth
+                }, '', window.location.href);
+            }
+        }
     }
 
     function toggleFavorite(id) {
@@ -475,7 +524,7 @@
         saveEntriesLocally();
         void syncEntryToSupabase(entry);
         renderEntries();
-        if (currentDetailId === id) openDetail(id);
+        if (currentDetailId === id) renderDetailContent(entry);
     }
 
     function deleteEntry(id) {
@@ -522,11 +571,9 @@
         document.getElementById('welcome-opt-handbook')?.addEventListener('click', openHandbookModal);
         document.getElementById('btn-close-handbook-modal')?.addEventListener('click', () => closeHandbookModal());
         document.getElementById('btn-add-handbook-entry')?.addEventListener('click', () => openEntryModal());
-        document.getElementById('btn-close-handbook-detail')?.addEventListener('click', closeDetail);
+        document.getElementById('btn-close-handbook-detail')?.addEventListener('click', () => closeDetail());
         document.getElementById('btn-edit-handbook-detail')?.addEventListener('click', () => {
-            const id = currentDetailId;
-            closeDetail();
-            if (id) openEntryModal(id);
+            if (currentDetailId) openEntryModal(currentDetailId);
         });
         document.getElementById('btn-delete-handbook-detail')?.addEventListener('click', () => {
             if (currentDetailId) deleteEntry(currentDetailId);
@@ -534,8 +581,8 @@
         document.getElementById('btn-print-handbook-detail')?.addEventListener('click', () => {
             if (currentDetailId) printEntry(currentDetailId);
         });
-        document.getElementById('btn-close-handbook-entry')?.addEventListener('click', closeEntryModal);
-        document.getElementById('btn-cancel-handbook-entry')?.addEventListener('click', closeEntryModal);
+        document.getElementById('btn-close-handbook-entry')?.addEventListener('click', () => closeEntryModal());
+        document.getElementById('btn-cancel-handbook-entry')?.addEventListener('click', () => closeEntryModal());
         document.getElementById('handbook-entry-form')?.addEventListener('submit', handleSubmit);
         document.getElementById('handbook-search-input')?.addEventListener('input', event => {
             const clear = document.getElementById('btn-clear-handbook-search');
@@ -550,12 +597,6 @@
             document.getElementById('btn-clear-handbook-search').hidden = true;
             renderEntries();
             input?.focus();
-        });
-        document.getElementById('handbook-modal')?.addEventListener('click', event => {
-            if (event.target.id === 'handbook-modal') closeHandbookModal();
-        });
-        document.getElementById('handbook-detail-modal')?.addEventListener('click', event => {
-            if (event.target.id === 'handbook-detail-modal') closeDetail();
         });
         document.getElementById('handbook-entry-modal')?.addEventListener('click', event => {
             if (event.target.id === 'handbook-entry-modal') closeEntryModal();

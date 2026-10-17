@@ -37,12 +37,20 @@ const state = {
 };
 let supabaseClient = null;
 let supabaseSubscription = null;
+let expenseRevision = 0;
+let expenseFetchSequence = 0;
+let expenseWriteBusy = false;
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 let dashboardCalendarYear = new Date().getFullYear();
 let dashboardCalendarMonth = new Date().getMonth();
 let analysisYear = new Date().getFullYear();
 let analysisMonth = new Date().getMonth();
+let historyYear = new Date().getFullYear();
+let historyMonth = new Date().getMonth();
+let hasUserChangedHistoryMonth = false;
+let isHistoryAllTime = false;
+let historyModalYear = new Date().getFullYear();
 let currentAdjustingSaverId = null;
 let currentAdjustingField = null;
 
@@ -90,6 +98,11 @@ function closeActiveAppView(fromHistory = false) {
     }
     if (isElementActive('add-saver-modal')) {
         closeAddSaverModal(true);
+        return;
+    }
+
+    if (isElementActive('history-month-modal')) {
+        closeHistoryMonthModal(true);
         return;
     }
 
@@ -160,15 +173,31 @@ function closeActiveAppView(fromHistory = false) {
         return;
     }
     if (isElementActive('handbook-entry-modal')) {
-        if (typeof window.closeHandbookEntryModal === 'function') window.closeHandbookEntryModal();
+        if (typeof window.closeHandbookEntryModal === 'function') window.closeHandbookEntryModal(true);
         return;
     }
     if (isElementActive('handbook-detail-modal')) {
-        if (typeof window.closeHandbookDetail === 'function') window.closeHandbookDetail();
+        if (typeof window.closeHandbookDetail === 'function') window.closeHandbookDetail(true);
         return;
     }
     if (isElementActive('handbook-modal')) {
         if (typeof window.closeHandbookModal === 'function') window.closeHandbookModal(true, true);
+        return;
+    }
+    if (isElementActive('her-profile-modal')) {
+        if (typeof window.closeHerProfileModal === 'function') window.closeHerProfileModal(true);
+        return;
+    }
+    if (isElementActive('her-random-food-modal')) {
+        if (typeof window.closeHerRandomFoodModal === 'function') window.closeHerRandomFoodModal(true);
+        return;
+    }
+    if (isElementActive('her-entry-modal')) {
+        if (typeof window.closeHerEntryModal === 'function') window.closeHerEntryModal(true);
+        return;
+    }
+    if (isElementActive('her-modal')) {
+        if (typeof window.closeHerModal === 'function') window.closeHerModal(true, true);
         return;
     }
 
@@ -193,9 +222,9 @@ window.addEventListener('popstate', () => {
 // Sắp xếp chi tiêu: Ngày mới nhất lên đầu, nếu cùng ngày thì ID lớn nhất (mới nhất) lên đầu
 function sortExpenses() {
     state.expenses.sort((a, b) => {
-        const dateCompare = b.date.localeCompare(a.date);
+        const dateCompare = String(b.date || '').localeCompare(String(a.date || ''));
         if (dateCompare !== 0) return dateCompare;
-        return b.id.localeCompare(a.id);
+        return String(b.id || '').localeCompare(String(a.id || ''));
     });
 }
 
@@ -245,23 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
 });
 
-// LOAD DỮ LIỆU TỪ LOCALSTORAGE
+// Khởi tạo: khoản chi chỉ xuất hiện sau khi tải thành công từ Supabase.
 function loadData() {
-    const savedExpenses = localStorage.getItem('money_expenses') || localStorage.getItem('ispend_expenses');
-    if (savedExpenses) {
-        try {
-            state.expenses = JSON.parse(savedExpenses);
-            sortExpenses();
-        } catch (e) {
-            console.error("Lỗi parse dữ liệu chi tiêu:", e);
-            state.expenses = [];
-        }
-    } else {
-        // Tạo một số dữ liệu mẫu ban đầu để giao diện đẹp ngay lập tức
-        state.expenses = getSampleData();
-        sortExpenses();
-        saveData();
-    }
+    // Chỉ hiển thị khoản chi đã được Supabase xác nhận cho tài khoản đăng nhập.
+    state.expenses = [];
 
     // Nạp dữ liệu Saver (Tiết kiệm)
     loadSaverData();
@@ -275,32 +291,68 @@ function saveData() {
     const storageKey = state.currentUserId
         ? `money_expenses_${state.currentUserId}`
         : 'money_expenses';
-    localStorage.setItem(storageKey, JSON.stringify(state.expenses));
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(state.expenses));
+    } catch (error) {
+        console.warn('Không thể lưu bản sao khoản chi trên thiết bị:', error);
+    }
+}
+
+function normalizeExpenseRecord(item) {
+    return {
+        ...item,
+        id: String(item.id),
+        date: String(item.date || '').split('T')[0],
+        amount: Number(item.amount) || 0
+    };
+}
+
+function setExpenseWriteBusy(busy) {
+    expenseWriteBusy = busy;
+    ['#add-expense-form button[type="submit"]', '#btn-save-edit-expense', '#btn-delete-expense']
+        .forEach(selector => {
+            const button = document.querySelector(selector);
+            if (button) button.disabled = busy;
+        });
+}
+
+function showExpenseSyncError(action, error) {
+    console.error(`Lỗi ${action.toLowerCase()} khoản chi trên Supabase:`, error);
+    alert(`${action} không thành công trên Supabase. Dữ liệu chưa được thay đổi. Vui lòng kiểm tra mạng và thử lại.`);
+}
+
+function showExpenseDisplayError(error) {
+    console.error('Supabase đã lưu khoản chi nhưng giao diện chưa cập nhật:', error);
+    alert('Supabase đã lưu thay đổi, nhưng màn hình chưa cập nhật. Vui lòng tải lại trang.');
+}
+
+function preserveUnverifiedLocalExpenses(remoteData) {
+    const cacheKey = `money_expenses_${state.currentUserId}`;
+    const recoveryKey = `money_expenses_recovery_${state.currentUserId}`;
+    try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+        const previous = JSON.parse(localStorage.getItem(recoveryKey) || '[]');
+        if (!Array.isArray(cached) || !Array.isArray(previous)) return;
+        const remoteIds = new Set(remoteData.map(item => String(item.id)));
+        const localOnly = cached.filter(item =>
+            item && item.id && item.user_id === state.currentUserId && !remoteIds.has(String(item.id))
+        );
+        if (!localOnly.length) return;
+        const backup = new Map(previous.map(item => [String(item.id), item]));
+        const newIds = new Set(localOnly.filter(item => !backup.has(String(item.id))).map(item => String(item.id)));
+        localOnly.forEach(item => backup.set(String(item.id), item));
+        localStorage.setItem(recoveryKey, JSON.stringify(Array.from(backup.values())));
+        if (newIds.size) {
+            alert(`Có ${newIds.size} khoản chi chỉ lưu trên thiết bị và chưa có trên Supabase. Bản sao đã được giữ trong trình duyệt để đối chiếu; chúng không được cộng vào tổng chi.`);
+        }
+    } catch (error) {
+        console.warn('Không thể sao lưu khoản chi cục bộ chưa xác nhận:', error);
+    }
 }
 
 function loadExpenseDataForCurrentUser() {
-    if (!state.currentUserId) {
-        state.expenses = [];
-        updateUI();
-        return;
-    }
-
-    const savedExpenses = localStorage.getItem(`money_expenses_${state.currentUserId}`);
-    if (!savedExpenses) {
-        state.expenses = [];
-        updateUI();
-        return;
-    }
-
-    try {
-        state.expenses = JSON.parse(savedExpenses);
-        sortExpenses();
-    } catch (e) {
-        console.error("Lỗi parse dữ liệu chi tiêu của tài khoản:", e);
-        state.expenses = [];
-    }
-
-    // Hiển thị dữ liệu đã lưu trên máy ngay, không chờ Supabase phản hồi.
+    state.expenses = [];
+    expenseRevision++;
     updateUI();
 }
 
@@ -477,8 +529,8 @@ function initUI() {
         window._welcomeDateInterval = setInterval(updateWelcomeDate, 1000);
     }
 
-    // Đặt ngày mặc định cho form nhập là ngày hôm nay
-    document.getElementById('expense-date').value = getTodayDateString();
+    // Đặt ngày mặc định cho form nhập là ngày hôm nay và đồng bộ dd/mm/yyyy
+    syncExpenseDateDisplay(getTodayDateString());
 
     // Khởi tạo Lucide Icons
     createLucideIcons();
@@ -487,18 +539,14 @@ function initUI() {
 
 // ĐĂNG KÝ SỰ KIỆN TƯƠNG TÁC (EVENT LISTENERS)
 function registerEventListeners() {
-    // Sự kiện thanh điều hướng dưới (Tabs Switch)
-    const navItems = document.querySelectorAll('.app-nav .nav-item[data-tab]');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const targetTab = item.getAttribute('data-tab');
-            switchTab(targetTab);
-        });
-    });
-
+    // Thiết lập trường chọn ngày dd/mm/yyyy
+    setupExpenseDatePicker();
 
     // Mở / Đóng Modal Thêm Chi Tiêu
-    document.getElementById('btn-open-add-modal').addEventListener('click', openAddModal);
+    const btnOpenAdd = document.getElementById('btn-open-add-modal');
+    if (btnOpenAdd) {
+        btnOpenAdd.addEventListener('click', openAddModal);
+    }
     document.getElementById('btn-close-modal').addEventListener('click', closeAddModal);
     document.getElementById('btn-cancel-add').addEventListener('click', closeAddModal);
     document.getElementById('add-expense-modal').addEventListener('click', (e) => {
@@ -766,10 +814,77 @@ function registerEventListeners() {
 
     // Tìm kiếm lịch sử
     const searchInput = document.getElementById('search-input');
-    searchInput.addEventListener('input', (e) => {
-        state.searchQuery = e.target.value;
-        renderHistoryList();
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            state.searchQuery = e.target.value;
+            renderHistoryList();
+        });
+    }
+
+    // Chuyển tháng Lịch sử thu chi (Trước / Sau / Chọn tháng)
+    const btnHistoryPrevMonth = document.getElementById('btn-history-prev-month');
+    if (btnHistoryPrevMonth) {
+        btnHistoryPrevMonth.addEventListener('click', () => {
+            changeHistoryMonth(-1);
+        });
+    }
+    const btnHistoryNextMonth = document.getElementById('btn-history-next-month');
+    if (btnHistoryNextMonth) {
+        btnHistoryNextMonth.addEventListener('click', () => {
+            changeHistoryMonth(1);
+        });
+    }
+    const historyMonthPicker = document.getElementById('history-month-picker');
+    if (historyMonthPicker) {
+        historyMonthPicker.addEventListener('change', handleHistoryMonthPickerChange);
+    }
+
+    // Mở / Đóng modal chọn nhanh Tháng Năm & All Time
+    const btnOpenHistoryMonth = document.getElementById('btn-open-history-month-modal');
+    if (btnOpenHistoryMonth) {
+        btnOpenHistoryMonth.addEventListener('click', openHistoryMonthModal);
+    }
+    const btnCloseHistoryMonth = document.getElementById('btn-close-history-month-modal');
+    if (btnCloseHistoryMonth) {
+        btnCloseHistoryMonth.addEventListener('click', () => closeHistoryMonthModal());
+    }
+    const historyMonthModal = document.getElementById('history-month-modal');
+    if (historyMonthModal) {
+        historyMonthModal.addEventListener('click', (e) => {
+            if (e.target.id === 'history-month-modal') closeHistoryMonthModal();
+        });
+    }
+
+    // Chọn All Time
+    const btnHistorySelectAllTime = document.getElementById('btn-history-select-all-time');
+    if (btnHistorySelectAllTime) {
+        btnHistorySelectAllTime.addEventListener('click', selectHistoryAllTime);
+    }
+
+    // Đổi năm trong modal chọn nhanh
+    const btnHistoryModalPrevYear = document.getElementById('btn-history-modal-prev-year');
+    if (btnHistoryModalPrevYear) {
+        btnHistoryModalPrevYear.addEventListener('click', () => {
+            historyModalYear--;
+            renderHistoryModalContent();
+        });
+    }
+    const btnHistoryModalNextYear = document.getElementById('btn-history-modal-next-year');
+    if (btnHistoryModalNextYear) {
+        btnHistoryModalNextYear.addEventListener('click', () => {
+            historyModalYear++;
+            renderHistoryModalContent();
+        });
+    }
+
+    // Về tháng hiện tại
+    const btnHistoryJumpCurrentMonth = document.getElementById('btn-history-jump-current-month');
+    if (btnHistoryJumpCurrentMonth) {
+        btnHistoryJumpCurrentMonth.addEventListener('click', () => {
+            const now = new Date();
+            selectHistoryMonth(now.getFullYear(), now.getMonth());
+        });
+    }
 
     // Mở / Đóng Modal Lịch Chi Tiêu
     const btnCloseCalendar = document.getElementById('btn-close-calendar');
@@ -963,10 +1078,172 @@ function switchTab(tabId) {
 
 
 
+// ==========================================================================
+// ĐỊNH DẠNG NGÀY HIỂN THỊ DD/MM/YYYY CHO MODAL THÊM KHOẢN CHI
+// ==========================================================================
+function formatISODateToDisplay(isoStr) {
+    if (!isoStr) return '';
+    const parts = String(isoStr).trim().split('-');
+    if (parts.length === 3) {
+        return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+    }
+    return isoStr;
+}
+
+function isValidExpenseDate(year, month, day) {
+    if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1) return false;
+    return day <= new Date(year, month, 0).getDate();
+}
+
+function parseDisplayDateToISO(displayStr) {
+    if (!displayStr) return '';
+    const cleanStr = String(displayStr).trim();
+    if (!cleanStr) return '';
+
+    // Trường hợp đã là YYYY-MM-DD
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(cleanStr)) {
+        const [y, m, d] = cleanStr.split('-').map(Number);
+        if (isValidExpenseDate(y, m, d)) {
+            return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+
+    // Trường hợp DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY hoặc D/M/YY
+    const parts = cleanStr.split(/[\/\-\.\s]+/);
+    if (parts.length === 3) {
+        let d = parseInt(parts[0], 10);
+        let m = parseInt(parts[1], 10);
+        let y = parseInt(parts[2], 10);
+
+        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+            if (y < 100) {
+                y += (y < 70 ? 2000 : 1900);
+            }
+            if (isValidExpenseDate(y, m, d)) {
+                return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            }
+        }
+    }
+
+    // Trường hợp gõ liền 8 chữ số: DDMMYYYY (vd 14102026)
+    const digitsOnly = cleanStr.replace(/\D/g, '');
+    if (digitsOnly.length === 8) {
+        const d = parseInt(digitsOnly.slice(0, 2), 10);
+        const m = parseInt(digitsOnly.slice(2, 4), 10);
+        const y = parseInt(digitsOnly.slice(4, 8), 10);
+        if (isValidExpenseDate(y, m, d)) {
+            return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+
+    return '';
+}
+
+function syncExpenseDateDisplay(isoValue) {
+    const hiddenDateInput = document.getElementById('expense-date');
+    const displayInput = document.getElementById('expense-date-display');
+    if (!hiddenDateInput) return;
+
+    if (isoValue) {
+        hiddenDateInput.value = isoValue;
+    }
+    if (displayInput) {
+        displayInput.value = formatISODateToDisplay(hiddenDateInput.value || getTodayDateString());
+    }
+}
+
+function setupExpenseDatePicker() {
+    const hiddenDateInput = document.getElementById('expense-date');
+    const displayInput = document.getElementById('expense-date-display');
+    const triggerWrap = document.getElementById('btn-trigger-date-picker-wrap') || document.getElementById('btn-trigger-date-picker');
+
+    if (!hiddenDateInput || !displayInput) return;
+
+    // Đồng bộ ban đầu
+    if (!hiddenDateInput.value) {
+        hiddenDateInput.value = getTodayDateString();
+    }
+    syncExpenseDateDisplay(hiddenDateInput.value);
+
+    // Khi chọn ngày từ popup lịch của trình duyệt (trên điện thoại hoặc máy tính)
+    hiddenDateInput.addEventListener('change', () => {
+        if (hiddenDateInput.value) {
+            displayInput.value = formatISODateToDisplay(hiddenDateInput.value);
+        }
+    });
+
+    // Mở lịch khi click vào nút wrapper (nếu click ngoài input con)
+    const openNativePicker = () => {
+        if (typeof hiddenDateInput.showPicker === 'function') {
+            try {
+                hiddenDateInput.showPicker();
+                return;
+            } catch (err) {}
+        }
+    };
+
+    if (triggerWrap) {
+        triggerWrap.addEventListener('click', (e) => {
+            if (e.target !== hiddenDateInput) {
+                openNativePicker();
+            }
+        });
+    }
+
+    // Nhập liệu và gỡ/xóa ngày tháng năm trên ô text displayInput
+    displayInput.addEventListener('input', (e) => {
+        // Cho phép người dùng xóa (Backspace/Delete) hoàn toàn tự do
+        if (e.inputType && e.inputType.startsWith('delete')) {
+            const iso = parseDisplayDateToISO(displayInput.value);
+            if (iso) {
+                hiddenDateInput.value = iso;
+            }
+            return;
+        }
+
+        let v = e.target.value.replace(/[^\d]/g, '');
+        if (v.length > 8) v = v.slice(0, 8);
+
+        let formatted = '';
+        if (v.length > 0) {
+            formatted = v.slice(0, 2);
+            if (v.length > 2) {
+                formatted += '/' + v.slice(2, 4);
+                if (v.length > 4) {
+                    formatted += '/' + v.slice(4, 8);
+                }
+            }
+        }
+        e.target.value = formatted;
+
+        if (formatted.length === 10) {
+            const iso = parseDisplayDateToISO(formatted);
+            if (iso) {
+                hiddenDateInput.value = iso;
+            }
+        }
+    });
+
+    // Khi người dùng click ra ngoài (blur): nếu nhập hợp lệ thì format chuẩn, nếu để trống thì lấy hôm nay
+    displayInput.addEventListener('blur', () => {
+        const val = displayInput.value.trim();
+        if (!val) {
+            hiddenDateInput.value = getTodayDateString();
+            displayInput.value = formatISODateToDisplay(hiddenDateInput.value);
+            return;
+        }
+        const iso = parseDisplayDateToISO(val);
+        if (iso) {
+            hiddenDateInput.value = iso;
+            displayInput.value = formatISODateToDisplay(iso);
+        }
+    });
+}
+
 // CÁC HÀM MỞ/ĐÓNG MODAL
 function openAddModal() {
-    // Đặt lại ngày mặc định là hôm nay
-    document.getElementById('expense-date').value = getTodayDateString();
+    // Đặt lại ngày mặc định là hôm nay và hiển thị dạng dd/mm/yyyy
+    syncExpenseDateDisplay(getTodayDateString());
     const modal = document.getElementById('add-expense-modal');
     if (!modal || modal.classList.contains('active')) return;
     modal.classList.add('active');
@@ -1035,10 +1312,10 @@ function openDetailModal(expenseId) {
 
     // Nút Xóa
     const deleteBtn = document.getElementById('btn-delete-expense');
-    deleteBtn.onclick = () => {
+    deleteBtn.onclick = async () => {
+        if (expenseWriteBusy) return;
         if (confirm(`Bạn có chắc chắn muốn xóa chi tiêu "${exp.title}" không?`)) {
-            deleteExpense(exp.id);
-            closeDetailModal();
+            if (await deleteExpense(exp.id)) closeDetailModal();
         }
     };
 
@@ -1053,59 +1330,74 @@ function openDetailModal(expenseId) {
     }
 }
 
-function saveEditedExpense(id) {
+async function saveEditedExpense(id) {
     if (!state.currentUserId) {
         showLoginScreen();
-        return;
+        return false;
     }
+    if (expenseWriteBusy) return false;
 
     const exp = state.expenses.find(item => item.id === id);
-    if (!exp) return;
+    if (!exp) return false;
 
     const amountRaw = document.getElementById('detail-amount-input').value.replace(/\D/g, '');
     const amount = parseInt(amountRaw, 10);
-    if (isNaN(amount) || amount <= 0) {
-        alert('Vui lòng nhập số tiền chi tiêu hợp lệ lớn hơn 0!');
-        return;
+    if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) {
+        alert('Vui lòng nhập số tiền chi tiêu từ 1 đến 100.000.000 VNĐ!');
+        return false;
     }
 
     const title = document.getElementById('detail-title-input').value.trim();
     if (!title) {
         alert('Vui lòng nhập nội dung chi tiêu!');
-        return;
+        return false;
     }
 
     const category = document.getElementById('detail-category-select').value;
 
-    exp.amount = amount;
-    exp.title = title;
-    exp.category = category;
-
-    sortExpenses();
-    saveData();
-    updateUI();
-
-    // Đồng bộ lên Supabase nếu có
-    if (supabaseClient && state.currentUserId) {
-        supabaseClient
-            .from('expenses')
-            .update({
-                amount: exp.amount,
-                title: exp.title,
-                category: exp.category
-            })
-            .eq('id', id)
-            .eq('user_id', state.currentUserId)
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Lỗi khi cập nhật giao dịch lên Supabase:", error);
-                } else {
-                    console.log("Đã cập nhật giao dịch lên Supabase thành công.");
-                }
-            });
+    if (!supabaseClient) {
+        alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
+        return false;
     }
 
-    closeDetailModal();
+    const userId = state.currentUserId;
+    let writeSucceeded = false;
+    setExpenseWriteBusy(true);
+    try {
+        const { data, error } = await supabaseClient
+            .from('expenses')
+            .update({
+                amount,
+                title,
+                category
+            })
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select('id');
+        if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Không tìm thấy khoản chi trên Supabase.');
+        writeSucceeded = true;
+        if (state.currentUserId === userId) {
+            const currentExpense = state.expenses.find(item => item.id === id);
+            if (currentExpense) Object.assign(currentExpense, { amount, title, category });
+            expenseRevision++;
+            sortExpenses();
+            saveData();
+            updateUI();
+            closeDetailModal();
+        }
+        return true;
+    } catch (error) {
+        if (writeSucceeded) {
+            showExpenseDisplayError(error);
+            return true;
+        }
+        showExpenseSyncError('Lưu thay đổi', error);
+        return false;
+    } finally {
+        setExpenseWriteBusy(false);
+        if (writeSucceeded && state.currentUserId === userId) fetchExpensesFromSupabase();
+    }
 }
 
 function closeDetailModal(fromHistory = false) {
@@ -1276,7 +1568,7 @@ function showDayExpensesDetail(dayStr) {
     if (dayDetailTitle) dayDetailTitle.innerText = displayDate;
 
     // Tính tổng ngày
-    const dayTotal = dayExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    const dayTotal = dayExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     const dayTotalEl = document.getElementById('cal-day-detail-total');
     if (dayTotalEl) dayTotalEl.innerText = formatCurrency(dayTotal);
 
@@ -1361,8 +1653,8 @@ function renderCalendar() {
             const d = parseInt(parts[2], 10);
             if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
                 if (y === calendarYear && (m - 1) === calendarMonth) {
-                    dayTotals[d] = (dayTotals[d] || 0) + (exp.amount || 0);
-                    monthTotal += (exp.amount || 0);
+                    dayTotals[d] = (dayTotals[d] || 0) + (Number(exp.amount) || 0);
+                    monthTotal += Number(exp.amount) || 0;
                 }
             }
         }
@@ -1425,31 +1717,41 @@ function renderCalendar() {
 }
 
 // THÊM CHI TIÊU MỚI (SUBMIT FORM)
-function handleAddExpenseSubmit(e) {
+async function handleAddExpenseSubmit(e) {
     e.preventDefault();
 
     if (!state.currentUserId) {
         showLoginScreen();
         return;
     }
+    if (expenseWriteBusy) return;
 
     // Lấy số tiền
     const amountRaw = document.getElementById('expense-amount').value.replace(/\D/g, '');
     const amount = parseInt(amountRaw, 10);
     
-    if (isNaN(amount) || amount <= 0) {
-        alert('Vui lòng nhập số tiền chi tiêu hợp lệ lớn hơn 0!');
+    if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) {
+        alert('Vui lòng nhập số tiền chi tiêu từ 1 đến 100.000.000 VNĐ!');
         return;
     }
 
     // Lấy tên/nội dung
     const title = document.getElementById('expense-title').value.trim();
+    if (!title) {
+        alert('Vui lòng nhập nội dung chi tiêu!');
+        return;
+    }
     
     // Lấy phân loại
     const category = document.getElementById('expense-category').value;
     
     // Lấy ngày
-    const date = document.getElementById('expense-date').value;
+    const displayDateInput = document.getElementById('expense-date-display');
+    const date = parseDisplayDateToISO(displayDateInput?.value || document.getElementById('expense-date').value);
+    if (!date) {
+        alert('Ngày chi tiêu không hợp lệ. Vui lòng nhập ngày đúng theo dd/mm/yyyy.');
+        return;
+    }
 
     // Tạo đối tượng chi tiêu mới (sử dụng ID chứa timestamp để sắp xếp)
     const newExpense = {
@@ -1461,70 +1763,99 @@ function handleAddExpenseSubmit(e) {
         date: date
     };
 
-    // Lưu vào state và LocalStorage
-    state.expenses.unshift(newExpense); // Đưa lên hàng đầu tiên
-    sortExpenses();
-    saveData();
-
-    // Tự động đồng bộ lên Supabase trong nền (nếu đã cấu hình)
-    if (supabaseClient && state.currentUserId) {
-        supabaseClient
-            .from('expenses')
-            .insert([{
-                id: newExpense.id,
-                user_id: state.currentUserId,
-                date: newExpense.date,
-                title: newExpense.title,
-                amount: newExpense.amount,
-                category: newExpense.category
-            }])
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Lỗi khi thêm giao dịch lên Supabase:", error);
-                } else {
-                    console.log("Đã thêm giao dịch lên Supabase thành công.");
-                }
-            });
-    }
-
-    // Đóng modal và reset
-    closeAddModal();
-
-    // Cập nhật lại giao diện và thông báo thành công
-    updateUI();
-    
-    // Hiệu ứng Toast đơn giản hoặc chỉ cần chuyển về Dashboard
-    switchTab('dashboard');
-}
-
-// XÓA KHOẢN CHI TIÊU
-function deleteExpense(id) {
-    if (!state.currentUserId) {
-        showLoginScreen();
+    if (!supabaseClient) {
+        alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
         return;
     }
 
-    const expenseToDelete = state.expenses.find(item => item.id === id);
-    
-    // Xóa cục bộ trên thiết bị trước
-    state.expenses = state.expenses.filter(item => item.id !== id);
-    saveData();
-    updateUI();
+    const userId = state.currentUserId;
+    let writeSucceeded = false;
+    setExpenseWriteBusy(true);
+    try {
+        const { data, error } = await supabaseClient
+            .from('expenses')
+            .insert([newExpense])
+            .select('id');
+        if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Supabase không xác nhận khoản chi mới.');
+        writeSucceeded = true;
+        if (state.currentUserId !== userId) return;
 
-    // Nếu đã kết nối Supabase, tự động xóa dòng tương ứng
-    if (supabaseClient && state.currentUserId) {
-        supabaseClient
+        if (!state.expenses.some(item => item.id === newExpense.id)) {
+            state.expenses.unshift(newExpense);
+        }
+        expenseRevision++;
+        sortExpenses();
+        saveData();
+
+        // Chuyển lịch sử sang tháng của giao dịch vừa thêm.
+        if (!isHistoryAllTime) {
+            const expParts = String(newExpense.date || '').split('-').map(Number);
+            if (expParts.length >= 2 && !isNaN(expParts[0]) && !isNaN(expParts[1])) {
+                historyYear = expParts[0];
+                historyMonth = expParts[1] - 1;
+                hasUserChangedHistoryMonth = true;
+            }
+        }
+
+        closeAddModal();
+
+        updateUI();
+        switchTab('dashboard');
+    } catch (error) {
+        if (writeSucceeded) showExpenseDisplayError(error);
+        else showExpenseSyncError('Thêm', error);
+    } finally {
+        setExpenseWriteBusy(false);
+        if (writeSucceeded && state.currentUserId === userId) fetchExpensesFromSupabase();
+    }
+}
+
+// XÓA KHOẢN CHI TIÊU
+async function deleteExpense(id) {
+    if (!state.currentUserId) {
+        showLoginScreen();
+        return false;
+    }
+    if (expenseWriteBusy) return false;
+
+    const expenseToDelete = state.expenses.find(item => item.id === id);
+    if (!expenseToDelete) return false;
+    if (!supabaseClient) {
+        alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
+        return false;
+    }
+
+    const userId = state.currentUserId;
+    let writeSucceeded = false;
+    setExpenseWriteBusy(true);
+    try {
+        const { data, error } = await supabaseClient
             .from('expenses')
             .delete()
             .eq('id', id)
-            .eq('user_id', state.currentUserId)
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Lỗi khi xóa giao dịch trên Supabase:", error);
-                } else {
-                    console.log("Đã xóa giao dịch thành công trên Supabase.");
-                }
-            });
+            .eq('user_id', userId)
+            .select('id');
+        if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Không tìm thấy khoản chi trên Supabase.');
+        writeSucceeded = true;
+        if (state.currentUserId === userId) {
+            state.expenses = state.expenses.filter(item => item.id !== id);
+            expenseRevision++;
+            saveData();
+            updateUI();
+        }
+        return true;
+    } catch (error) {
+        if (writeSucceeded) {
+            showExpenseDisplayError(error);
+            return true;
+        }
+        showExpenseSyncError('Xóa', error);
+        return false;
+    } finally {
+        setExpenseWriteBusy(false);
+        if (writeSucceeded && state.currentUserId === userId) fetchExpensesFromSupabase();
     }
 }
 
@@ -1542,6 +1873,39 @@ function updateUI() {
     if (state.currentTab === 'history') {
         renderHistoryList();
     }
+}
+
+// HIỂN THỊ CÁC GIAO DỊCH GẦN ĐÂY TRÊN BẢNG ĐIỀU KHIỂN (DASHBOARD)
+function renderRecentExpensesDashboard() {
+    const listEl = document.getElementById('dashboard-recent-spendings-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (!state.expenses || state.expenses.length === 0) {
+        listEl.innerHTML = `
+            <div class="empty-recent-state" style="padding: 24px 12px; text-align: center; color: var(--text-secondary);">
+                <i data-lucide="receipt" style="width: 32px; height: 32px; margin: 0 auto 8px; opacity: 0.6; display: block;"></i>
+                <p style="font-size: 0.82rem; margin: 0;">Chưa có chi tiêu nào được ghi nhận. Hãy bấm nút <strong>+ Thêm chi tiêu</strong> để bắt đầu!</p>
+            </div>
+        `;
+        createLucideIcons();
+        return;
+    }
+
+    // Lấy 6 giao dịch mới nhất (sắp xếp theo ngày giảm dần, rồi id giảm dần)
+    const sorted = [...state.expenses].sort((a, b) => {
+        const dateDiff = String(b.date || '').localeCompare(String(a.date || ''));
+        if (dateDiff !== 0) return dateDiff;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
+    });
+
+    const recentItems = sorted.slice(0, 6);
+    recentItems.forEach(exp => {
+        const itemEl = createTransactionDOMItem(exp);
+        listEl.appendChild(itemEl);
+    });
+
+    createLucideIcons();
 }
 
 // TÍNH TOÁN VÀ HIỂN THỊ CÁC THẺ TỔNG KẾT
@@ -1570,21 +1934,24 @@ function calculateAndRenderSummaries() {
     let totalMonth = 0;
 
     state.expenses.forEach(exp => {
-        const expDate = new Date(exp.date);
+        const parts = getExpenseDateParts(exp);
+        if (!parts) return;
+        const expDate = new Date(parts.year, parts.month, parts.day);
+        const amount = Number(exp.amount) || 0;
         
         // So sánh Ngày hôm nay
-        if (exp.date === today) {
-            totalToday += exp.amount;
+        if (String(exp.date).split('T')[0] === today) {
+            totalToday += amount;
         }
 
         // So sánh Tuần này
         if (expDate >= startOfWeek && expDate <= endOfWeek) {
-            totalWeek += exp.amount;
+            totalWeek += amount;
         }
 
         // So sánh Tháng này
         if (expDate.getFullYear() === currentYear && expDate.getMonth() === currentMonth) {
-            totalMonth += exp.amount;
+            totalMonth += amount;
         }
     });
 
@@ -1970,32 +2337,262 @@ function closeCategoryExpensesPopup() {
     overlay.setAttribute('aria-hidden', 'true');
 }
 
-// HIỂN THỊ DANH SÁCH LỊCH SỬ (HISTORY TAB)
-function renderHistoryList() {
+// ==========================================================================
+// ĐIỀU HƯỚNG THÁNG LỊCH SỬ THU CHI
+// ==========================================================================
+function expenseBelongsToMonth(exp, targetYear, targetMonth) {
+    if (!exp || !exp.date) return false;
+    const parts = String(exp.date).trim().split('-');
+    if (parts.length >= 2) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1; // 0-based
+        return y === targetYear && m === targetMonth;
+    }
+    const d = new Date(exp.date);
+    if (!isNaN(d.getTime())) {
+        return d.getFullYear() === targetYear && d.getMonth() === targetMonth;
+    }
+    return false;
+}
 
+function ensureHistoryMonthInitialized() {
+    if (isHistoryAllTime) return;
+    if (hasUserChangedHistoryMonth) return;
+    const now = new Date();
+    const currentY = now.getFullYear();
+    const currentM = now.getMonth();
+
+    // Nếu tháng hiện tại có giao dịch hoặc chưa có dữ liệu giao dịch nào
+    const hasCurrentMonth = state.expenses && state.expenses.some(exp => expenseBelongsToMonth(exp, currentY, currentM));
+    if (hasCurrentMonth || !state.expenses || state.expenses.length === 0) {
+        historyYear = currentY;
+        historyMonth = currentM;
+        return;
+    }
+
+    // Nếu tháng hiện tại trống nhưng có giao dịch ở tháng khác, ưu tiên hiển thị tháng có giao dịch mới nhất
+    const sorted = [...state.expenses].filter(e => e && e.date).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    if (sorted.length > 0) {
+        const parts = String(sorted[0].date).split('-').map(Number);
+        if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            historyYear = parts[0];
+            historyMonth = parts[1] - 1;
+        }
+    }
+}
+
+function changeHistoryMonth(delta) {
+    if (isHistoryAllTime) {
+        isHistoryAllTime = false;
+        const now = new Date();
+        historyYear = now.getFullYear();
+        historyMonth = now.getMonth();
+    }
+    hasUserChangedHistoryMonth = true;
+    historyMonth += delta;
+    if (historyMonth < 0) {
+        historyMonth = 11;
+        historyYear--;
+    } else if (historyMonth > 11) {
+        historyMonth = 0;
+        historyYear++;
+    }
+    renderHistoryList();
+}
+
+function handleHistoryMonthPickerChange(e) {
+    if (!e || !e.target || !e.target.value) return;
+    const parts = e.target.value.split('-').map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        isHistoryAllTime = false;
+        hasUserChangedHistoryMonth = true;
+        historyYear = parts[0];
+        historyMonth = parts[1] - 1;
+        renderHistoryList();
+    }
+}
+
+// CÁC HÀM XỬ LÝ MODAL CHỌN NHANH THÁNG NĂM & ALL TIME
+function openHistoryMonthModal() {
+    const modal = document.getElementById('history-month-modal');
+    if (!modal) return;
+    historyModalYear = isHistoryAllTime ? new Date().getFullYear() : historyYear;
+    renderHistoryModalContent();
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    if (typeof pushAppView === 'function') {
+        pushAppView('history-month-modal');
+    }
+    if (typeof createLucideIcons === 'function') {
+        createLucideIcons();
+    }
+}
+
+function closeHistoryMonthModal(fromHistory = false) {
+    const modal = document.getElementById('history-month-modal');
+    if (!modal) return;
+    if (!modal.classList.contains('active')) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    if (!fromHistory && typeof leaveAppView === 'function') {
+        leaveAppView();
+    }
+}
+
+function selectHistoryMonth(y, m) {
+    isHistoryAllTime = false;
+    historyYear = y;
+    historyMonth = m;
+    hasUserChangedHistoryMonth = true;
+    closeHistoryMonthModal();
+    renderHistoryList();
+}
+
+function selectHistoryAllTime() {
+    isHistoryAllTime = true;
+    hasUserChangedHistoryMonth = true;
+    closeHistoryMonthModal();
+    renderHistoryList();
+}
+
+function renderHistoryModalContent() {
+    const yearLabel = document.getElementById('history-modal-year-label');
+    if (yearLabel) {
+        yearLabel.innerText = String(historyModalYear);
+    }
+
+    const allTimeBtn = document.getElementById('btn-history-select-all-time');
+    if (allTimeBtn) {
+        allTimeBtn.classList.toggle('active', isHistoryAllTime);
+        const checkIcon = allTimeBtn.querySelector('.history-all-time-check');
+        if (checkIcon) {
+            checkIcon.style.display = isHistoryAllTime ? 'block' : 'none';
+        }
+    }
+
+    const grid = document.getElementById('history-modal-months-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const now = new Date();
+    const currY = now.getFullYear();
+    const currM = now.getMonth();
+
+    const monthNames = [
+        'Thg 1', 'Thg 2', 'Thg 3', 'Thg 4',
+        'Thg 5', 'Thg 6', 'Thg 7', 'Thg 8',
+        'Thg 9', 'Thg 10', 'Thg 11', 'Thg 12'
+    ];
+
+    // Đếm số lượng giao dịch trong mỗi tháng của năm đang hiển thị
+    const monthCounts = Array(12).fill(0);
+    (state.expenses || []).forEach(exp => {
+        if (!exp || !exp.date) return;
+        const parts = String(exp.date).trim().split('-');
+        if (parts.length >= 2) {
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            if (y === historyModalYear && m >= 0 && m < 12) {
+                monthCounts[m]++;
+            }
+        }
+    });
+
+    for (let m = 0; m < 12; m++) {
+        const cell = document.createElement('button');
+        cell.type = 'button';
+        cell.className = 'history-modal-month-cell';
+
+        const isCurrent = currY === historyModalYear && currM === m;
+        const isSelected = !isHistoryAllTime && historyYear === historyModalYear && historyMonth === m;
+
+        if (isCurrent) cell.classList.add('current-month');
+        if (isSelected) cell.classList.add('selected');
+
+        const count = monthCounts[m];
+        const countText = count > 0 ? `${count} mục` : '';
+
+        cell.innerHTML = `
+            <span>${monthNames[m]}</span>
+            ${countText ? `<span class="history-modal-month-count">${countText}</span>` : ''}
+        `;
+
+        cell.onclick = () => {
+            selectHistoryMonth(historyModalYear, m);
+        };
+
+        grid.appendChild(cell);
+    }
+}
+
+// Gắn window cho truy cập từ mọi nơi
+window.openHistoryMonthModal = openHistoryMonthModal;
+window.closeHistoryMonthModal = closeHistoryMonthModal;
+window.selectHistoryMonth = selectHistoryMonth;
+window.selectHistoryAllTime = selectHistoryAllTime;
+
+// HIỂN THỊ DANH SÁCH LỊCH SỬ (HISTORY TAB - THEO TỪNG THÁNG HOẶC ALL TIME)
+function renderHistoryList() {
     const historyListContainer = document.getElementById('history-spendings-list');
     if (!historyListContainer) return;
     historyListContainer.innerHTML = '';
 
-    // Lọc dữ liệu theo Từ khóa tìm kiếm
-    let filtered = state.expenses;
+    ensureHistoryMonthInitialized();
 
-    if (state.searchQuery.trim() !== '') {
+    // Cập nhật nhãn tháng trên thanh điều hướng lịch sử
+    const monthLabel = document.getElementById('history-month-label');
+    if (monthLabel) {
+        monthLabel.innerText = isHistoryAllTime ? 'Tất cả (All Time)' : `Tháng ${historyMonth + 1}/${historyYear}`;
+    }
+    const monthPicker = document.getElementById('history-month-picker');
+    if (monthPicker) {
+        const mm = String(historyMonth + 1).padStart(2, '0');
+        monthPicker.value = `${historyYear}-${mm}`;
+    }
+
+    // Lọc dữ liệu: Nếu là All Time thì lấy toàn bộ danh sách, ngược lại lọc theo Tháng/Năm
+    let filtered = isHistoryAllTime
+        ? [...(state.expenses || [])]
+        : (state.expenses || []).filter(exp => expenseBelongsToMonth(exp, historyYear, historyMonth));
+
+    // Lọc tiếp theo từ khóa tìm kiếm (nếu có)
+    if (state.searchQuery && state.searchQuery.trim() !== '') {
         const query = state.searchQuery.toLowerCase().trim();
         filtered = filtered.filter(exp => 
-            exp.title.toLowerCase().includes(query) || 
-            exp.amount.toString().includes(query)
+            (exp.title && exp.title.toLowerCase().includes(query)) || 
+            (exp.amount && exp.amount.toString().includes(query)) ||
+            (exp.category && exp.category.toLowerCase().includes(query)) ||
+            (exp.date && String(exp.date).includes(query))
         );
     }
 
     if (filtered.length === 0) {
-        historyListContainer.innerHTML = `
-            <div class="empty-state">
-                <i data-lucide="search-code"></i>
-                <p>Không tìm thấy khoản chi tiêu nào phù hợp.</p>
-            </div>
-        `;
-        lucide.createIcons();
+        if (state.searchQuery && state.searchQuery.trim() !== '') {
+            const scopeText = isHistoryAllTime ? 'toàn bộ lịch sử' : `Tháng ${historyMonth + 1}/${historyYear}`;
+            historyListContainer.innerHTML = `
+                <div class="empty-state" style="padding: 32px 16px; text-align: center; color: var(--text-secondary);">
+                    <i data-lucide="search-x" style="width: 36px; height: 36px; margin: 0 auto 10px; opacity: 0.6; display: block;"></i>
+                    <p style="margin: 0; font-size: 0.88rem;">Không tìm thấy khoản chi tiêu nào phù hợp trong ${scopeText}.</p>
+                </div>
+            `;
+        } else {
+            if (isHistoryAllTime) {
+                historyListContainer.innerHTML = `
+                    <div class="empty-state" style="padding: 32px 16px; text-align: center; color: var(--text-secondary);">
+                        <i data-lucide="calendar-off" style="width: 36px; height: 36px; margin: 0 auto 10px; opacity: 0.6; display: block;"></i>
+                        <p style="margin: 0; font-size: 0.88rem;">Chưa có chi tiêu nào được ghi nhận trong toàn bộ lịch sử.</p>
+                    </div>
+                `;
+            } else {
+                historyListContainer.innerHTML = `
+                    <div class="empty-state" style="padding: 32px 16px; text-align: center; color: var(--text-secondary);">
+                        <i data-lucide="calendar-off" style="width: 36px; height: 36px; margin: 0 auto 10px; opacity: 0.6; display: block;"></i>
+                        <p style="margin: 0; font-size: 0.88rem;">Chưa có chi tiêu nào trong <strong>Tháng ${historyMonth + 1}/${historyYear}</strong>.</p>
+                    </div>
+                `;
+            }
+        }
+        createLucideIcons();
         return;
     }
 
@@ -2211,7 +2808,11 @@ function showWelcomeHubPage({ fromHistory = false } = {}) {
         'spending-analysis-page',
         'add-expense-modal',
         'detail-expense-modal',
-        'calendar-expense-modal'
+        'calendar-expense-modal',
+        'her-modal',
+        'her-entry-modal',
+        'her-profile-modal',
+        'her-random-food-modal'
     ];
     modalsToClose.forEach(id => {
         const el = document.getElementById(id);
@@ -2272,10 +2873,44 @@ function normalizeDuplicateText(value) {
     return normalizeSupportText(value).replace(/\s+/g, ' ').trim();
 }
 
-// Ghi text vào ô và tô sáng đoạn khớp từ khóa (an toàn, không dùng innerHTML)
+// Ghi text vào ô, tự động nhận diện liên kết/sđt và tô sáng đoạn khớp từ khóa
 function fillSupportCell(cell, text, query) {
     const source = String(text || '');
     if (!query) {
+        const urlOrPhoneRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|0[35789]\d{8}\b)/gi;
+        if (urlOrPhoneRegex.test(source)) {
+            cell.replaceChildren();
+            let lastIdx = 0;
+            source.replace(urlOrPhoneRegex, (match, p1, offset) => {
+                if (offset > lastIdx) {
+                    cell.appendChild(document.createTextNode(source.slice(lastIdx, offset)));
+                }
+                if (/^0[35789]\d{8}$/.test(match)) {
+                    const telLink = document.createElement('a');
+                    telLink.href = `tel:${match}`;
+                    telLink.className = 'support-tel-link';
+                    telLink.textContent = `📞 ${match}`;
+                    telLink.addEventListener('click', (e) => e.stopPropagation());
+                    cell.appendChild(telLink);
+                } else {
+                    const webLink = document.createElement('a');
+                    const fullHref = match.startsWith('http') ? match : `https://${match}`;
+                    webLink.href = fullHref;
+                    webLink.target = '_blank';
+                    webLink.rel = 'noopener noreferrer';
+                    webLink.className = 'support-web-link';
+                    webLink.textContent = match;
+                    webLink.addEventListener('click', (e) => e.stopPropagation());
+                    cell.appendChild(webLink);
+                }
+                lastIdx = offset + match.length;
+            });
+            if (lastIdx < source.length) {
+                cell.appendChild(document.createTextNode(source.slice(lastIdx)));
+            }
+            return;
+        }
+
         cell.textContent = source;
         return;
     }
@@ -2328,7 +2963,7 @@ function renderSupportEntries() {
         : allEntries;
 
     if (countEl) {
-        countEl.textContent = query ? `${entries.length}/${allEntries.length}` : String(allEntries.length);
+        countEl.textContent = query ? `${entries.length} / ${allEntries.length}` : String(allEntries.length);
     }
 
     if (!entries.length) {
@@ -2339,9 +2974,9 @@ function renderSupportEntries() {
         const isSearching = Boolean(query) && allEntries.length > 0;
         cell.innerHTML = `
             <div class="support-empty-state">
-                <span class="support-empty-icon"><i data-lucide="${isSearching ? 'search-x' : 'inbox'}"></i></span>
-                <strong>${isSearching ? 'Không tìm thấy kết quả' : 'Chưa có thông tin'}</strong>
-                <p>${isSearching ? 'Thử từ khóa khác nhé.' : 'Bấm nút “+” ở góc trên để thêm “Cần này” và “Đi đây”.'}</p>
+                <span class="support-empty-icon"><i data-lucide="${isSearching ? 'search-x' : 'life-buoy'}"></i></span>
+                <strong>${isSearching ? 'Không tìm thấy kết quả' : 'Chưa có thông tin hỗ trợ'}</strong>
+                <p>${isSearching ? 'Thử từ khóa khác nhé.' : 'Bấm nút “+ Thêm mới” ở góc trên để thêm thông tin tra cứu.'}</p>
             </div>`;
         row.appendChild(cell);
         tbody.appendChild(row);
@@ -2360,7 +2995,10 @@ function renderSupportEntries() {
             selectButton.className = 'support-row-select';
             selectButton.title = state.supportSelectionMode === 'edit' ? 'Chỉnh sửa mục này' : 'Xóa mục này';
             selectButton.setAttribute('aria-label', selectButton.title);
-            selectButton.addEventListener('click', () => handleSupportEntrySelection(entry.id));
+            selectButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleSupportEntrySelection(entry.id);
+            });
             indexCell.appendChild(selectButton);
         } else {
             const rowNumber = document.createElement('span');
@@ -2380,6 +3018,20 @@ function renderSupportEntries() {
         fillSupportCell(goCell, entry.content, query);
 
         row.append(indexCell, needCell, goCell);
+
+        row.title = state.supportSelectionMode 
+            ? (state.supportSelectionMode === 'edit' ? 'Nhấn để chỉnh sửa' : 'Nhấn để xóa')
+            : 'Nhấn để xem hoặc chỉnh sửa';
+
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('a') || e.target.closest('button')) return;
+            if (state.supportSelectionMode) {
+                handleSupportEntrySelection(entry.id);
+            } else {
+                openSupportEntryModal(entry.id);
+            }
+        });
+
         tbody.appendChild(row);
     });
 
@@ -2763,61 +3415,97 @@ function renderWishlistEntries() {
 
     tbody.replaceChildren();
     const entries = state.wishlistEntries || [];
-    if (countEl) countEl.textContent = `${entries.length} mục`;
+    if (countEl) countEl.textContent = entries.length;
 
     if (!entries.length) {
         const row = document.createElement('tr');
         row.className = 'support-empty-row';
         const cell = document.createElement('td');
-        cell.colSpan = 2;
-        cell.innerHTML = '<div class="support-empty-state"><span class="support-empty-icon"><i data-lucide="heart"></i></span><strong>Chưa có Wishlist</strong><p>Bấm nút “+” để thêm điều bạn muốn theo dõi.</p></div>';
+        cell.colSpan = 3;
+        cell.innerHTML = `
+            <div class="support-empty-state wishlist-empty-state">
+                <span class="support-empty-icon wishlist-empty-icon">
+                    <i data-lucide="heart"></i>
+                </span>
+                <strong>Chưa có mục nào trong Wishlist</strong>
+                <p>Bấm “+ Thêm mới” để lưu lại điều bạn mong muốn thực hiện.</p>
+            </div>
+        `;
         row.appendChild(cell);
         tbody.appendChild(row);
         createLucideIcons();
         return;
     }
 
+    const isSelecting = Boolean(state.wishlistSelectionMode);
+
     entries.forEach((entry, index) => {
         const row = document.createElement('tr');
         row.dataset.wishlistId = entry.id;
-        row.draggable = true;
-
-        const rankCell = document.createElement('td');
-        rankCell.className = 'support-col-index wishlist-rank-cell';
-        const isSelecting = Boolean(state.wishlistSelectionMode);
+        row.className = 'wishlist-table-row';
         if (!isSelecting) {
-            const rank = document.createElement('span');
-            rank.className = 'wishlist-rank';
-            rank.textContent = String(index + 1);
-            rankCell.appendChild(rank);
+            row.draggable = true;
         }
 
-        const handle = document.createElement('button');
-        handle.type = 'button';
-        handle.className = 'wishlist-drag-handle';
-        handle.title = 'Kéo để đổi thứ tự TOP';
-        handle.setAttribute('aria-label', handle.title);
-        handle.innerHTML = '<i data-lucide="grip-vertical"></i>';
-        rankCell.appendChild(handle);
+        // Cột 1: Huy hiệu Rank TOP (căn giữa 100% thẳng hàng với header TOP)
+        const rankCell = document.createElement('td');
+        rankCell.className = 'wishlist-rank-cell';
+        const rank = document.createElement('span');
+        const rankNum = index + 1;
+        rank.className = `wishlist-rank ${rankNum <= 3 ? `wishlist-rank-top${rankNum}` : ''}`;
+        rank.textContent = String(rankNum);
+        rankCell.appendChild(rank);
+
+        // Cột 2: Tiêu đề & Nội dung Wishlist (căn trái thẳng tắp với header)
+        const titleCell = document.createElement('td');
+        titleCell.className = 'wishlist-title-cell';
+        const titleText = document.createElement('span');
+        titleText.className = 'wishlist-title-text';
+        titleText.textContent = entry.title || '';
+        titleCell.appendChild(titleText);
+
+        // Cột 3: Nút Kéo thả / Xóa bên phải cùng
+        const actionCell = document.createElement('td');
+        actionCell.className = 'wishlist-action-cell';
 
         if (isSelecting) {
             const selectButton = document.createElement('button');
             selectButton.type = 'button';
             selectButton.className = 'support-row-select wishlist-row-select';
-            selectButton.title = state.wishlistSelectionMode === 'edit'
-                ? 'Chỉnh sửa Wishlist này'
-                : 'Xóa Wishlist này';
+            selectButton.title = 'Xóa mục này';
             selectButton.setAttribute('aria-label', selectButton.title);
-            selectButton.addEventListener('click', () => handleWishlistEntrySelection(entry.id));
-            rankCell.appendChild(selectButton);
+            selectButton.innerHTML = '<i data-lucide="trash-2"></i>';
+            selectButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleWishlistEntrySelection(entry.id);
+            });
+            actionCell.appendChild(selectButton);
+        } else {
+            const handle = document.createElement('button');
+            handle.type = 'button';
+            handle.className = 'wishlist-drag-handle';
+            handle.title = 'Kéo để đổi thứ tự TOP';
+            handle.setAttribute('aria-label', handle.title);
+            handle.innerHTML = '<i data-lucide="grip-vertical"></i>';
+            actionCell.appendChild(handle);
+            bindWishlistDrag(row, handle, entry.id);
         }
 
-        const titleCell = document.createElement('td');
-        titleCell.className = 'support-cell-need wishlist-title-cell';
-        titleCell.textContent = entry.title || '';
+        row.append(rankCell, titleCell, actionCell);
 
-        row.append(rankCell, titleCell);
-        bindWishlistDrag(row, handle, entry.id);
+        // Chạm vào hàng để chỉnh sửa nhanh
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('.wishlist-drag-handle')) return;
+            if (e.target.closest('.wishlist-row-select')) return;
+            if (state.wishlistDraggingId) return;
+
+            if (state.wishlistSelectionMode === 'delete') {
+                deleteWishlistEntry(entry.id);
+            } else {
+                openWishlistEntryModal(entry.id);
+            }
+        });
+
         tbody.appendChild(row);
     });
 
@@ -2826,9 +3514,7 @@ function renderWishlistEntries() {
 
 function setWishlistSelectionMode(mode) {
     state.wishlistSelectionMode = state.wishlistSelectionMode === mode ? null : mode;
-    const editButton = document.getElementById('btn-edit-wishlist-entry');
     const deleteButton = document.getElementById('btn-delete-wishlist-entry');
-    if (editButton) editButton.setAttribute('aria-pressed', state.wishlistSelectionMode === 'edit' ? 'true' : 'false');
     if (deleteButton) deleteButton.setAttribute('aria-pressed', state.wishlistSelectionMode === 'delete' ? 'true' : 'false');
     renderWishlistEntries();
 }
@@ -2911,7 +3597,7 @@ function bindWishlistDrag(row, handle, entryId) {
         document.querySelectorAll('.wishlist-drag-over').forEach(item => item.classList.remove('wishlist-drag-over'));
     });
 
-    // Hỗ trợ kéo trên màn hình cảm ứng/PWA.
+    // Hỗ trợ kéo trên màn hình cảm ứng/PWA với phản hồi xúc giác nhẹ (Haptics)
     let pointerDragging = false;
     handle.addEventListener('pointerdown', event => {
         if (event.pointerType === 'mouse') return;
@@ -2920,6 +3606,7 @@ function bindWishlistDrag(row, handle, entryId) {
         state.wishlistDraggingId = entryId;
         row.classList.add('wishlist-dragging');
         handle.setPointerCapture?.(event.pointerId);
+        try { navigator.vibrate?.(15); } catch (_) {}
     });
     handle.addEventListener('pointermove', event => {
         if (!pointerDragging) return;
@@ -2933,6 +3620,7 @@ function bindWishlistDrag(row, handle, entryId) {
         if (!pointerDragging) return;
         pointerDragging = false;
         row.classList.remove('wishlist-dragging');
+        try { navigator.vibrate?.(10); } catch (_) {}
         syncWishlistOrderFromDom();
     };
     handle.addEventListener('pointerup', finishPointerDrag);
@@ -3124,6 +3812,7 @@ function openListModal() {
     if (!modal) return;
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
+    modal.removeAttribute('data-selection-mode');
     state.listSelectionMode = null;
     setListActionButtons();
     pushAppView('list-modal');
@@ -3136,6 +3825,7 @@ function closeListModal(returnToHub = true, fromHistory = false) {
     if (!modal) return;
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
+    modal.removeAttribute('data-selection-mode');
     state.listSelectionMode = null;
     setListActionButtons();
     if (returnToHub && !fromHistory) leaveAppView();
@@ -3167,6 +3857,34 @@ function loadLocalListEntries() {
 
 function saveLocalListEntries(entries) {
     localStorage.setItem(getListLocalStorageKey(), JSON.stringify(entries));
+}
+
+function getListDoneKey() {
+    return state.currentUserId ? `qlct_list_done_${state.currentUserId}` : 'qlct_list_done';
+}
+
+function loadListDoneMap() {
+    try {
+        const raw = localStorage.getItem(getListDoneKey());
+        return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveListDoneMap(map) {
+    try {
+        localStorage.setItem(getListDoneKey(), JSON.stringify(map));
+    } catch (e) {
+        console.warn('Không thể lưu trạng thái hoàn thành:', e);
+    }
+}
+
+function isEntryDone(entry) {
+    if (!entry) return false;
+    if (entry.is_done !== undefined && entry.is_done !== null) return Boolean(entry.is_done);
+    const doneMap = loadListDoneMap();
+    return Boolean(doneMap[entry.id]);
 }
 
 function sortListEntries(entries) {
@@ -3224,12 +3942,12 @@ function renderListEntries() {
 
     container.replaceChildren();
     const groups = getListTopicGroups();
-    if (countEl) countEl.textContent = `${groups.length} chủ đề`;
+    if (countEl) countEl.textContent = groups.length;
 
     if (!groups.length) {
         const empty = document.createElement('div');
         empty.className = 'list-empty-state';
-        empty.innerHTML = '<span class="list-empty-icon"><i data-lucide="layers-3"></i></span><strong>Chưa có chủ đề</strong><p>Bấm nút “+” để tạo chủ đề và thêm các mục con.</p>';
+        empty.innerHTML = '<span class="list-empty-icon"><i data-lucide="layers-3"></i></span><strong>Chưa có chủ đề</strong><p>Bấm nút “+ Thêm mới” để tạo chủ đề và thêm các mục con.</p>';
         container.appendChild(empty);
         createLucideIcons();
         return;
@@ -3245,23 +3963,44 @@ function renderListEntries() {
         if (state.listSelectionMode) {
             const selectTopicButton = document.createElement('button');
             selectTopicButton.type = 'button';
-            selectTopicButton.className = 'support-row-select list-row-select';
+            selectTopicButton.className = `support-row-select list-row-select ${state.listSelectionMode === 'delete' ? 'is-delete' : 'is-edit'}`;
             selectTopicButton.title = state.listSelectionMode === 'edit'
                 ? 'Chỉnh sửa chủ đề này'
                 : 'Xóa chủ đề và các mục con';
             selectTopicButton.setAttribute('aria-label', selectTopicButton.title);
-            selectTopicButton.addEventListener('click', () => handleListTopicSelection(group.topic));
+            selectTopicButton.innerHTML = state.listSelectionMode === 'edit'
+                ? '<i data-lucide="pencil"></i>'
+                : '<i data-lucide="trash-2"></i>';
+            selectTopicButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleListTopicSelection(group.topic);
+            });
             header.appendChild(selectTopicButton);
         }
+
+        const doneCount = group.entries.filter(e => isEntryDone(e)).length;
+        const totalCount = group.entries.length;
+        const countText = doneCount > 0 ? `${doneCount}/${totalCount}` : `${totalCount}`;
+        const countClass = (doneCount === totalCount && totalCount > 0)
+            ? 'is-all-done'
+            : (doneCount > 0 ? 'has-done' : '');
 
         const topicToggle = document.createElement('button');
         topicToggle.type = 'button';
         topicToggle.className = 'list-topic-toggle';
         const expanded = state.listExpandedTopics.has(group.topic);
         topicToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-        topicToggle.innerHTML = `<i class="list-topic-chevron" data-lucide="chevron-down"></i><span class="list-topic-name"></span><span class="list-topic-count">${group.entries.length}</span>`;
+        topicToggle.innerHTML = `<i class="list-topic-chevron" data-lucide="chevron-down"></i><span class="list-topic-name"></span><span class="list-topic-count ${countClass}">${countText}</span>`;
         topicToggle.querySelector('.list-topic-name').textContent = group.topic;
         topicToggle.addEventListener('click', () => {
+            if (state.listSelectionMode === 'edit') {
+                handleListTopicSelection(group.topic);
+                return;
+            }
+            if (state.listSelectionMode === 'delete') {
+                handleListTopicSelection(group.topic);
+                return;
+            }
             if (state.listExpandedTopics.has(group.topic)) state.listExpandedTopics.delete(group.topic);
             else state.listExpandedTopics.add(group.topic);
             renderListEntries();
@@ -3275,15 +4014,24 @@ function renderListEntries() {
         group.entries.forEach((entry, index) => {
             const itemRow = document.createElement('div');
             itemRow.className = 'list-item-row';
+            const isDone = isEntryDone(entry);
+            if (isDone) itemRow.classList.add('is-done');
+
             if (state.listSelectionMode) {
                 const selectItemButton = document.createElement('button');
                 selectItemButton.type = 'button';
-                selectItemButton.className = 'support-row-select list-row-select';
+                selectItemButton.className = `support-row-select list-row-select ${state.listSelectionMode === 'delete' ? 'is-delete' : 'is-edit'}`;
                 selectItemButton.title = state.listSelectionMode === 'edit'
                     ? 'Chỉnh sửa mục này'
                     : 'Xóa mục này';
                 selectItemButton.setAttribute('aria-label', selectItemButton.title);
-                selectItemButton.addEventListener('click', () => handleListItemSelection(entry.id));
+                selectItemButton.innerHTML = state.listSelectionMode === 'edit'
+                    ? '<i data-lucide="pencil"></i>'
+                    : '<i data-lucide="trash-2"></i>';
+                selectItemButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleListItemSelection(entry.id);
+                });
                 itemRow.appendChild(selectItemButton);
             } else {
                 const itemNumber = document.createElement('span');
@@ -3295,6 +4043,32 @@ function renderListEntries() {
             itemText.className = 'list-item-name';
             itemText.textContent = entry.item || '';
             itemRow.appendChild(itemText);
+
+            // Dấu tích Đã xem / Đã đi tinh tế ở bên phải
+            if (!state.listSelectionMode) {
+                const checkButton = document.createElement('button');
+                checkButton.type = 'button';
+                checkButton.className = `list-item-check-btn ${isDone ? 'is-checked' : ''}`;
+                checkButton.setAttribute('aria-label', isDone ? 'Đánh dấu chưa đi / chưa xem' : 'Đánh dấu đã đi / đã xem');
+                checkButton.title = isDone ? 'Đã xem / Đã đi (Bấm để bỏ đánh dấu)' : 'Đánh dấu đã xem / Đã đi';
+                checkButton.innerHTML = '<i data-lucide="check"></i>';
+                checkButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleListItemDone(entry.id, e);
+                });
+                itemRow.appendChild(checkButton);
+            }
+
+            itemRow.addEventListener('click', (e) => {
+                if (e.target.closest('.list-item-check-btn')) return;
+                if (state.listSelectionMode === 'edit') {
+                    handleListItemSelection(entry.id);
+                } else if (state.listSelectionMode === 'delete') {
+                    handleListItemSelection(entry.id);
+                }
+                // Ở chế độ bình thường (không bấm nút sửa chữa): tắt hoàn toàn tính năng mở sửa chữa
+            });
+
             items.appendChild(itemRow);
         });
         topicCard.appendChild(items);
@@ -3306,6 +4080,11 @@ function renderListEntries() {
 
 function setListSelectionMode(mode) {
     state.listSelectionMode = state.listSelectionMode === mode ? null : mode;
+    const modal = document.getElementById('list-modal');
+    if (modal) {
+        if (state.listSelectionMode) modal.setAttribute('data-selection-mode', state.listSelectionMode);
+        else modal.removeAttribute('data-selection-mode');
+    }
     setListActionButtons();
     renderListEntries();
 }
@@ -3578,6 +4357,52 @@ function saveListItemLocally(topic, item) {
     closeListEntryModal();
 }
 
+async function toggleListItemDone(id, event) {
+    if (event) event.stopPropagation();
+    const entry = state.listEntries.find(item => item.id === id);
+    if (!entry) return;
+
+    const nextDone = !isEntryDone(entry);
+    entry.is_done = nextDone;
+
+    const doneMap = loadListDoneMap();
+    if (nextDone) doneMap[id] = true;
+    else delete doneMap[id];
+    saveListDoneMap(doneMap);
+
+    saveLocalListEntries(state.listEntries);
+
+    if (nextDone) {
+        const group = getListTopicGroups().find(g => g.topic === entry.topic);
+        if (group && group.entries.length > 0 && group.entries.every(e => isEntryDone(e))) {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 45,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+            }
+        }
+    }
+
+    renderListEntries();
+
+    if (supabaseClient && state.currentUserId && state.listStorageMode !== 'local') {
+        try {
+            const { error } = await supabaseClient
+                .from('list_entries')
+                .update({ is_done: nextDone, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .eq('user_id', state.currentUserId);
+            if (error) {
+                console.warn('Lưu Supabase is_done không thành công (đã lưu trên thiết bị):', error.message);
+            }
+        } catch (err) {
+            console.warn('Lỗi kết nối Supabase:', err);
+        }
+    }
+}
+
 async function deleteListItem(id) {
     const entry = state.listEntries.find(item => item.id === id);
     if (!entry || !confirm(`Bạn có chắc muốn xóa mục “${entry.item}” không?`)) return;
@@ -3588,6 +4413,11 @@ async function deleteListItem(id) {
         const { error } = await supabaseClient.from('list_entries').delete().eq('id', id).eq('user_id', state.currentUserId);
         if (error) { alert('Không thể xóa mục. Vui lòng thử lại.'); return; }
         state.listEntries = state.listEntries.filter(item => item.id !== id);
+    }
+    const doneMap = loadListDoneMap();
+    if (doneMap[id]) {
+        delete doneMap[id];
+        saveListDoneMap(doneMap);
     }
     state.listSelectionMode = null;
     setListActionButtons();
@@ -3631,22 +4461,39 @@ async function persistListOrders() {
 }
 
 async function fetchListEntries() {
+    const doneMap = loadListDoneMap();
     if (!supabaseClient || !state.currentUserId) {
         state.listStorageMode = 'local';
-        state.listEntries = sortListEntries(loadLocalListEntries());
+        state.listEntries = sortListEntries(loadLocalListEntries()).map(entry => ({
+            ...entry,
+            is_done: entry.is_done !== undefined ? Boolean(entry.is_done) : Boolean(doneMap[entry.id])
+        }));
         setListNotice('Chưa có phiên Supabase. Danh sách sẽ được lưu tạm trên thiết bị này.');
         renderListEntries();
         return;
     }
-    const { data, error } = await supabaseClient.from('list_entries')
-        .select('id,topic,item,topic_order,item_order,created_at,updated_at')
+    let queryResult = await supabaseClient.from('list_entries')
+        .select('id,topic,item,topic_order,item_order,is_done,created_at,updated_at')
         .eq('user_id', state.currentUserId)
         .order('topic_order', { ascending: true })
         .order('item_order', { ascending: true });
+
+    if (queryResult.error && (String(queryResult.error.message || '').includes('is_done') || queryResult.error.code === '42703')) {
+        queryResult = await supabaseClient.from('list_entries')
+            .select('id,topic,item,topic_order,item_order,created_at,updated_at')
+            .eq('user_id', state.currentUserId)
+            .order('topic_order', { ascending: true })
+            .order('item_order', { ascending: true });
+    }
+
+    const { data, error } = queryResult;
     if (error) {
         if (isMissingListTable(error)) {
             state.listStorageMode = 'local';
-            state.listEntries = sortListEntries(loadLocalListEntries());
+            state.listEntries = sortListEntries(loadLocalListEntries()).map(entry => ({
+                ...entry,
+                is_done: entry.is_done !== undefined ? Boolean(entry.is_done) : Boolean(doneMap[entry.id])
+            }));
             setListNotice('Chưa có bảng list_entries. Hãy chạy file supabase_list.sql để đồng bộ Supabase.');
         } else {
             console.error('Không thể tải Danh sách:', error);
@@ -3655,37 +4502,13 @@ async function fetchListEntries() {
         }
     } else {
         state.listStorageMode = 'supabase';
-        state.listEntries = sortListEntries(data || []);
+        state.listEntries = sortListEntries((data || []).map(entry => ({
+            ...entry,
+            is_done: entry.is_done !== undefined ? Boolean(entry.is_done) : Boolean(doneMap[entry.id])
+        })));
         setListNotice('');
     }
     renderListEntries();
-}
-
-// ============================================================================
-// QUOTES (TRÍCH DẪN) – tính năng thứ 9
-// ============================================================================
-function openQuoteModal() {
-    const modal = document.getElementById('quote-modal');
-    if (!modal) return;
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-    state.quoteSelectionMode = null;
-    document.getElementById('btn-edit-quote-entry')?.setAttribute('aria-pressed', 'false');
-    document.getElementById('btn-delete-quote-entry')?.setAttribute('aria-pressed', 'false');
-    pushAppView('quote-modal');
-    fetchQuoteEntries();
-    createLucideIcons();
-}
-
-function closeQuoteModal(returnToHub = true, fromHistory = false) {
-    const modal = document.getElementById('quote-modal');
-    if (!modal) return;
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-    state.quoteSelectionMode = null;
-    document.getElementById('btn-edit-quote-entry')?.setAttribute('aria-pressed', 'false');
-    document.getElementById('btn-delete-quote-entry')?.setAttribute('aria-pressed', 'false');
-    if (returnToHub && !fromHistory) leaveAppView();
 }
 
 // ============================================================================
@@ -3704,6 +4527,7 @@ function openQuoteModal() {
     if (!modal) return;
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
+    modal.removeAttribute('data-selection-mode');
     state.quoteSelectionMode = null;
     document.getElementById('btn-edit-quote-entry')?.setAttribute('aria-pressed', 'false');
     document.getElementById('btn-delete-quote-entry')?.setAttribute('aria-pressed', 'false');
@@ -3717,6 +4541,7 @@ function closeQuoteModal(returnToHub = true, fromHistory = false) {
     if (!modal) return;
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
+    modal.removeAttribute('data-selection-mode');
     state.quoteSelectionMode = null;
     document.getElementById('btn-edit-quote-entry')?.setAttribute('aria-pressed', 'false');
     document.getElementById('btn-delete-quote-entry')?.setAttribute('aria-pressed', 'false');
@@ -3740,7 +4565,11 @@ function loadLocalQuoteEntries() {
     try {
         const raw = localStorage.getItem(getQuoteLocalStorageKey());
         const entries = raw ? JSON.parse(raw) : [];
-        return Array.isArray(entries) ? entries : [];
+        return (Array.isArray(entries) ? entries : []).map(entry => ({
+            ...entry,
+            quote: String(entry?.quote || '').normalize('NFC'),
+            author: String(entry?.author || 'Khuyết danh').normalize('NFC')
+        }));
     } catch (error) {
         console.warn('Không thể đọc Quote tạm:', error);
         return [];
@@ -3823,8 +4652,10 @@ function updateQuoteHeroBanner() {
 
     const idx = Math.abs(state.quoteHeroIndex || 0) % entries.length;
     const current = entries[idx];
-    heroText.textContent = `“${current.quote}”`;
-    heroAuthor.textContent = `— ${current.author || 'Khuyết danh'}`;
+    const cleanQuote = String(current?.quote || '').normalize('NFC');
+    const cleanAuthor = String(current?.author || 'Khuyết danh').normalize('NFC');
+    heroText.textContent = `“${cleanQuote}”`;
+    heroAuthor.textContent = `— ${cleanAuthor}`;
 }
 
 function shuffleQuoteHero() {
@@ -3930,6 +4761,8 @@ function renderQuoteEntries() {
     const allEntries = state.quoteEntries || [];
     const favCount = allEntries.filter(q => q.is_favorite).length;
 
+    const headerCountEl = document.getElementById('quote-entry-count');
+    if (headerCountEl) headerCountEl.textContent = `${allEntries.length}`;
     if (countAllEl) countAllEl.textContent = `${allEntries.length}`;
     if (countFavEl) countFavEl.textContent = `${favCount}`;
 
@@ -4054,9 +4887,10 @@ function renderQuoteEntries() {
         card.appendChild(headerRow);
 
         // Quote text
+        const cleanQuote = String(entry.quote || '').normalize('NFC');
         const text = document.createElement('p');
         text.className = 'quote-card-text';
-        text.textContent = `“${entry.quote}”`;
+        text.textContent = `“${cleanQuote}”`;
         card.appendChild(text);
 
         // Footer
@@ -4066,7 +4900,7 @@ function renderQuoteEntries() {
         const authorChip = document.createElement('div');
         authorChip.className = 'quote-author-chip';
 
-        const authorName = (entry.author || 'Khuyết danh').trim();
+        const authorName = String(entry.author || 'Khuyết danh').normalize('NFC').trim();
         const initial = authorName.charAt(0).toUpperCase() || 'K';
 
         const avatar = document.createElement('div');
@@ -4136,6 +4970,11 @@ function renderQuoteEntries() {
 
 function setQuoteSelectionMode(mode) {
     state.quoteSelectionMode = state.quoteSelectionMode === mode ? null : mode;
+    const modal = document.getElementById('quote-modal');
+    if (modal) {
+        if (state.quoteSelectionMode) modal.setAttribute('data-selection-mode', state.quoteSelectionMode);
+        else modal.removeAttribute('data-selection-mode');
+    }
     const editBtn = document.getElementById('btn-edit-quote-entry');
     const deleteBtn = document.getElementById('btn-delete-quote-entry');
     if (editBtn) editBtn.setAttribute('aria-pressed', state.quoteSelectionMode === 'edit' ? 'true' : 'false');
@@ -4198,8 +5037,8 @@ function openQuoteEntryModal(entryId = null) {
     if (entryId) {
         const entry = (state.quoteEntries || []).find(q => q.id === entryId);
         if (titleEl) titleEl.textContent = 'Chỉnh sửa câu quote';
-        if (quoteInput) quoteInput.value = entry?.quote || '';
-        if (authorInput) authorInput.value = entry?.author && entry.author !== 'Khuyết danh' ? entry.author : '';
+        if (quoteInput) quoteInput.value = (entry?.quote || '').normalize('NFC');
+        if (authorInput) authorInput.value = entry?.author && entry.author !== 'Khuyết danh' ? entry.author.normalize('NFC') : '';
     } else {
         if (titleEl) titleEl.textContent = 'Thêm câu quote';
         if (quoteInput) quoteInput.value = '';
@@ -4225,18 +5064,20 @@ function closeQuoteEntryModal(closeParent = false, fromHistory = false) {
 }
 
 function saveLocalQuoteEntryDirect(quote, author, editingId) {
+    const cleanQuote = String(quote || '').normalize('NFC');
+    const cleanAuthor = String(author || 'Khuyết danh').normalize('NFC');
     const entries = loadLocalQuoteEntries();
     const now = new Date().toISOString();
     if (editingId) {
-        const next = entries.map(entry => entry.id === editingId ? { ...entry, quote, author, updated_at: now } : entry);
+        const next = entries.map(entry => entry.id === editingId ? { ...entry, quote: cleanQuote, author: cleanAuthor, updated_at: now } : entry);
         saveLocalQuoteEntries(next);
         state.quoteEntries = next;
     } else {
         const newEntry = {
             id: `local_quote_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
             user_id: state.currentUserId || 'local',
-            quote,
-            author,
+            quote: cleanQuote,
+            author: cleanAuthor,
             is_favorite: false,
             display_order: entries.length + 1,
             created_at: now,
@@ -4255,8 +5096,8 @@ async function handleQuoteEntrySubmit(event) {
     event.preventDefault();
     const quoteInput = document.getElementById('quote-entry-text');
     const authorInput = document.getElementById('quote-entry-author');
-    const quote = (quoteInput?.value || '').trim();
-    let author = (authorInput?.value || '').trim();
+    const quote = (quoteInput?.value || '').trim().normalize('NFC');
+    let author = (authorInput?.value || '').trim().normalize('NFC');
     if (!author) author = 'Khuyết danh';
 
     if (!quote) {
@@ -4416,7 +5257,11 @@ async function fetchQuoteEntries() {
             }
         } else {
             state.quoteStorageMode = 'supabase';
-            state.quoteEntries = data || [];
+            state.quoteEntries = (data || []).map(entry => ({
+                ...entry,
+                quote: String(entry?.quote || '').normalize('NFC'),
+                author: String(entry?.author || 'Khuyết danh').normalize('NFC')
+            }));
             setQuoteNotice('');
         }
     } catch (err) {
@@ -4527,6 +5372,8 @@ function setCurrentSupabaseUser(user) {
     const nextUserId = user && user.id ? user.id : null;
     if (state.currentUserId === nextUserId) return;
 
+    expenseFetchSequence++;
+    expenseRevision++;
     state.currentUserId = nextUserId;
     if (nextUserId) {
         loadExpenseDataForCurrentUser();
@@ -4577,9 +5424,11 @@ function setCurrentSupabaseUser(user) {
 // Kiểm tra phiên đăng nhập Supabase Auth
 async function checkAuthSession() {
     if (!supabaseClient) return;
-    
+    const userAtStart = state.currentUserId;
     try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (state.currentUserId !== userAtStart) return;
         if (session && session.user) {
             setCurrentSupabaseUser(session.user);
             hideLoginScreen();
@@ -4701,9 +5550,12 @@ async function handleLogout() {
     if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?")) {
         if (supabaseClient) {
             try {
-                await supabaseClient.auth.signOut();
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
             } catch (e) {
-                console.warn("Lỗi đăng xuất:", e);
+                console.error("Lỗi đăng xuất:", e);
+                alert('Đăng xuất chưa thành công. Vui lòng kiểm tra mạng và thử lại.');
+                return;
             }
         }
         setCurrentSupabaseUser(null);
@@ -4714,8 +5566,19 @@ async function handleLogout() {
 
 // Khởi tạo Supabase Client và Đăng ký Real-time listener & Auth
 function initSupabase() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm && !loginForm.dataset.authBound) {
+        loginForm.addEventListener('submit', handleLogin);
+        loginForm.dataset.authBound = 'true';
+    }
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout && !btnLogout.dataset.authBound) {
+        btnLogout.addEventListener('click', handleLogout);
+        btnLogout.dataset.authBound = 'true';
+    }
     if (typeof supabase === 'undefined') {
         console.warn("Supabase SDK chưa nạp.");
+        showLoginError('Không tải được kết nối Supabase. Vui lòng kiểm tra mạng và tải lại trang.');
         return;
     }
     
@@ -4728,19 +5591,6 @@ function initSupabase() {
         });
         window.__QLCT_SUPABASE_CLIENT = supabaseClient;
         
-        // Đăng ký Event Listeners cho Login Form và Logout Button
-        const loginForm = document.getElementById('login-form');
-        if (loginForm && !loginForm.dataset.authBound) {
-            loginForm.addEventListener('submit', handleLogin);
-            loginForm.dataset.authBound = 'true';
-        }
-        
-        const btnLogout = document.getElementById('btn-logout');
-        if (btnLogout && !btnLogout.dataset.authBound) {
-            btnLogout.addEventListener('click', handleLogout);
-            btnLogout.dataset.authBound = 'true';
-        }
-        
         // Lắng nghe sự thay đổi trạng thái xác thực từ Supabase Auth
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
@@ -4748,9 +5598,14 @@ function initSupabase() {
                 hideLoginScreen();
                 showLogoutButton();
                 setupRealtimeSubscription();
+                if (event === 'SIGNED_IN') fetchExpensesFromSupabase();
                 fetchSaversFromSupabase();
             } else if (event === 'SIGNED_OUT') {
                 setCurrentSupabaseUser(null);
+                if (supabaseSubscription) {
+                    supabaseClient.removeChannel(supabaseSubscription);
+                    supabaseSubscription = null;
+                }
                 showLoginScreen();
                 hideLogoutButton();
             }
@@ -4768,54 +5623,57 @@ function initSupabase() {
 // nếu bảng Supabase được mở rộng thêm trong tương lai.
 const EXPENSE_SELECT_FIELDS = 'id,user_id,date,title,amount,category,created_at';
 
-// Lấy danh sách chi tiêu từ Supabase với Timeout 3.5s cực kỳ an toàn
+// Supabase giới hạn số dòng mỗi lần đọc; tải đủ các trang trước khi thay dữ liệu trên màn hình.
 async function fetchExpensesFromSupabase() {
     if (!supabaseClient || !state.currentUserId) return;
-
-    // Timeout 3.5s bằng AbortController để ngăn iOS bị đơ/treo mạng
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
+    const userId = state.currentUserId;
+    const revision = expenseRevision;
+    const sequence = ++expenseFetchSequence;
+    const pageSize = 1000;
+    const allExpenses = [];
     try {
-        const { data, error } = await supabaseClient
-            .from('expenses')
-            .select(EXPENSE_SELECT_FIELDS)
-            .eq('user_id', state.currentUserId)
-            .abortSignal(controller.signal);
-            
-        clearTimeout(timeoutId);
-            
-        if (error) throw error;
-        
-        if (data && Array.isArray(data)) {
-            // Hợp nhất dữ liệu Cloud và Local (không xóa mất khoản vừa tạo)
-            mergeLocalAndRemoteExpenses(data);
+        for (let offset = 0; ;) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            let result;
+            try {
+                result = await supabaseClient
+                    .from('expenses')
+                    .select(EXPENSE_SELECT_FIELDS)
+                    .eq('user_id', userId)
+                    .order('id', { ascending: true })
+                    .range(offset, offset + pageSize - 1)
+                    .abortSignal(controller.signal);
+            } finally {
+                clearTimeout(timeoutId);
+            }
+            if (result.error) throw result.error;
+            if (!Array.isArray(result.data)) throw new Error('Supabase không trả danh sách khoản chi.');
+            allExpenses.push(...result.data);
+            if (result.data.length === 0) break;
+            offset += result.data.length;
+            if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
         }
+        if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
+        if (revision !== expenseRevision || expenseWriteBusy) {
+            if (!expenseWriteBusy) fetchExpensesFromSupabase();
+            return;
+        }
+        mergeLocalAndRemoteExpenses(allExpenses);
     } catch (err) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-            console.warn("⚡ Fetch Supabase quá 3.5s - Tự động ưu tiên dữ liệu bộ nhớ máy.");
-        } else {
-            console.warn("Lỗi fetch Supabase:", err.message || err);
+        if (state.currentUserId === userId && sequence === expenseFetchSequence) {
+            console.error('Lỗi tải khoản chi từ Supabase:', err);
+            alert('Không tải được dữ liệu thu chi từ Supabase. Vui lòng kiểm tra mạng và tải lại trang.');
         }
     }
 }
 
-// Hợp nhất dữ liệu cloud và local
+// Dữ liệu Supabase là nguồn chuẩn; không gộp lại khoản cũ chỉ còn trong bộ nhớ máy.
 function mergeLocalAndRemoteExpenses(remoteData) {
-    const remoteMap = new Map();
-    remoteData.forEach(item => {
-        if (item && item.id) remoteMap.set(item.id, item);
-    });
-
-    // Keep only unsynced records owned by the current account.
-    state.expenses.forEach(localItem => {
-        if (localItem && localItem.id && localItem.user_id === state.currentUserId && !remoteMap.has(localItem.id)) {
-            remoteMap.set(localItem.id, localItem);
-        }
-    });
-
-    state.expenses = Array.from(remoteMap.values());
+    preserveUnverifiedLocalExpenses(remoteData);
+    state.expenses = remoteData
+        .filter(item => item && item.id && item.user_id === state.currentUserId)
+        .map(normalizeExpenseRecord);
     sortExpenses();
     saveData();
     updateUI();
@@ -4828,24 +5686,34 @@ function handleRealtimeDbChange(payload) {
     const newRecord = payload.new;
     const oldRecord = payload.old;
 
+    if (eventType === 'DELETE' && oldRecord && !oldRecord.user_id) {
+        // Một số cấu hình Realtime chỉ gửi khóa chính của dòng đã xóa.
+        fetchExpensesFromSupabase();
+        return;
+    }
     const changedRecord = eventType === 'DELETE' ? oldRecord : newRecord;
     if (!changedRecord || changedRecord.user_id !== state.currentUserId) return;
     
     if (eventType === 'INSERT') {
-        if (!state.expenses.some(e => e.id === newRecord.id)) {
-            state.expenses.unshift(newRecord);
+        if (!state.expenses.some(e => e.id === String(newRecord.id))) {
+            state.expenses.unshift(normalizeExpenseRecord(newRecord));
             sortExpenses();
         }
     } else if (eventType === 'DELETE') {
-        state.expenses = state.expenses.filter(e => e.id !== oldRecord.id);
+        state.expenses = state.expenses.filter(e => e.id !== String(oldRecord.id));
     } else if (eventType === 'UPDATE') {
-        const idx = state.expenses.findIndex(e => e.id === newRecord.id);
+        const idx = state.expenses.findIndex(e => e.id === String(newRecord.id));
         if (idx !== -1) {
-            state.expenses[idx] = newRecord;
+            state.expenses[idx] = normalizeExpenseRecord(newRecord);
             sortExpenses();
+        } else {
+            expenseRevision++;
+            fetchExpensesFromSupabase();
+            return;
         }
     }
     
+    expenseRevision++;
     saveData();
     updateUI();
 }
