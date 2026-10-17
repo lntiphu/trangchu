@@ -22,7 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/style.css?v=11">
+    <link rel="stylesheet" href="css/style.css?v=12">
     <script>
         function goBackToHome() {
             try {
@@ -49,14 +49,30 @@
         <div class="ios-status-bar-spacer"></div>
 
         <!-- HEADER -->
-        <header class="app-header">
+        <header class="app-header header-overview">
             <div class="header-left">
-                <div class="header-brand-title">
-                    <img src="../assets/web-avatar.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
-                    <div>
-                        <h1 class="header-main-title">Quản Lý Thu Chi</h1>
-                        <span class="header-date-badge" id="current-date">Thứ Tư, ngày 30 tháng 9 năm 2026</span>
-                    </div>
+                <div class="header-eyebrow">
+                    <span class="header-status-badge">
+                        <span class="status-pulse-dot"></span>
+                        <span>Hôm nay</span>
+                    </span>
+                    <span class="header-clock-wrap">
+                        <i data-lucide="clock"></i>
+                        <span id="header-live-clock">--:--:--</span>
+                    </span>
+                </div>
+                <h1 class="header-main-date" id="current-date">Thứ Bảy, ngày 17 tháng 10 năm 2026</h1>
+                <div class="header-date-sub">
+                    <span class="header-sub-tag"><i data-lucide="wallet"></i> Sổ Thu Chi</span>
+                    <span class="header-sub-sep">·</span>
+                    <span class="header-sub-desc">Quản lý dòng tiền & ngân sách chi tiêu</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-calendar-badge" title="Lịch hôm nay">
+                    <div class="calendar-badge-top" id="header-calendar-month">Thg 10</div>
+                    <div class="calendar-badge-day" id="header-calendar-day">17</div>
+                    <div class="calendar-badge-bottom" id="header-calendar-weekday">Thứ 7</div>
                 </div>
             </div>
         </header>
@@ -99,20 +115,28 @@
                     </div>
                     <div class="dashboard-shortcuts-grid">
                         <button type="button" class="shortcut-pill shortcut-pill-add" onclick="openAddModal()">
-                            <i data-lucide="plus-circle"></i>
-                            <span>Ghi khoản chi mới</span>
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="plus-circle"></i>
+                            </div>
+                            <span class="shortcut-label">Ghi khoản chi mới</span>
                         </button>
                         <button type="button" class="shortcut-pill shortcut-pill-analysis" onclick="openSpendingAnalysisPage()">
-                            <i data-lucide="bar-chart-3"></i>
-                            <span>Toàn cảnh tài chính</span>
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="bar-chart-3"></i>
+                            </div>
+                            <span class="shortcut-label">Toàn cảnh tài chính</span>
                         </button>
                         <button type="button" class="shortcut-pill shortcut-pill-history" onclick="switchTab('history')">
-                            <i data-lucide="receipt"></i>
-                            <span>Xem lịch sử chi</span>
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="receipt"></i>
+                            </div>
+                            <span class="shortcut-label">Xem lịch sử chi</span>
                         </button>
                         <button type="button" class="shortcut-pill shortcut-pill-home" onclick="goBackToHome()">
-                            <i data-lucide="layout-grid"></i>
-                            <span>Trung tâm chức năng</span>
+                            <div class="shortcut-icon-bubble">
+                                <i data-lucide="layout-grid"></i>
+                            </div>
+                            <span class="shortcut-label">Trung tâm chức năng</span>
                         </button>
                     </div>
                 </div>
@@ -615,7 +639,7 @@
     <script src="https://unpkg.com/lucide@latest" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/chart-config.js?v=2" defer></script>
-    <script src="js/app.js?v=13" defer></script>
+    <script src="js/app.js?v=15" defer></script>
     <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
