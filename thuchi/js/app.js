@@ -365,105 +365,6 @@ function showExpenseDisplayError(error) {
     alert('Supabase đã lưu thay đổi, nhưng màn hình chưa cập nhật. Vui lòng tải lại trang.');
 }
 
-function isSyncableLocalExpense(item, userId) {
-    if (!item || !item.id || item.user_id !== userId) return false;
-    const id = String(item.id);
-    const title = typeof item.title === 'string' ? item.title.trim() : '';
-    if (!title || title.startsWith('QA_THUCHI_')) return false;
-    const amount = Number(item.amount);
-    if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) return false;
-    const date = parseDisplayDateToISO(String(item.date || '').split('T')[0]);
-    if (!date) return false;
-    const shared = getSharedExpenseSyncState();
-    const deletedMem = getExpenseUserSet(shared.deletedByUser, userId);
-    const deletedStored = readStoredIdSet(`money_expenses_deleted_ids_${userId}`);
-    if (deletedMem.has(id) || deletedStored.has(id)) return false;
-    const syncedStored = readStoredIdSet(`money_expenses_synced_ids_${userId}`);
-    if (syncedStored.has(id)) return false;
-    return true;
-}
-
-async function syncPendingLocalExpensesToSupabase(userId, remoteData) {
-    if (!supabaseClient || !userId || !Array.isArray(remoteData)) return remoteData;
-    const cacheKey = `money_expenses_${userId}`;
-    const recoveryKey = `money_expenses_recovery_${userId}`;
-    try {
-        const cached = JSON.parse(localStorage.getItem(cacheKey) || '[]');
-        const recovery = JSON.parse(localStorage.getItem(recoveryKey) || '[]');
-        const remoteIds = new Set(remoteData.map(item => String(item.id)));
-        const shared = getSharedExpenseSyncState();
-        const confirmedMem = getExpenseUserSet(shared.confirmedByUser, userId);
-
-        const mergedRemote = [...remoteData];
-        const candidatesById = new Map();
-
-        // Giữ nguyên các khoản vừa được xác nhận trên Supabase trong phiên hiện tại
-        // nếu truy vấn đọc phân trang trả về bản chụp cũ hơn.
-        if (Array.isArray(cached)) {
-            cached.forEach(item => {
-                if (!item || !item.id || item.user_id !== userId) return;
-                const id = String(item.id);
-                if (remoteIds.has(id)) return;
-                if (confirmedMem.has(id)) {
-                    mergedRemote.push(normalizeExpenseRecord(item));
-                    remoteIds.add(id);
-                } else if (isSyncableLocalExpense(item, userId)) {
-                    candidatesById.set(id, item);
-                }
-            });
-        }
-
-        if (Array.isArray(recovery)) {
-            recovery.forEach(item => {
-                if (!item || !item.id || item.user_id !== userId) return;
-                const id = String(item.id);
-                if (remoteIds.has(id) || candidatesById.has(id)) return;
-                if (isSyncableLocalExpense(item, userId)) {
-                    candidatesById.set(id, item);
-                }
-            });
-        }
-
-        if (!candidatesById.size) return mergedRemote;
-
-        const tableApi = supabaseClient.from('expenses');
-        const canUpsert = typeof tableApi?.upsert === 'function';
-        const canInsert = typeof tableApi?.insert === 'function';
-        if (!canUpsert && !canInsert) return mergedRemote;
-
-        for (const [id, item] of candidatesById.entries()) {
-            const payload = {
-                id,
-                user_id: userId,
-                amount: Number(item.amount),
-                title: String(item.title).trim(),
-                category: item.category || 'Khác',
-                date: parseDisplayDateToISO(String(item.date || '').split('T')[0])
-            };
-            try {
-                const table = supabaseClient.from('expenses');
-                const op = typeof table.upsert === 'function'
-                    ? table.upsert([payload], { onConflict: 'id' })
-                    : table.insert([payload]);
-                const { data, error } = typeof op.select === 'function'
-                    ? await op.select('id')
-                    : await op;
-                if (!error && (!data || data.length === 1)) {
-                    markExpenseSynced(userId, [id]);
-                    mergedRemote.push(normalizeExpenseRecord(payload));
-                    remoteIds.add(id);
-                }
-            } catch (syncError) {
-                console.warn('Chưa thể đồng bộ khoản chi cục bộ lên Supabase:', syncError);
-            }
-        }
-        return mergedRemote;
-    } catch (error) {
-        console.warn('Lỗi khi kiểm tra khoản chi cần đồng bộ lên Supabase:', error);
-        return remoteData;
-    }
-}
-
 function preserveUnverifiedLocalExpenses(remoteData) {
     const cacheKey = `money_expenses_${state.currentUserId}`;
     const recoveryKey = `money_expenses_recovery_${state.currentUserId}`;
@@ -490,6 +391,37 @@ function preserveUnverifiedLocalExpenses(remoteData) {
     } catch (error) {
         console.warn('Không thể sao lưu khoản chi cục bộ chưa xác nhận:', error);
     }
+}
+
+async function purgeDeletedExpensesFromSupabase(userId, remoteData) {
+    if (!supabaseClient || !userId || !Array.isArray(remoteData)) return remoteData;
+    const shared = getSharedExpenseSyncState();
+    const deletedMem = getExpenseUserSet(shared.deletedByUser, userId);
+    const deletedStored = readStoredIdSet(`money_expenses_deleted_ids_${userId}`);
+    if (!deletedMem.size && !deletedStored.size) return remoteData;
+
+    const zombies = remoteData.filter(item =>
+        item && item.id && (deletedMem.has(String(item.id)) || deletedStored.has(String(item.id)))
+    );
+    if (!zombies.length) return remoteData;
+
+    for (const item of zombies) {
+        const id = String(item.id);
+        try {
+            const table = supabaseClient.from('expenses');
+            if (typeof table?.delete === 'function') {
+                const delOp = table.delete().eq('id', id).eq('user_id', userId);
+                if (typeof delOp.select === 'function') await delOp.select('id');
+                else await delOp;
+            }
+        } catch (err) {
+            console.warn('Không thể dọn khoản chi đã xóa trên Supabase:', err);
+        }
+    }
+
+    return remoteData.filter(item =>
+        item && item.id && !deletedMem.has(String(item.id)) && !deletedStored.has(String(item.id))
+    );
 }
 
 function loadExpenseDataForCurrentUser() {
@@ -3355,10 +3287,9 @@ async function fetchExpensesFromSupabase() {
             if (!isAnyExpenseWriteBusy()) fetchExpensesFromSupabase();
             return;
         }
-        markExpenseSynced(userId, allExpenses.map(item => item && item.id));
-        const syncedRemote = await syncPendingLocalExpensesToSupabase(userId, allExpenses);
+        const cleanedRemote = await purgeDeletedExpensesFromSupabase(userId, allExpenses);
         if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
-        mergeLocalAndRemoteExpenses(syncedRemote);
+        mergeLocalAndRemoteExpenses(cleanedRemote);
     } catch (err) {
         if (state.currentUserId === userId && sequence === expenseFetchSequence) {
             console.error('Lỗi tải khoản chi từ Supabase:', err);
@@ -3370,10 +3301,18 @@ async function fetchExpensesFromSupabase() {
 // Dữ liệu Supabase là nguồn chuẩn; không gộp lại khoản cũ chỉ còn trong bộ nhớ máy.
 function mergeLocalAndRemoteExpenses(remoteData) {
     preserveUnverifiedLocalExpenses(remoteData);
+    const shared = getSharedExpenseSyncState();
+    const deletedMem = getExpenseUserSet(shared.deletedByUser, state.currentUserId);
+    const deletedStored = readStoredIdSet(`money_expenses_deleted_ids_${state.currentUserId}`);
     state.expenses = remoteData
-        .filter(item => item && item.id && item.user_id === state.currentUserId)
+        .filter(item =>
+            item &&
+            item.id &&
+            item.user_id === state.currentUserId &&
+            !deletedMem.has(String(item.id)) &&
+            !deletedStored.has(String(item.id))
+        )
         .map(normalizeExpenseRecord);
-    markExpenseSynced(state.currentUserId, state.expenses.map(item => item.id));
     sortExpenses();
     saveData();
     updateUI();
