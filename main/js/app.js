@@ -526,6 +526,12 @@ function initUI() {
     if (dateEl) {
         dateEl.innerText = `${currentDay}, ngày ${currentDateVal} tháng ${currentMonthVal} năm ${currentYearVal}`;
     }
+    const dayNumEl = document.getElementById('header-calendar-day');
+    if (dayNumEl) dayNumEl.innerText = currentDateVal;
+    const monthNumEl = document.getElementById('header-calendar-month');
+    if (monthNumEl) monthNumEl.innerText = `Thg ${currentMonthVal}`;
+    const weekdayEl = document.getElementById('header-calendar-weekday');
+    if (weekdayEl) weekdayEl.innerText = currentDay.startsWith('Thứ ') ? `T${currentDay.split(' ')[1]}` : (currentDay === 'Chủ Nhật' ? 'CN' : currentDay);
     updateWelcomeDate();
     if (!window._welcomeDateInterval) {
         window._welcomeDateInterval = setInterval(updateWelcomeDate, 1000);
@@ -5301,7 +5307,7 @@ function navigateToFeature(featureName) {
 
 function updateWelcomeDate() {
     const dateEl = document.getElementById('welcome-current-date');
-    if (!dateEl) return;
+    const headerClockEl = document.getElementById('header-live-clock');
     const now = new Date();
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
     const dayName = days[now.getDay()];
@@ -5311,7 +5317,12 @@ function updateWelcomeDate() {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-    dateEl.textContent = `${dayName}, ${day} Tháng ${month}, ${year} · ${hours}:${minutes}:${seconds}`;
+    if (dateEl) {
+        dateEl.textContent = `${dayName}, ${day} Tháng ${month}, ${year} · ${hours}:${minutes}:${seconds}`;
+    }
+    if (headerClockEl) {
+        headerClockEl.textContent = `${hours}:${minutes}:${seconds}`;
+    }
 }
 
 window.addEventListener('message', function(event) {
