@@ -81,7 +81,12 @@
 
     function formatDate(value) {
         try {
-            return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value));
+            return new Intl.DateTimeFormat('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'Asia/Ho_Chi_Minh'
+            }).format(new Date(value));
         } catch {
             return '';
         }

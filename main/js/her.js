@@ -90,6 +90,21 @@
             .replace(/'/g, '&#39;');
     }
 
+    const VN_OFFSET_MS = 7 * 60 * 60 * 1000; // UTC+7 (Hà Nội)
+
+    function getVietnamTodayParts(input = Date.now()) {
+        const ms = input instanceof Date ? input.getTime() : (typeof input === 'number' ? input : new Date(input).getTime());
+        if (Number.isNaN(ms)) return null;
+        const shifted = new Date(ms + VN_OFFSET_MS);
+        return {
+            year: shifted.getUTCFullYear(),
+            month: shifted.getUTCMonth(),
+            day: shifted.getUTCDate(),
+            isoDate: shifted.toISOString().slice(0, 10),
+            midnightUtcMs: Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate())
+        };
+    }
+
     function formatDateVN(dateStr) {
         if (!dateStr) return '';
         try {
@@ -105,12 +120,12 @@
                 const [, y, m, d] = ymdMatch;
                 return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
             }
-            // Fallback to Date object parsing
-            const d = new Date(dateStr);
-            if (!isNaN(d.getTime())) {
-                const day = String(d.getDate()).padStart(2, '0');
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const year = d.getFullYear();
+            // Fallback to Date object parsing in UTC+7
+            const vn = getVietnamTodayParts(dateStr);
+            if (vn) {
+                const day = String(vn.day).padStart(2, '0');
+                const month = String(vn.month + 1).padStart(2, '0');
+                const year = vn.year;
                 return `${day}/${month}/${year}`;
             }
             return dateStr;
@@ -721,12 +736,11 @@
         if (daysText) {
             if (profile.anniversary_date) {
                 try {
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
+                    const todayVn = getVietnamTodayParts();
                     const clean = String(profile.anniversary_date).slice(0, 10);
                     const [y, m, d] = clean.split('-').map(Number);
-                    const start = new Date(y, m - 1, d);
-                    const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+                    const startMs = Date.UTC(y, m - 1, d);
+                    const diff = Math.floor((todayVn.midnightUtcMs - startMs) / (1000 * 60 * 60 * 24));
                     const formattedDate = formatDateVN(profile.anniversary_date);
                     if (diff >= 0) {
                         daysText.textContent = `Bên nhau ${diff} ngày 💕 (${formattedDate})`;
@@ -746,13 +760,14 @@
             if (profile.birthday) {
                 bdayChip.style.display = 'inline-flex';
                 try {
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
+                    const todayVn = getVietnamTodayParts();
                     const clean = String(profile.birthday).slice(0, 10);
                     const [by, bm, bd] = clean.split('-').map(Number);
-                    const nextBday = new Date(today.getFullYear(), bm - 1, bd);
-                    if (nextBday < today) nextBday.setFullYear(today.getFullYear() + 1);
-                    const diffDays = Math.round((nextBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                    let nextBdayMs = Date.UTC(todayVn.year, bm - 1, bd);
+                    if (nextBdayMs < todayVn.midnightUtcMs) {
+                        nextBdayMs = Date.UTC(todayVn.year + 1, bm - 1, bd);
+                    }
+                    const diffDays = Math.round((nextBdayMs - todayVn.midnightUtcMs) / (1000 * 60 * 60 * 24));
                     const formattedBday = formatDateVN(profile.birthday);
                     if (diffDays === 0) {
                         bdayText.textContent = `Hôm nay sinh nhật cô ấy! (${formattedBday}) 🎂`;
@@ -1125,25 +1140,24 @@
     function calculateDaysBadge(eventDateStr, repeatYearly) {
         if (!eventDateStr) return '';
         try {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const todayVn = getVietnamTodayParts();
 
             const clean = String(eventDateStr).slice(0, 10);
             const [year, month, day] = clean.split('-').map(Number);
-            const targetThisYear = new Date(today.getFullYear(), month - 1, day);
+            let targetThisYearMs = Date.UTC(todayVn.year, month - 1, day);
 
             if (repeatYearly) {
-                if (targetThisYear < today) {
-                    targetThisYear.setFullYear(today.getFullYear() + 1);
+                if (targetThisYearMs < todayVn.midnightUtcMs) {
+                    targetThisYearMs = Date.UTC(todayVn.year + 1, month - 1, day);
                 }
-                const diffTime = targetThisYear.getTime() - today.getTime();
+                const diffTime = targetThisYearMs - todayVn.midnightUtcMs;
                 const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays === 0) return `<span class="badge-anniversary badge-today"><i data-lucide="party-popper"></i> Hôm nay là ngày kỷ niệm!</span>`;
                 if (diffDays <= 7) return `<span class="badge-anniversary badge-upcoming"><i data-lucide="clock"></i> Sắp tới: Còn <strong>${diffDays}</strong> ngày!</span>`;
                 return `<span class="badge-anniversary"><i data-lucide="clock"></i> Còn <strong>${diffDays}</strong> ngày nữa</span>`;
             } else {
-                const originDate = new Date(year, month - 1, day);
-                const diffTime = today.getTime() - originDate.getTime();
+                const originDateMs = Date.UTC(year, month - 1, day);
+                const diffTime = todayVn.midnightUtcMs - originDateMs;
                 const passedDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                 return `<span class="badge-anniversary badge-passed"><i data-lucide="heart"></i> Đã <strong>${passedDays}</strong> ngày</span>`;
             }
@@ -1163,8 +1177,7 @@
             return;
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayVn = getVietnamTodayParts();
 
         // Tìm sự kiện có số ngày còn lại nhỏ nhất
         let closestEvent = null;
@@ -1175,9 +1188,11 @@
             try {
                 const clean = String(d.event_date).slice(0, 10);
                 const [, month, day] = clean.split('-').map(Number);
-                const target = new Date(today.getFullYear(), month - 1, day);
-                if (target < today) target.setFullYear(today.getFullYear() + 1);
-                const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                let targetMs = Date.UTC(todayVn.year, month - 1, day);
+                if (targetMs < todayVn.midnightUtcMs) {
+                    targetMs = Date.UTC(todayVn.year + 1, month - 1, day);
+                }
+                const diff = Math.round((targetMs - todayVn.midnightUtcMs) / (1000 * 60 * 60 * 24));
                 if (diff < minDiff) {
                     minDiff = diff;
                     closestEvent = d;
@@ -1296,12 +1311,11 @@
     function formatMemoryElapsed(dateStr) {
         if (!dateStr) return '';
         try {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const todayVn = getVietnamTodayParts();
             const clean = String(dateStr).slice(0, 10);
             const [y, m, d] = clean.split('-').map(Number);
-            const memDate = new Date(y, m - 1, d);
-            const diffMs = today.getTime() - memDate.getTime();
+            const memDateMs = Date.UTC(y, m - 1, d);
+            const diffMs = todayVn.midnightUtcMs - memDateMs;
             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             if (diffDays === 0) return '✨ Hôm nay là ngày kỷ niệm!';
             if (diffDays > 0) {
@@ -1574,7 +1588,7 @@
         } else if (type === 'date') {
             const item = id ? dates.find(d => d.id === id) : null;
             titleText = item ? 'Chỉnh sửa ngày kỷ niệm' : 'Thêm ngày kỷ niệm';
-            const defaultDate = item?.event_date || new Date().toISOString().slice(0, 10);
+            const defaultDate = item?.event_date || getVietnamTodayParts().isoDate;
 
             fieldsHtml = `
                 <div class="her-form-group">
@@ -1649,7 +1663,7 @@
         } else if (type === 'mood') {
             const item = id ? moods.find(m => m.id === id) : null;
             titleText = item ? 'Chỉnh sửa nhật ký tâm trạng' : 'Ghi lại tâm trạng cô ấy';
-            const defaultDate = item?.mood_date || new Date().toISOString().slice(0, 10);
+            const defaultDate = item?.mood_date || getVietnamTodayParts().isoDate;
             const currentMood = item?.mood_type || 'happy';
 
             fieldsHtml = `
@@ -1718,7 +1732,7 @@
         } else if (type === 'memory') {
             const item = id ? memories.find(m => m.id === id) : null;
             titleText = item ? 'Chỉnh sửa kỷ niệm của 2 đứa' : 'Thêm kỷ niệm của 2 đứa';
-            const defaultDate = item?.memory_date || new Date().toISOString().slice(0, 10);
+            const defaultDate = item?.memory_date || getVietnamTodayParts().isoDate;
             const currentCategory = item?.category || '💕 Hẹn hò & Tỏ tình';
 
             fieldsHtml = `
