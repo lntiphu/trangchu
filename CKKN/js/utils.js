@@ -7,6 +7,14 @@
 const CYCLE_KEY    = 'ckkn_cycles';
 const RELATION_KEY = 'ckkn_relations';
 
+const VN_TIMEZONE_OFFSET_MS = 7 * 60 * 60 * 1000; // UTC+7 (Hà Nội)
+
+function getVietnamDateKey(date = new Date()) {
+  const ms = date instanceof Date ? date.getTime() : new Date(date).getTime();
+  const shifted = new Date(ms + VN_TIMEZONE_OFFSET_MS);
+  return shifted.toISOString().slice(0, 10);
+}
+
 /* ── Tạo ID ngẫu nhiên duy nhất ── */
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -14,11 +22,20 @@ function uid() {
 
 /* ── Tính số ngày chênh lệch giữa 2 chuỗi YYYY-MM-DD ── */
 function dayDiff(a, b) {
+  const [ya, ma, da] = String(a || '').split('T')[0].split('-').map(Number);
+  const [yb, mb, db] = String(b || '').split('T')[0].split('-').map(Number);
+  if (![ya, ma, da, yb, mb, db].some(Number.isNaN)) {
+    return Math.round((Date.UTC(yb, mb - 1, db) - Date.UTC(ya, ma - 1, da)) / 86_400_000);
+  }
   return Math.round((new Date(b) - new Date(a)) / 86_400_000);
 }
 
 /* ── Cộng thêm d ngày vào date string, trả về string ── */
 function addDays(dateStr, d) {
+  const [y, m, day] = String(dateStr || '').split('T')[0].split('-').map(Number);
+  if (![y, m, day].some(Number.isNaN)) {
+    return new Date(Date.UTC(y, m - 1, day + Number(d || 0))).toISOString().slice(0, 10);
+  }
   const dt = new Date(dateStr);
   dt.setDate(dt.getDate() + d);
   return dt.toISOString().split('T')[0];

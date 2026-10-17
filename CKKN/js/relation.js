@@ -22,10 +22,11 @@ let rExpandedHistory = new Set();
    tránh thai tuyệt đối. Cần khuyến nghị dùng bao cao su/biện pháp phù hợp.
 ══════════════════════════════════════ */
 function _localDateKey(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  if (typeof getVietnamDateKey === 'function') {
+    return getVietnamDateKey(date);
+  }
+  const shifted = new Date((date instanceof Date ? date.getTime() : new Date(date).getTime()) + 7 * 3600 * 1000);
+  return shifted.toISOString().slice(0, 10);
 }
 
 function _cycleSafetyProfile() {
@@ -344,11 +345,9 @@ function renderRelations() {
 function updateRelationStats() {
   document.getElementById('r-total').textContent = relations.length;
 
-  const now = new Date();
-  const thisMonth = relations.filter(r => {
-    const d = new Date(r.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length;
+  const todayKey = _localDateKey();
+  const currentMonthKey = todayKey.slice(0, 7);
+  const thisMonth = relations.filter(r => String(r.date || '').slice(0, 7) === currentMonthKey).length;
   document.getElementById('r-this-month').textContent = thisMonth;
 
   if (!relations.length) {
@@ -356,8 +355,8 @@ function updateRelationStats() {
     return;
   }
 
-  const sorted = [...relations].sort((a, b) => new Date(b.date) - new Date(a.date));
-  const diff   = dayDiff(sorted[0].date, now.toISOString().split('T')[0]);
+  const sorted = [...relations].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const diff   = dayDiff(sorted[0].date, todayKey);
 
   document.getElementById('r-last').textContent =
     diff === 0 ? 'Hôm nay' : diff === 1 ? 'Hôm qua' : `${diff} ngày`;

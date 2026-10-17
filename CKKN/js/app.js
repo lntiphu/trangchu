@@ -119,7 +119,9 @@ function openCycleModal(isEdit = false) {
     if (!isEdit) {
       const startEl = document.getElementById('c-start');
       if (startEl && !startEl.value) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = typeof getVietnamDateKey === 'function'
+          ? getVietnamDateKey()
+          : new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
         startEl.value = today;
       }
     }
@@ -138,7 +140,9 @@ function openRelationModal(isEdit = false) {
     if (!isEdit) {
       const dateEl = document.getElementById('r-date');
       if (dateEl && !dateEl.value) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = typeof getVietnamDateKey === 'function'
+          ? getVietnamDateKey()
+          : new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0];
         dateEl.value = today;
       }
     }
