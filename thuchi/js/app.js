@@ -2240,9 +2240,9 @@ function renderHistoryModalContent() {
     const currM = now.getMonth();
 
     const monthNames = [
-        'Thg 1', 'Thg 2', 'Thg 3', 'Thg 4',
-        'Thg 5', 'Thg 6', 'Thg 7', 'Thg 8',
-        'Thg 9', 'Thg 10', 'Thg 11', 'Thg 12'
+        'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+        'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+        'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
     ];
 
     // Đếm số lượng giao dịch trong mỗi tháng của năm đang hiển thị
@@ -2271,11 +2271,11 @@ function renderHistoryModalContent() {
         if (isSelected) cell.classList.add('selected');
 
         const count = monthCounts[m];
-        const countText = count > 0 ? `${count} mục` : '';
 
         cell.innerHTML = `
-            <span>${monthNames[m]}</span>
-            ${countText ? `<span class="history-modal-month-count">${countText}</span>` : ''}
+            <span class="history-modal-month-name">${monthNames[m]}</span>
+            <span class="history-modal-month-count ${count > 0 ? 'has-count' : 'is-zero'}">${count > 0 ? `${count} mục` : '0 mục'}</span>
+            ${isCurrent ? '<span class="history-modal-current-dot" title="Tháng hiện tại"></span>' : ''}
         `;
 
         cell.onclick = () => {
@@ -2283,6 +2283,10 @@ function renderHistoryModalContent() {
         };
 
         grid.appendChild(cell);
+    }
+
+    if (typeof createLucideIcons === 'function') {
+        createLucideIcons();
     }
 }
 
