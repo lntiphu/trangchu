@@ -278,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Khởi tạo: khoản chi chỉ xuất hiện sau khi tải thành công từ Supabase.
 function loadData() {
+    registerSharedExpenseListener();
     // Chỉ hiển thị khoản chi đã được Supabase xác nhận cho tài khoản đăng nhập.
     state.expenses = [];
 
@@ -288,6 +289,154 @@ function loadData() {
     initSupabase();
 }
 
+function getSharedExpenseSyncState() {
+    const owner = window.parent && window.parent !== window ? window.parent : window;
+    if (!owner.__QLCT_EXPENSE_SYNC) {
+        owner.__QLCT_EXPENSE_SYNC = {
+            revision: 0,
+            writeBusyCount: 0,
+            confirmedByUser: new Map(),
+            deletedByUser: new Map(),
+            listeners: new Set()
+        };
+    }
+    return owner.__QLCT_EXPENSE_SYNC;
+}
+
+function getExpenseUserSet(map, userId) {
+    if (!userId) return new Set();
+    let set = map.get(userId);
+    if (!set) {
+        set = new Set();
+        map.set(userId, set);
+    }
+    return set;
+}
+
+function readStoredIdSet(storageKey) {
+    try {
+        const raw = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        return new Set(Array.isArray(raw) ? raw.map(id => String(id)) : []);
+    } catch (error) {
+        return new Set();
+    }
+}
+
+function writeStoredIdSet(storageKey, idSet) {
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(idSet)));
+    } catch (error) {
+        console.warn('Không thể lưu trạng thái đồng bộ khoản chi:', error);
+    }
+}
+
+function removeIdsFromRecoveryCache(userId, ids) {
+    if (!userId || !ids.length) return;
+    const recoveryKey = `money_expenses_recovery_${userId}`;
+    try {
+        const previous = JSON.parse(localStorage.getItem(recoveryKey) || '[]');
+        if (!Array.isArray(previous) || !previous.length) return;
+        const removeSet = new Set(ids.map(id => String(id)));
+        const filtered = previous.filter(item => item && !removeSet.has(String(item.id)));
+        if (filtered.length !== previous.length) {
+            localStorage.setItem(recoveryKey, JSON.stringify(filtered));
+        }
+    } catch (error) {
+        console.warn('Không thể cập nhật bộ nhớ đối chiếu khoản chi:', error);
+    }
+}
+
+function markExpenseSynced(userId, ids) {
+    if (!userId) return;
+    const list = (Array.isArray(ids) ? ids : [ids]).filter(Boolean).map(id => String(id));
+    if (!list.length) return;
+    const shared = getSharedExpenseSyncState();
+    const confirmedMem = getExpenseUserSet(shared.confirmedByUser, userId);
+    const deletedMem = getExpenseUserSet(shared.deletedByUser, userId);
+    const syncedKey = `money_expenses_synced_ids_${userId}`;
+    const deletedKey = `money_expenses_deleted_ids_${userId}`;
+    const syncedStored = readStoredIdSet(syncedKey);
+    const deletedStored = readStoredIdSet(deletedKey);
+    let deletedChanged = false;
+    list.forEach(id => {
+        confirmedMem.add(id);
+        syncedStored.add(id);
+        deletedMem.delete(id);
+        if (deletedStored.delete(id)) deletedChanged = true;
+    });
+    writeStoredIdSet(syncedKey, syncedStored);
+    if (deletedChanged) writeStoredIdSet(deletedKey, deletedStored);
+    removeIdsFromRecoveryCache(userId, list);
+}
+
+function markExpenseDeleted(userId, id) {
+    if (!userId || !id) return;
+    const targetId = String(id);
+    const shared = getSharedExpenseSyncState();
+    const confirmedMem = getExpenseUserSet(shared.confirmedByUser, userId);
+    const deletedMem = getExpenseUserSet(shared.deletedByUser, userId);
+    const syncedKey = `money_expenses_synced_ids_${userId}`;
+    const deletedKey = `money_expenses_deleted_ids_${userId}`;
+    const syncedStored = readStoredIdSet(syncedKey);
+    const deletedStored = readStoredIdSet(deletedKey);
+    confirmedMem.delete(targetId);
+    deletedMem.add(targetId);
+    if (syncedStored.delete(targetId)) writeStoredIdSet(syncedKey, syncedStored);
+    deletedStored.add(targetId);
+    writeStoredIdSet(deletedKey, deletedStored);
+    removeIdsFromRecoveryCache(userId, [targetId]);
+}
+
+function bumpExpenseRevision() {
+    expenseRevision++;
+    const shared = getSharedExpenseSyncState();
+    shared.revision = Math.max(shared.revision + 1, expenseRevision);
+    expenseRevision = shared.revision;
+    return expenseRevision;
+}
+
+function getEffectiveExpenseRevision() {
+    const shared = getSharedExpenseSyncState();
+    return Math.max(expenseRevision, shared.revision);
+}
+
+function isAnyExpenseWriteBusy() {
+    const shared = getSharedExpenseSyncState();
+    return expenseWriteBusy || shared.writeBusyCount > 0;
+}
+
+let sharedExpenseListener = null;
+
+function registerSharedExpenseListener() {
+    const shared = getSharedExpenseSyncState();
+    if (!sharedExpenseListener) {
+        sharedExpenseListener = payload => {
+            if (!payload || payload.userId !== state.currentUserId) return;
+            state.expenses = Array.isArray(payload.expenses)
+                ? payload.expenses.map(normalizeExpenseRecord)
+                : [];
+            sortExpenses();
+            expenseRevision = Math.max(expenseRevision, shared.revision);
+            updateUI();
+        };
+    }
+    shared.listeners.add(sharedExpenseListener);
+}
+
+function notifySharedExpenseListeners() {
+    if (!state.currentUserId) return;
+    const shared = getSharedExpenseSyncState();
+    const snapshot = state.expenses.map(item => ({ ...item }));
+    shared.listeners.forEach(listener => {
+        if (listener === sharedExpenseListener) return;
+        try {
+            listener({ userId: state.currentUserId, expenses: snapshot });
+        } catch (error) {
+            console.warn('Không thể đồng bộ khoản chi giữa các khung hiển thị:', error);
+        }
+    });
+}
+
 // LƯU DỮ LIỆU XUỐNG LOCALSTORAGE
 function saveData() {
     const storageKey = state.currentUserId
@@ -295,6 +444,7 @@ function saveData() {
         : 'money_expenses';
     try {
         localStorage.setItem(storageKey, JSON.stringify(state.expenses));
+        notifySharedExpenseListeners();
     } catch (error) {
         console.warn('Không thể lưu bản sao khoản chi trên thiết bị:', error);
     }
@@ -310,7 +460,14 @@ function normalizeExpenseRecord(item) {
 }
 
 function setExpenseWriteBusy(busy) {
+    const wasBusy = expenseWriteBusy;
     expenseWriteBusy = busy;
+    const shared = getSharedExpenseSyncState();
+    if (busy && !wasBusy) {
+        shared.writeBusyCount += 1;
+    } else if (!busy && wasBusy) {
+        shared.writeBusyCount = Math.max(0, shared.writeBusyCount - 1);
+    }
     ['#add-expense-form button[type="submit"]', '#btn-save-edit-expense', '#btn-delete-expense']
         .forEach(selector => {
             const button = document.querySelector(selector);
@@ -328,6 +485,103 @@ function showExpenseDisplayError(error) {
     alert('Supabase đã lưu thay đổi, nhưng màn hình chưa cập nhật. Vui lòng tải lại trang.');
 }
 
+function isSyncableLocalExpense(item, userId) {
+    if (!item || !item.id || item.user_id !== userId) return false;
+    const id = String(item.id);
+    const title = typeof item.title === 'string' ? item.title.trim() : '';
+    if (!title || title.startsWith('QA_THUCHI_')) return false;
+    const amount = Number(item.amount);
+    if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) return false;
+    const date = parseDisplayDateToISO(String(item.date || '').split('T')[0]);
+    if (!date) return false;
+    const shared = getSharedExpenseSyncState();
+    const deletedMem = getExpenseUserSet(shared.deletedByUser, userId);
+    const deletedStored = readStoredIdSet(`money_expenses_deleted_ids_${userId}`);
+    if (deletedMem.has(id) || deletedStored.has(id)) return false;
+    const syncedStored = readStoredIdSet(`money_expenses_synced_ids_${userId}`);
+    if (syncedStored.has(id)) return false;
+    return true;
+}
+
+async function syncPendingLocalExpensesToSupabase(userId, remoteData) {
+    if (!supabaseClient || !userId || !Array.isArray(remoteData)) return remoteData;
+    const cacheKey = `money_expenses_${userId}`;
+    const recoveryKey = `money_expenses_recovery_${userId}`;
+    try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+        const recovery = JSON.parse(localStorage.getItem(recoveryKey) || '[]');
+        const remoteIds = new Set(remoteData.map(item => String(item.id)));
+        const shared = getSharedExpenseSyncState();
+        const confirmedMem = getExpenseUserSet(shared.confirmedByUser, userId);
+
+        const mergedRemote = [...remoteData];
+        const candidatesById = new Map();
+
+        if (Array.isArray(cached)) {
+            cached.forEach(item => {
+                if (!item || !item.id || item.user_id !== userId) return;
+                const id = String(item.id);
+                if (remoteIds.has(id)) return;
+                if (confirmedMem.has(id)) {
+                    mergedRemote.push(normalizeExpenseRecord(item));
+                    remoteIds.add(id);
+                } else if (isSyncableLocalExpense(item, userId)) {
+                    candidatesById.set(id, item);
+                }
+            });
+        }
+
+        if (Array.isArray(recovery)) {
+            recovery.forEach(item => {
+                if (!item || !item.id || item.user_id !== userId) return;
+                const id = String(item.id);
+                if (remoteIds.has(id) || candidatesById.has(id)) return;
+                if (isSyncableLocalExpense(item, userId)) {
+                    candidatesById.set(id, item);
+                }
+            });
+        }
+
+        if (!candidatesById.size) return mergedRemote;
+
+        const tableApi = supabaseClient.from('expenses');
+        const canUpsert = typeof tableApi?.upsert === 'function';
+        const canInsert = typeof tableApi?.insert === 'function';
+        if (!canUpsert && !canInsert) return mergedRemote;
+
+        for (const [id, item] of candidatesById.entries()) {
+            const payload = {
+                id,
+                user_id: userId,
+                amount: Number(item.amount),
+                title: String(item.title).trim(),
+                category: item.category || 'Khác',
+                date: parseDisplayDateToISO(String(item.date || '').split('T')[0])
+            };
+            try {
+                const table = supabaseClient.from('expenses');
+                const op = typeof table.upsert === 'function'
+                    ? table.upsert([payload], { onConflict: 'id' })
+                    : table.insert([payload]);
+                const { data, error } = typeof op.select === 'function'
+                    ? await op.select('id')
+                    : await op;
+                if (!error && (!data || data.length === 1)) {
+                    markExpenseSynced(userId, [id]);
+                    mergedRemote.push(normalizeExpenseRecord(payload));
+                    remoteIds.add(id);
+                }
+            } catch (syncError) {
+                console.warn('Chưa thể đồng bộ khoản chi cục bộ lên Supabase:', syncError);
+            }
+        }
+        return mergedRemote;
+    } catch (error) {
+        console.warn('Lỗi khi kiểm tra khoản chi cần đồng bộ lên Supabase:', error);
+        return remoteData;
+    }
+}
+
 function preserveUnverifiedLocalExpenses(remoteData) {
     const cacheKey = `money_expenses_${state.currentUserId}`;
     const recoveryKey = `money_expenses_recovery_${state.currentUserId}`;
@@ -336,25 +590,30 @@ function preserveUnverifiedLocalExpenses(remoteData) {
         const previous = JSON.parse(localStorage.getItem(recoveryKey) || '[]');
         if (!Array.isArray(cached) || !Array.isArray(previous)) return;
         const remoteIds = new Set(remoteData.map(item => String(item.id)));
+        const shared = getSharedExpenseSyncState();
+        const deletedMem = getExpenseUserSet(shared.deletedByUser, state.currentUserId);
+        const deletedStored = readStoredIdSet(`money_expenses_deleted_ids_${state.currentUserId}`);
         const localOnly = cached.filter(item =>
-            item && item.id && item.user_id === state.currentUserId && !remoteIds.has(String(item.id))
+            item &&
+            item.id &&
+            item.user_id === state.currentUserId &&
+            !remoteIds.has(String(item.id)) &&
+            !deletedMem.has(String(item.id)) &&
+            !deletedStored.has(String(item.id))
         );
         if (!localOnly.length) return;
         const backup = new Map(previous.map(item => [String(item.id), item]));
-        const newIds = new Set(localOnly.filter(item => !backup.has(String(item.id))).map(item => String(item.id)));
         localOnly.forEach(item => backup.set(String(item.id), item));
         localStorage.setItem(recoveryKey, JSON.stringify(Array.from(backup.values())));
-        if (newIds.size) {
-            alert(`Có ${newIds.size} khoản chi chỉ lưu trên thiết bị và chưa có trên Supabase. Bản sao đã được giữ trong trình duyệt để đối chiếu; chúng không được cộng vào tổng chi.`);
-        }
     } catch (error) {
         console.warn('Không thể sao lưu khoản chi cục bộ chưa xác nhận:', error);
     }
 }
 
 function loadExpenseDataForCurrentUser() {
+    registerSharedExpenseListener();
     state.expenses = [];
-    expenseRevision++;
+    bumpExpenseRevision();
     updateUI();
 }
 
@@ -1338,7 +1597,26 @@ function openDetailModal(expenseId) {
     }
 }
 
+async function ensureExpenseAuthSession() {
+    if (state.currentUserId) return state.currentUserId;
+    if (!supabaseClient) initSupabase();
+    if (state.currentUserId) return state.currentUserId;
+    if (supabaseClient?.auth?.getSession) {
+        try {
+            const { data, error } = await supabaseClient.auth.getSession();
+            if (!error && data?.session?.user?.id) {
+                setCurrentSupabaseUser(data.session.user);
+                return state.currentUserId;
+            }
+        } catch (err) {
+            console.warn('Không thể khôi phục phiên đăng nhập trước khi lưu khoản chi:', err);
+        }
+    }
+    return state.currentUserId;
+}
+
 async function saveEditedExpense(id) {
+    if (!state.currentUserId) await ensureExpenseAuthSession();
     if (!state.currentUserId) {
         showLoginScreen();
         return false;
@@ -1363,6 +1641,7 @@ async function saveEditedExpense(id) {
 
     const category = document.getElementById('detail-category-select').value;
 
+    if (!supabaseClient) initSupabase();
     if (!supabaseClient) {
         alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
         return false;
@@ -1370,6 +1649,7 @@ async function saveEditedExpense(id) {
 
     const userId = state.currentUserId;
     let writeSucceeded = false;
+    bumpExpenseRevision();
     setExpenseWriteBusy(true);
     try {
         const { data, error } = await supabaseClient
@@ -1385,10 +1665,11 @@ async function saveEditedExpense(id) {
         if (error) throw error;
         if (!data || data.length !== 1) throw new Error('Không tìm thấy khoản chi trên Supabase.');
         writeSucceeded = true;
+        markExpenseSynced(userId, [id]);
         if (state.currentUserId === userId) {
             const currentExpense = state.expenses.find(item => item.id === id);
             if (currentExpense) Object.assign(currentExpense, { amount, title, category });
-            expenseRevision++;
+            bumpExpenseRevision();
             sortExpenses();
             saveData();
             updateUI();
@@ -1728,6 +2009,7 @@ function renderCalendar() {
 async function handleAddExpenseSubmit(e) {
     e.preventDefault();
 
+    if (!state.currentUserId) await ensureExpenseAuthSession();
     if (!state.currentUserId) {
         showLoginScreen();
         return;
@@ -1771,6 +2053,7 @@ async function handleAddExpenseSubmit(e) {
         date: date
     };
 
+    if (!supabaseClient) initSupabase();
     if (!supabaseClient) {
         alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
         return;
@@ -1778,6 +2061,7 @@ async function handleAddExpenseSubmit(e) {
 
     const userId = state.currentUserId;
     let writeSucceeded = false;
+    bumpExpenseRevision();
     setExpenseWriteBusy(true);
     try {
         const { data, error } = await supabaseClient
@@ -1787,12 +2071,13 @@ async function handleAddExpenseSubmit(e) {
         if (error) throw error;
         if (!data || data.length !== 1) throw new Error('Supabase không xác nhận khoản chi mới.');
         writeSucceeded = true;
+        markExpenseSynced(userId, [newExpense.id]);
         if (state.currentUserId !== userId) return;
 
         if (!state.expenses.some(item => item.id === newExpense.id)) {
             state.expenses.unshift(newExpense);
         }
-        expenseRevision++;
+        bumpExpenseRevision();
         sortExpenses();
         saveData();
 
@@ -1821,6 +2106,7 @@ async function handleAddExpenseSubmit(e) {
 
 // XÓA KHOẢN CHI TIÊU
 async function deleteExpense(id) {
+    if (!state.currentUserId) await ensureExpenseAuthSession();
     if (!state.currentUserId) {
         showLoginScreen();
         return false;
@@ -1829,6 +2115,7 @@ async function deleteExpense(id) {
 
     const expenseToDelete = state.expenses.find(item => item.id === id);
     if (!expenseToDelete) return false;
+    if (!supabaseClient) initSupabase();
     if (!supabaseClient) {
         alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
         return false;
@@ -1836,6 +2123,7 @@ async function deleteExpense(id) {
 
     const userId = state.currentUserId;
     let writeSucceeded = false;
+    bumpExpenseRevision();
     setExpenseWriteBusy(true);
     try {
         const { data, error } = await supabaseClient
@@ -1847,9 +2135,10 @@ async function deleteExpense(id) {
         if (error) throw error;
         if (!data || data.length !== 1) throw new Error('Không tìm thấy khoản chi trên Supabase.');
         writeSucceeded = true;
+        markExpenseDeleted(userId, id);
         if (state.currentUserId === userId) {
             state.expenses = state.expenses.filter(item => item.id !== id);
-            expenseRevision++;
+            bumpExpenseRevision();
             saveData();
             updateUI();
         }
@@ -5390,7 +5679,7 @@ function setCurrentSupabaseUser(user) {
     if (state.currentUserId === nextUserId) return;
 
     expenseFetchSequence++;
-    expenseRevision++;
+    bumpExpenseRevision();
     state.currentUserId = nextUserId;
     if (nextUserId) {
         loadExpenseDataForCurrentUser();
@@ -5585,6 +5874,7 @@ async function handleLogout() {
 
 // Khởi tạo Supabase Client và Đăng ký Real-time listener & Auth
 function initSupabase() {
+    registerSharedExpenseListener();
     const loginForm = document.getElementById('login-form');
     if (loginForm && !loginForm.dataset.authBound) {
         loginForm.addEventListener('submit', handleLogin);
@@ -5595,7 +5885,7 @@ function initSupabase() {
         btnLogout.addEventListener('click', handleLogout);
         btnLogout.dataset.authBound = 'true';
     }
-    if (typeof supabase === 'undefined') {
+    if (typeof supabase === 'undefined' && !window.__QLCT_SUPABASE_CLIENT) {
         console.warn("Supabase SDK chưa nạp.");
         showLoginError('Không tải được kết nối Supabase. Vui lòng kiểm tra mạng và tải lại trang.');
         return;
@@ -5648,7 +5938,7 @@ const EXPENSE_SELECT_FIELDS = 'id,user_id,date,title,amount,category,created_at'
 async function fetchExpensesFromSupabase() {
     if (!supabaseClient || !state.currentUserId) return;
     const userId = state.currentUserId;
-    const revision = expenseRevision;
+    const revision = getEffectiveExpenseRevision();
     const sequence = ++expenseFetchSequence;
     const pageSize = 1000;
     const allExpenses = [];
@@ -5668,7 +5958,10 @@ async function fetchExpensesFromSupabase() {
             } finally {
                 clearTimeout(timeoutId);
             }
-            if (result.error) throw result.error;
+            if (result.error) {
+                if (offset > 0 && (result.error.code === 'PGRST103' || result.status === 416)) break;
+                throw result.error;
+            }
             if (!Array.isArray(result.data)) throw new Error('Supabase không trả danh sách khoản chi.');
             allExpenses.push(...result.data);
             if (result.data.length === 0) break;
@@ -5676,11 +5969,14 @@ async function fetchExpensesFromSupabase() {
             if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
         }
         if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
-        if (revision !== expenseRevision || expenseWriteBusy) {
-            if (!expenseWriteBusy) fetchExpensesFromSupabase();
+        if (revision !== getEffectiveExpenseRevision() || isAnyExpenseWriteBusy()) {
+            if (!isAnyExpenseWriteBusy()) fetchExpensesFromSupabase();
             return;
         }
-        mergeLocalAndRemoteExpenses(allExpenses);
+        markExpenseSynced(userId, allExpenses.map(item => item && item.id));
+        const syncedRemote = await syncPendingLocalExpensesToSupabase(userId, allExpenses);
+        if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
+        mergeLocalAndRemoteExpenses(syncedRemote);
     } catch (err) {
         if (state.currentUserId === userId && sequence === expenseFetchSequence) {
             console.error('Lỗi tải khoản chi từ Supabase:', err);
@@ -5695,6 +5991,7 @@ function mergeLocalAndRemoteExpenses(remoteData) {
     state.expenses = remoteData
         .filter(item => item && item.id && item.user_id === state.currentUserId)
         .map(normalizeExpenseRecord);
+    markExpenseSynced(state.currentUserId, state.expenses.map(item => item.id));
     sortExpenses();
     saveData();
     updateUI();
@@ -5707,34 +6004,43 @@ function handleRealtimeDbChange(payload) {
     const newRecord = payload.new;
     const oldRecord = payload.old;
 
-    if (eventType === 'DELETE' && oldRecord && !oldRecord.user_id) {
-        // Một số cấu hình Realtime chỉ gửi khóa chính của dòng đã xóa.
-        fetchExpensesFromSupabase();
+    if (eventType === 'DELETE') {
+        if (!oldRecord?.id) {
+            fetchExpensesFromSupabase();
+            return;
+        }
+        if (oldRecord.user_id && oldRecord.user_id !== state.currentUserId) return;
+        const deletedId = String(oldRecord.id);
+        markExpenseDeleted(state.currentUserId, deletedId);
+        if (!state.expenses.some(item => item.id === deletedId)) return;
+        state.expenses = state.expenses.filter(item => item.id !== deletedId);
+        bumpExpenseRevision();
+        saveData();
+        updateUI();
         return;
     }
-    const changedRecord = eventType === 'DELETE' ? oldRecord : newRecord;
+    const changedRecord = newRecord;
     if (!changedRecord || changedRecord.user_id !== state.currentUserId) return;
     
+    markExpenseSynced(state.currentUserId, [newRecord.id]);
     if (eventType === 'INSERT') {
         if (!state.expenses.some(e => e.id === String(newRecord.id))) {
             state.expenses.unshift(normalizeExpenseRecord(newRecord));
             sortExpenses();
         }
-    } else if (eventType === 'DELETE') {
-        state.expenses = state.expenses.filter(e => e.id !== String(oldRecord.id));
     } else if (eventType === 'UPDATE') {
         const idx = state.expenses.findIndex(e => e.id === String(newRecord.id));
         if (idx !== -1) {
             state.expenses[idx] = normalizeExpenseRecord(newRecord);
             sortExpenses();
         } else {
-            expenseRevision++;
+            bumpExpenseRevision();
             fetchExpensesFromSupabase();
             return;
         }
     }
     
-    expenseRevision++;
+    bumpExpenseRevision();
     saveData();
     updateUI();
 }
