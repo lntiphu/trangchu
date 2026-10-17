@@ -44,6 +44,7 @@ let expenseFetchSequence = 0;
 let expenseWriteBusy = false;
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
+let calendarSelectedDay = null;
 let dashboardCalendarYear = new Date().getFullYear();
 let dashboardCalendarMonth = new Date().getMonth();
 let analysisYear = new Date().getFullYear();
@@ -418,6 +419,7 @@ function registerSharedExpenseListener() {
             sortExpenses();
             expenseRevision = Math.max(expenseRevision, shared.revision);
             updateUI();
+            refreshCalendarDayDetailIfOpen();
         };
     }
     shared.listeners.add(sharedExpenseListener);
@@ -732,6 +734,107 @@ function formatDateStringVietnamese(dateStr) {
         const dayOfWeek = getVietnameseDayOfWeek(dateStr);
         return `${dayOfWeek}, ${day}/${month}/${year}`;
     }
+}
+
+// Chuẩn hóa từ khóa lịch sử để hỗ trợ tìm ngày với nhiều cách gõ:
+// 22/07/2026, 22-07-2026, 07/2026, 2026 hoặc "tháng 7 năm 2026".
+function normalizeHistorySearchText(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .replace(/[._-]+/g, '/')
+        .replace(/\s*\/\s*/g, '/')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function getExpenseDateSearchTokens(dateValue) {
+    const rawDateStr = String(dateValue || '').split('T')[0].trim();
+    const isoDateStr = (typeof parseDisplayDateToISO === 'function' && parseDisplayDateToISO(rawDateStr)) || rawDateStr;
+    const match = isoDateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) return [];
+
+    const [, year, monthRaw, dayRaw] = match;
+    const month = Number(monthRaw);
+    const day = Number(dayRaw);
+    if (!month || !day) return [];
+
+    const dd = String(day).padStart(2, '0');
+    const mm = String(month).padStart(2, '0');
+    const yy = year.slice(-2);
+    const tokens = [
+        `${year}-${mm}-${dd}`,
+        `${year}/${mm}/${dd}`,
+        `${year}/${month}/${day}`,
+        `${dd}/${mm}/${year}`,
+        `${day}/${month}/${year}`,
+        `${dd}/${month}/${year}`,
+        `${day}/${mm}/${year}`,
+        `${dd}/${mm}/${yy}`,
+        `${day}/${month}/${yy}`,
+        `${dd}/${month}/${yy}`,
+        `${day}/${mm}/${yy}`,
+        `${dd}/${mm}`,
+        `${day}/${month}`,
+        `${dd}/${month}`,
+        `${day}/${mm}`,
+        `${mm}/${year}`,
+        `${month}/${year}`,
+        `${year}/${mm}`,
+        `${year}/${month}`,
+        `${day} thang ${month} nam ${year}`,
+        `${dd} thang ${mm} nam ${year}`,
+        `ngay ${day} thang ${month} nam ${year}`,
+        `ngay ${dd}/${mm}/${year}`,
+        `thang ${month} nam ${year}`,
+        `thang ${mm} nam ${year}`,
+        `thang ${month}`,
+        `nam ${year}`,
+        `${year}${mm}${dd}`,
+        `${dd}${mm}${year}`,
+        `${dd}${mm}${yy}`,
+        `${mm}${year}`,
+        year
+    ];
+    return [...new Set(tokens.map(normalizeHistorySearchText))];
+}
+
+function isDateLikeSearchQuery(rawQuery) {
+    const q = String(rawQuery || '').trim();
+    if (!q) return false;
+    if (typeof parseDisplayDateToISO === 'function' && parseDisplayDateToISO(q)) return true;
+    const normalized = normalizeHistorySearchText(q);
+    return /^(\d{1,2}\/\d{1,2}(\/\d{1,4})?|\d{1,2}\/\d{4}|\d{4}\/\d{1,2}(\/\d{1,2})?|(ngay|thang|nam)\b)/.test(normalized);
+}
+
+function expenseMatchesHistorySearch(expense, rawQuery) {
+    if (!expense) return false;
+    const query = normalizeHistorySearchText(rawQuery);
+    if (!query) return true;
+
+    if (typeof parseDisplayDateToISO === 'function') {
+        const queryIso = parseDisplayDateToISO(rawQuery);
+        const expIso = parseDisplayDateToISO(String(expense.date || '').split('T')[0]);
+        if (queryIso && expIso && queryIso === expIso) return true;
+    }
+
+    const formattedAmount = (Number(expense.amount) || 0).toLocaleString('vi-VN');
+    const textFields = [expense.title, expense.category, expense.amount, formattedAmount]
+        .map(normalizeHistorySearchText);
+    if (textFields.some(value => value.includes(query))) return true;
+
+    const dateTokens = getExpenseDateSearchTokens(expense.date);
+    if (dateTokens.some(token => token.includes(query))) return true;
+
+    const queryDigits = String(rawQuery || '').replace(/\D/g, '');
+    if (queryDigits.length >= 4) {
+        if (String(expense.amount || '').includes(queryDigits)) return true;
+        return dateTokens.some(token => token.replace(/\D/g, '').includes(queryDigits));
+    }
+    return false;
 }
 
 // Định dạng Giờ & Ngày chi tiết: Vd 10:12 AM 22/07/26
@@ -1567,13 +1670,13 @@ function closeTodoModal(returnToHub = true, fromHistory = false) {
 }
 
 function openDetailModal(expenseId) {
-    const exp = state.expenses.find(item => item.id === expenseId);
+    const exp = state.expenses.find(item => String(item.id) === String(expenseId));
     if (!exp) return;
 
     const detailAmountEl = document.getElementById('detail-amount-input');
-    detailAmountEl.value = exp.amount.toLocaleString('vi-VN');
+    detailAmountEl.value = (Number(exp.amount) || 0).toLocaleString('vi-VN');
     scaleAmountFont(detailAmountEl); // Tự động co chữ ngay khi mở
-    document.getElementById('detail-title-input').value = exp.title;
+    document.getElementById('detail-title-input').value = exp.title || '';
     document.getElementById('detail-category-select').value = exp.category || 'Khác';
     document.getElementById('detail-date').innerText = formatDateTimeVietnamese(exp);
 
@@ -1591,9 +1694,26 @@ function openDetailModal(expenseId) {
     saveBtn.onclick = () => saveEditedExpense(exp.id);
 
     const detailModal = document.getElementById('detail-expense-modal');
-    if (detailModal && !detailModal.classList.contains('active')) {
-        detailModal.classList.add('active');
-        pushAppView('detail-expense-modal');
+    if (detailModal) {
+        detailModal.style.zIndex = '100020';
+        if (!detailModal.classList.contains('active')) {
+            detailModal.classList.add('active');
+            pushAppView('detail-expense-modal');
+        }
+    }
+}
+window.openDetailModal = openDetailModal;
+
+function refreshCalendarDayDetailIfOpen() {
+    const calendarModal = document.getElementById('calendar-expense-modal');
+    const detailView = document.getElementById('calendar-day-detail');
+    if (
+        calendarSelectedDay &&
+        calendarModal?.classList.contains('active') &&
+        detailView &&
+        detailView.style.display !== 'none'
+    ) {
+        showDayExpensesDetail(calendarSelectedDay);
     }
 }
 
@@ -1623,7 +1743,7 @@ async function saveEditedExpense(id) {
     }
     if (expenseWriteBusy) return false;
 
-    const exp = state.expenses.find(item => item.id === id);
+    const exp = state.expenses.find(item => String(item.id) === String(id));
     if (!exp) return false;
 
     const amountRaw = document.getElementById('detail-amount-input').value.replace(/\D/g, '');
@@ -1667,13 +1787,14 @@ async function saveEditedExpense(id) {
         writeSucceeded = true;
         markExpenseSynced(userId, [id]);
         if (state.currentUserId === userId) {
-            const currentExpense = state.expenses.find(item => item.id === id);
+            const currentExpense = state.expenses.find(item => String(item.id) === String(id));
             if (currentExpense) Object.assign(currentExpense, { amount, title, category });
             bumpExpenseRevision();
             sortExpenses();
             saveData();
             updateUI();
             closeDetailModal();
+            refreshCalendarDayDetailIfOpen();
         }
         return true;
     } catch (error) {
@@ -1794,6 +1915,7 @@ function openCalendarModal(e) {
     const detailView = document.getElementById('calendar-day-detail');
     if (gridView) gridView.style.display = 'block';
     if (detailView) detailView.style.display = 'none';
+    calendarSelectedDay = null;
 
     const modalEl = document.getElementById('calendar-expense-modal');
     if (modalEl) {
@@ -1824,6 +1946,7 @@ function closeCalendarModal(fromHistory = false) {
     const detailView = document.getElementById('calendar-day-detail');
     if (gridView) gridView.style.display = 'block';
     if (detailView) detailView.style.display = 'none';
+    calendarSelectedDay = null;
 }
 
 
@@ -1842,6 +1965,8 @@ function formatShortAmount(amount) {
 }
 
 function showDayExpensesDetail(dayStr) {
+    calendarSelectedDay = dayStr;
+
     // Lọc chi tiêu của ngày được chọn
     const dayExpenses = state.expenses.filter(exp => {
         if (!exp || !exp.date) return false;
@@ -1876,11 +2001,12 @@ function showDayExpensesDetail(dayStr) {
                 const amountStr = formatCurrency(exp.amount || 0);
                 const timeStr = formatDateTimeVietnamese(exp);
                 return `
-                <div style="
+                <div class="calendar-day-expense-item" data-expense-id="${exp.id}" role="button" tabindex="0" aria-label="Chỉnh sửa ${exp.title || 'khoản chi'}" style="
                     display: flex; align-items: center; gap: 12px;
                     background: rgba(255,255,255,0.04);
                     border-radius: 14px; padding: 12px 14px;
                     border: 1px solid rgba(255,255,255,0.07);
+                    cursor: pointer;
                 ">
                     <div style="
                         width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
@@ -1894,6 +2020,19 @@ function showDayExpensesDetail(dayStr) {
                     <div style="font-size: 0.95rem; font-weight: 800; color: ${style.color}; white-space: nowrap; flex-shrink: 0;">-${amountStr}</div>
                 </div>`;
             }).join('');
+
+            listEl.querySelectorAll('[data-expense-id]').forEach(itemEl => {
+                const expenseId = itemEl.dataset.expenseId;
+                const openEditor = () => openDetailModal(expenseId);
+
+                itemEl.addEventListener('click', openEditor);
+                itemEl.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openEditor();
+                    }
+                });
+            });
         }
     }
 
@@ -2113,7 +2252,7 @@ async function deleteExpense(id) {
     }
     if (expenseWriteBusy) return false;
 
-    const expenseToDelete = state.expenses.find(item => item.id === id);
+    const expenseToDelete = state.expenses.find(item => String(item.id) === String(id));
     if (!expenseToDelete) return false;
     if (!supabaseClient) initSupabase();
     if (!supabaseClient) {
@@ -2137,10 +2276,11 @@ async function deleteExpense(id) {
         writeSucceeded = true;
         markExpenseDeleted(userId, id);
         if (state.currentUserId === userId) {
-            state.expenses = state.expenses.filter(item => item.id !== id);
+            state.expenses = state.expenses.filter(item => String(item.id) !== String(id));
             bumpExpenseRevision();
             saveData();
             updateUI();
+            refreshCalendarDayDetailIfOpen();
         }
         return true;
     } catch (error) {
@@ -2851,20 +2991,19 @@ function renderHistoryList() {
         monthPicker.value = `${historyYear}-${mm}`;
     }
 
-    // Lọc dữ liệu: Nếu là All Time thì lấy toàn bộ danh sách, ngược lại lọc theo Tháng/Năm
-    let filtered = isHistoryAllTime
+    // Lọc dữ liệu: Nếu là All Time hoặc người dùng đang gõ tìm kiếm theo ngày/tháng/năm thì tra cứu toàn bộ lịch sử
+    const hasSearchQuery = Boolean(state.searchQuery && state.searchQuery.trim() !== '');
+    const searchAcrossAllTime = isHistoryAllTime || (hasSearchQuery && isDateLikeSearchQuery(state.searchQuery));
+    let filtered = searchAcrossAllTime
         ? [...(state.expenses || [])]
         : (state.expenses || []).filter(exp => expenseBelongsToMonth(exp, historyYear, historyMonth));
 
     // Lọc tiếp theo từ khóa tìm kiếm (nếu có)
-    if (state.searchQuery && state.searchQuery.trim() !== '') {
-        const query = state.searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(exp => 
-            (exp.title && exp.title.toLowerCase().includes(query)) || 
-            (exp.amount && exp.amount.toString().includes(query)) ||
-            (exp.category && exp.category.toLowerCase().includes(query)) ||
-            (exp.date && String(exp.date).includes(query))
-        );
+    if (hasSearchQuery) {
+        filtered = filtered.filter(exp => expenseMatchesHistorySearch(exp, state.searchQuery));
+        if (filtered.length === 0 && !searchAcrossAllTime) {
+            filtered = (state.expenses || []).filter(exp => expenseMatchesHistorySearch(exp, state.searchQuery));
+        }
     }
 
     if (filtered.length === 0) {
