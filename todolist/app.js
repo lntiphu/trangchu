@@ -98,21 +98,168 @@ function normalizeTaskDateTime(task) {
   return { ...task, dueDate: cloudDateTimeToLocal(task.dueDate) };
 }
 
+// ==========================================================================
+// ĐỊNH DẠNG NGÀY HIỂN THỊ DD/MM/YYYY CHO MODAL CÔNG VIỆC
+// ==========================================================================
+function formatISODateToDisplay(isoStr) {
+  if (!isoStr) return '';
+  const parts = String(isoStr).trim().split('-');
+  if (parts.length === 3) {
+    return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+  }
+  return isoStr;
+}
+
+function parseDisplayDateToISO(displayStr) {
+  if (!displayStr) return '';
+  const cleanStr = String(displayStr).trim();
+  if (!cleanStr) return '';
+
+  // Trường hợp đã là YYYY-MM-DD
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(cleanStr)) {
+    const [y, m, d] = cleanStr.split('-').map(Number);
+    if (y >= 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+  }
+
+  // Trường hợp DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY hoặc D/M/YY
+  const parts = cleanStr.split(/[\/\-\.\s]+/);
+  if (parts.length === 3) {
+    let d = parseInt(parts[0], 10);
+    let m = parseInt(parts[1], 10);
+    let y = parseInt(parts[2], 10);
+
+    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+      if (y < 100) {
+        y += (y < 70 ? 2000 : 1900);
+      }
+      if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+    }
+  }
+
+  // Trường hợp gõ liền 8 chữ số: DDMMYYYY (vd 02112026)
+  const digitsOnly = cleanStr.replace(/\D/g, '');
+  if (digitsOnly.length === 8) {
+    const d = parseInt(digitsOnly.slice(0, 2), 10);
+    const m = parseInt(digitsOnly.slice(2, 4), 10);
+    const y = parseInt(digitsOnly.slice(4, 8), 10);
+    if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+  }
+
+  return '';
+}
+
+function setupDateInputDisplay(displayInputId, nativeInputId, triggerWrapId) {
+  const displayInput = document.getElementById(displayInputId);
+  const nativeInput = document.getElementById(nativeInputId);
+  const triggerWrap = triggerWrapId ? document.getElementById(triggerWrapId) : null;
+
+  if (!displayInput || !nativeInput) return;
+
+  nativeInput.addEventListener('change', () => {
+    if (nativeInput.value) {
+      displayInput.value = formatISODateToDisplay(nativeInput.value);
+    }
+  });
+
+  const openNativePicker = () => {
+    if (typeof nativeInput.showPicker === 'function') {
+      try {
+        nativeInput.showPicker();
+        return;
+      } catch (err) {}
+    }
+    nativeInput.focus();
+  };
+
+  if (triggerWrap) {
+    triggerWrap.addEventListener('click', (e) => {
+      if (e.target !== nativeInput) {
+        openNativePicker();
+      }
+    });
+  }
+
+  displayInput.addEventListener('input', (e) => {
+    if (e.inputType && e.inputType.startsWith('delete')) {
+      const iso = parseDisplayDateToISO(displayInput.value);
+      if (iso) nativeInput.value = iso;
+      return;
+    }
+
+    let v = e.target.value.replace(/[^\d]/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+
+    let formatted = '';
+    if (v.length > 0) {
+      formatted = v.slice(0, 2);
+      if (v.length > 2) {
+        formatted += '/' + v.slice(2, 4);
+        if (v.length > 4) {
+          formatted += '/' + v.slice(4, 8);
+        }
+      }
+    }
+    e.target.value = formatted;
+
+    if (formatted.length === 10) {
+      const iso = parseDisplayDateToISO(formatted);
+      if (iso) nativeInput.value = iso;
+    }
+  });
+
+  displayInput.addEventListener('blur', () => {
+    const raw = displayInput.value.trim();
+    if (!raw) {
+      nativeInput.value = '';
+      return;
+    }
+    const iso = parseDisplayDateToISO(raw);
+    if (iso) {
+      nativeInput.value = iso;
+      displayInput.value = formatISODateToDisplay(iso);
+    } else if (nativeInput.value) {
+      displayInput.value = formatISODateToDisplay(nativeInput.value);
+    }
+  });
+}
+
 function setModalDueValue(value) {
   const hiddenInput = document.getElementById('modal-task-due');
   const dateInput = document.getElementById('modal-task-due-date');
+  const displayInput = document.getElementById('modal-task-due-date-display');
   const timeInput = document.getElementById('modal-task-due-time');
   const normalized = value ? cloudDateTimeToLocal(value) : '';
 
   if (hiddenInput) hiddenInput.value = normalized;
-  if (dateInput) dateInput.value = normalized.slice(0, 10);
+  const isoDate = normalized.slice(0, 10);
+  if (dateInput) dateInput.value = isoDate;
+  if (displayInput) displayInput.value = formatISODateToDisplay(isoDate);
   if (timeInput) timeInput.value = normalized.slice(11, 16);
 }
 
 function getModalDueValue() {
   const dateInput = document.getElementById('modal-task-due-date');
+  const displayInput = document.getElementById('modal-task-due-date-display');
   const timeInput = document.getElementById('modal-task-due-time');
-  const date = dateInput?.value || '';
+
+  let date = '';
+  if (displayInput && displayInput.value.trim()) {
+    const parsed = parseDisplayDateToISO(displayInput.value.trim());
+    if (parsed) {
+      date = parsed;
+      if (dateInput) dateInput.value = parsed;
+    }
+  }
+  if (!date && dateInput?.value) {
+    date = dateInput.value;
+  }
+
   const time = timeInput?.value.trim() || '';
 
   if (!date || !time) return '';
@@ -129,6 +276,86 @@ function getModalDueValue() {
   const hiddenInput = document.getElementById('modal-task-due');
   if (hiddenInput) hiddenInput.value = value;
   return value;
+}
+
+function setModalCompletedAtValue(value) {
+  const dateInput = document.getElementById('modal-task-completed-date');
+  const displayInput = document.getElementById('modal-task-completed-date-display');
+  const timeInput = document.getElementById('modal-task-completed-time');
+  if (!value) {
+    if (dateInput) dateInput.value = '';
+    if (displayInput) displayInput.value = '';
+    if (timeInput) timeInput.value = '';
+    return;
+  }
+  const d = new Date(value);
+  const pad = (n) => String(n).padStart(2, '0');
+  const isoDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  if (dateInput) dateInput.value = isoDate;
+  if (displayInput) displayInput.value = formatISODateToDisplay(isoDate);
+  if (timeInput) timeInput.value = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function getModalCompletedAtValue() {
+  const dateInput = document.getElementById('modal-task-completed-date');
+  const displayInput = document.getElementById('modal-task-completed-date-display');
+  const timeInput = document.getElementById('modal-task-completed-time');
+
+  let date = '';
+  if (displayInput && displayInput.value.trim()) {
+    const parsed = parseDisplayDateToISO(displayInput.value.trim());
+    if (parsed) {
+      date = parsed;
+      if (dateInput) dateInput.value = parsed;
+    }
+  }
+  if (!date && dateInput?.value) {
+    date = dateInput.value;
+  }
+
+  const time = timeInput?.value.trim() || '12:00';
+  if (!date) return '';
+  return new Date(`${date}T${time}:00`).toISOString();
+}
+
+// Sắp xếp danh sách công việc:
+// 1. Kế hoạch có thời gian luôn được ưu tiên lên TRÊN kế hoạch không có thời gian.
+// 2. Với các kế hoạch có thời gian, ưu tiên kế hoạch sắp hết hạn lên TRÊN ĐẦU (tăng dần theo thời hạn).
+// 3. Với các kế hoạch chưa đặt thời hạn, sắp xếp theo thời điểm tạo mới nhất.
+function sortTasksArray(tasks) {
+  if (!Array.isArray(tasks)) return [];
+  return [...tasks].sort((a, b) => {
+    // Việc đã hoàn thành luôn ở sau việc chưa hoàn thành
+    if (a.completed && !b.completed) return 1;
+    if (!a.completed && b.completed) return -1;
+
+    const hasDueA = Boolean(a.dueDate);
+    const hasDueB = Boolean(b.dueDate);
+
+    // Kế hoạch có thời hạn được ưu tiên hơn kế hoạch không có thời hạn
+    if (hasDueA && !hasDueB) return -1;
+    if (!hasDueA && hasDueB) return 1;
+
+    // Cả 2 đều không có thời hạn: sắp xếp theo thời điểm tạo mới nhất lên trước
+    if (!hasDueA && !hasDueB) {
+      const createdA = new Date(a.createdAt || 0).getTime();
+      const createdB = new Date(b.createdAt || 0).getTime();
+      return createdB - createdA;
+    }
+
+    // Cả 2 đều có thời hạn: Sắp xếp việc sắp hết hạn lên trên đầu (thời gian gần nhất)
+    const timeA = new Date(a.dueDate).getTime();
+    const timeB = new Date(b.dueDate).getTime();
+
+    if (isNaN(timeA)) return 1;
+    if (isNaN(timeB)) return -1;
+
+    if (timeA !== timeB) return timeA - timeB;
+
+    const createdA = new Date(a.createdAt || 0).getTime();
+    const createdB = new Date(b.createdAt || 0).getTime();
+    return createdB - createdA;
+  });
 }
 
 // App State
@@ -151,7 +378,7 @@ async function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsedTasks = JSON.parse(raw);
-      state.tasks = Array.isArray(parsedTasks) ? parsedTasks.map(normalizeTaskDateTime) : [];
+      state.tasks = Array.isArray(parsedTasks) ? sortTasksArray(parsedTasks.map(normalizeTaskDateTime)) : [];
     } else {
       state.tasks = [];
     }
@@ -221,7 +448,7 @@ async function syncWithSupabase(showManualToast = false) {
         createdAt: item.created_at || item.createdAt || new Date().toISOString()
       }));
 
-      state.tasks = cloudTasks;
+      state.tasks = sortTasksArray(cloudTasks);
 
       // Cập nhật LocalStorage với dữ liệu thật từ Cloud
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tasks));
@@ -507,7 +734,7 @@ function addTask(title, dueDate = '', description = '', image = null) {
     createdAt: new Date().toISOString()
   };
 
-  state.tasks.unshift(newTask);
+  state.tasks = sortTasksArray([newTask, ...state.tasks]);
   saveData();
   renderCurrentView();
   showToast('Đã thêm công việc vào Timeline');
@@ -542,6 +769,7 @@ function toggleCompleteTask(id) {
   } else {
     task.completed = false;
     task.completedAt = null;
+    state.tasks = sortTasksArray(state.tasks);
     saveData();
     renderCurrentView();
     showToast(`Đã khôi phục việc`);
@@ -553,6 +781,7 @@ function restoreTaskFromHistory(id) {
   if (!task) return;
   task.completed = false;
   task.completedAt = null;
+  state.tasks = sortTasksArray(state.tasks);
   saveData();
   renderCurrentView();
   showToast(`Đã chuyển lại sang Timeline việc cần làm`, {
@@ -660,13 +889,14 @@ function getTaskUrgency(dueDateIso) {
   const dateStr = `${pad(due.getDate())}/${pad(due.getMonth() + 1)}/${due.getFullYear()}`;
   const shortDateStr = `${pad(due.getDate())}/${pad(due.getMonth() + 1)}`;
 
-  // 1. Quá hạn
+  // 1. Quá hạn -> Trễ hẹn (Giữ nguyên công việc, hiển thị rõ badge Trễ hẹn)
   if (due < now) {
     return {
       isUrgent: true,
-      cardClass: 'task-urgent-card',
-      badgeClass: 'time-pill',
-      badgeText: `Quá hạn (${shortDateStr} • ${timeStr})`,
+      isOverdue: true,
+      cardClass: 'task-urgent-card task-overdue-card',
+      badgeClass: 'time-pill time-pill-overdue',
+      badgeText: `Trễ hẹn (${shortDateStr} • ${timeStr})`,
       badgeIcon: 'alert-triangle',
       actionColor: 'text-rose-700 hover:text-rose-900 dark:text-rose-300'
     };
@@ -676,6 +906,7 @@ function getTaskUrgency(dueDateIso) {
   if (todayKey === dueKey) {
     return {
       isUrgent: true,
+      isOverdue: false,
       cardClass: 'task-urgent-card',
       badgeClass: 'time-pill',
       badgeText: `Hôm nay lúc ${timeStr}`,
@@ -748,15 +979,22 @@ function renderTimelineTasks() {
   if (emptyState) emptyState.classList.add('hidden');
 
   const groups = {
-    urgent: { 
-      label: 'Gần tới hạn & Quá hạn', 
+    overdue: { 
+      label: 'Trễ hẹn', 
+      icon: 'alert-triangle',
+      badge: 'bg-rose-600 text-white shadow-md shadow-rose-600/30', 
+      nodeColor: 'bg-rose-600 ring-4 ring-rose-600/25',
+      tasks: [] 
+    },
+    today: { 
+      label: 'Hôm nay & Gần tới hạn', 
       icon: 'flame',
-      badge: 'bg-rose-500 text-white shadow-md shadow-rose-500/25', 
-      nodeColor: 'bg-rose-500 ring-4 ring-rose-500/25',
+      badge: 'bg-amber-500 text-white shadow-md shadow-amber-500/25', 
+      nodeColor: 'bg-amber-500 ring-4 ring-amber-500/25',
       tasks: [] 
     },
     normal: { 
-      label: 'Kế hoạch sắp tới (Bình thường)', 
+      label: 'Kế hoạch sắp tới', 
       icon: 'calendar-check-2',
       badge: 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25', 
       nodeColor: 'bg-emerald-500 ring-4 ring-emerald-500/25',
@@ -764,9 +1002,9 @@ function renderTimelineTasks() {
     },
     noDate: { 
       label: 'Chưa đặt ngày hạn', 
-      icon: 'inbox',
-      badge: 'bg-slate-500 text-white shadow-sm', 
-      nodeColor: 'bg-slate-400 ring-4 ring-slate-400/20',
+      icon: 'calendar-off',
+      badge: 'bg-amber-500 text-white shadow-sm', 
+      nodeColor: 'bg-amber-400 ring-4 ring-amber-400/20',
       tasks: [] 
     }
   };
@@ -777,15 +1015,32 @@ function renderTimelineTasks() {
       return;
     }
     const urgency = getTaskUrgency(task.dueDate);
-    if (urgency.isUrgent) {
-      groups.urgent.tasks.push(task);
+    if (urgency.isOverdue) {
+      groups.overdue.tasks.push(task);
+    } else if (urgency.isUrgent) {
+      groups.today.tasks.push(task);
     } else {
       groups.normal.tasks.push(task);
     }
   });
 
+  // Ưu tiên sắp xếp theo thời hạn: việc nào sắp hết hạn (gần nhất) sẽ xếp lên trên đầu
+  const sortByDueAsc = (a, b) => {
+    const timeA = new Date(a.dueDate).getTime();
+    const timeB = new Date(b.dueDate).getTime();
+    if (isNaN(timeA)) return 1;
+    if (isNaN(timeB)) return -1;
+    if (timeA !== timeB) return timeA - timeB;
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  };
+
+  groups.overdue.tasks.sort(sortByDueAsc);
+  groups.today.tasks.sort(sortByDueAsc);
+  groups.normal.tasks.sort(sortByDueAsc);
+  groups.noDate.tasks.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
   let html = '';
-  const order = ['urgent', 'normal', 'noDate'];
+  const order = ['overdue', 'today', 'normal', 'noDate'];
 
   order.forEach(key => {
     const g = groups[key];
@@ -794,12 +1049,14 @@ function renderTimelineTasks() {
     html += `
       <div class="timeline-group">
         <!-- Modern Section Header Banner -->
-        <div class="timeline-section-header ${key === 'urgent' ? 'timeline-header-urgent' : key === 'normal' ? 'timeline-header-normal' : 'timeline-header-nodate'}">
-          <div class="flex items-center gap-2 font-extrabold text-xs">
-            <i data-lucide="${g.icon}" class="w-4 h-4"></i>
-            <span>${g.label}</span>
+        <div class="timeline-section-header ${key === 'overdue' ? 'timeline-header-overdue' : key === 'today' ? 'timeline-header-urgent' : key === 'normal' ? 'timeline-header-normal' : 'timeline-header-nodate'}">
+          <div class="timeline-header-title-wrap">
+            <div class="timeline-header-icon-box">
+              <i data-lucide="${g.icon}"></i>
+            </div>
+            <span class="timeline-header-title">${g.label}</span>
           </div>
-          <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${key === 'urgent' ? 'bg-rose-500 text-white' : key === 'normal' ? 'bg-emerald-500 text-white' : 'bg-slate-400 text-white'}">
+          <span class="timeline-header-badge">
             ${g.tasks.length}
           </span>
         </div>
@@ -853,11 +1110,11 @@ function renderTimelineTasks() {
                         </span>
                       </div>
 
-                      <!-- Ghi chú thêm -->
+                      <!-- Ghi chú thêm (giữ nguyên chính xác từng dòng, dấu xuống hàng và khoảng trắng) -->
                       ${task.description ? `
-                        <div class="mt-1.5 text-xs font-medium opacity-80 line-clamp-2 leading-relaxed flex items-start gap-1">
+                        <div class="task-desc-wrap mt-2 text-xs font-medium leading-relaxed flex items-start gap-1.5 opacity-90">
                           <i data-lucide="file-text" class="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-70"></i>
-                          <span>${escapeHtml(task.description)}</span>
+                          <div class="task-desc-text flex-1 whitespace-pre-wrap break-words select-text">${formatDescriptionText(task.description)}</div>
                         </div>
                       ` : ''}
                     </div>
@@ -893,12 +1150,33 @@ function renderHistory() {
   const emptyState = document.getElementById('history-empty-state');
   if (!container) return;
   
-  const completed = state.tasks.filter(t => t.completed);
+  let completed = state.tasks.filter(t => t.completed);
+
+  // Lọc theo từ khóa tìm kiếm trong danh sách hoàn thành
+  if (state.searchQuery && state.searchQuery.trim()) {
+    const q = state.searchQuery.toLowerCase().trim();
+    completed = completed.filter(t => 
+      (t.title && t.title.toLowerCase().includes(q)) || 
+      (t.description && t.description.toLowerCase().includes(q))
+    );
+  }
+
   completed.sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0));
 
   if (completed.length === 0) {
     container.innerHTML = '';
-    if (emptyState) emptyState.classList.remove('hidden');
+    if (emptyState) {
+      emptyState.classList.remove('hidden');
+      const emptyTitle = emptyState.querySelector('p.text-xs');
+      const emptySub = emptyState.querySelector('p.text-\\[11px\\]');
+      if (state.searchQuery && state.searchQuery.trim()) {
+        if (emptyTitle) emptyTitle.textContent = 'Không tìm thấy việc hoàn thành phù hợp';
+        if (emptySub) emptySub.textContent = `Không có kết quả nào khớp với "${escapeHtml(state.searchQuery)}"`;
+      } else {
+        if (emptyTitle) emptyTitle.textContent = 'Lịch sử hiện đang trống';
+        if (emptySub) emptySub.textContent = 'Các công việc sau khi hoàn thành sẽ tự động lưu lại tại đây.';
+      }
+    }
     return;
   }
 
@@ -924,13 +1202,13 @@ function renderHistory() {
             </div>
           `}
 
-          <div class="history-card-content">
+          <div class="history-card-content cursor-pointer" onclick="openEditTaskModal('${task.id}')" title="Chạm để chỉnh sửa toàn bộ thông tin">
             <div class="history-card-title-row">
               <h3 class="history-card-title">${escapeHtml(task.title)}</h3>
               <span class="history-status">Đã xong</span>
             </div>
-            ${task.description ? `<p class="history-card-description">${escapeHtml(task.description)}</p>` : ''}
-            <button onclick="openEditHistoryModal('${task.id}')" class="history-time-btn" title="Sửa thời gian hoàn thành">
+            ${task.description ? `<div class="history-card-description whitespace-pre-wrap break-words select-text">${formatDescriptionText(task.description)}</div>` : ''}
+            <button type="button" onclick="event.stopPropagation(); openEditTaskModal('${task.id}')" class="history-time-btn" title="Chỉnh sửa toàn bộ thông tin">
               <i data-lucide="clock-3"></i>
               <span>${doneTime}</span>
               <i data-lucide="pencil"></i>
@@ -980,6 +1258,11 @@ function openAddTaskModal() {
   if (noDueToggle) noDueToggle.checked = false;
   if (dueContainer) dueContainer.classList.remove('opacity-40', 'pointer-events-none');
   setModalDueValue(getRelativeDateTime(0, 18, 0));
+
+  // Reset Completed At container
+  const completedAtContainer = document.getElementById('modal-completed-at-container');
+  if (completedAtContainer) completedAtContainer.classList.add('hidden');
+  setModalCompletedAtValue('');
   
   const titleEl = document.getElementById('modal-title');
   const subEl = document.getElementById('modal-subtitle');
@@ -988,10 +1271,23 @@ function openAddTaskModal() {
 
   showModal('task-modal');
   lucide.createIcons();
-  setTimeout(() => document.getElementById('modal-task-title').focus(), 150);
+  focusTaskTitleOnDesktop();
+}
+
+function focusTaskTitleOnDesktop() {
+  // Auto-focusing opens the iOS keyboard while the bottom sheet is animating,
+  // which can shrink the standalone PWA viewport and clip the form.
+  if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+    setTimeout(() => document.getElementById('modal-task-title')?.focus(), 150);
+  }
 }
 
 function openEditTaskModal(id) {
+  // Nếu người dùng đang bôi đen chọn văn bản (ví dụ copy số điện thoại, địa chỉ ghi chú) thì không mở modal
+  if (window.getSelection && window.getSelection().toString().trim().length > 0) {
+    return;
+  }
+
   const task = state.tasks.find(t => t.id === id);
   if (!task) return;
 
@@ -1033,39 +1329,41 @@ function openEditTaskModal(id) {
     setModalDueValue(task.dueDate);
   }
 
+  // Populate Completed At if task is completed
+  const completedAtContainer = document.getElementById('modal-completed-at-container');
+  if (completedAtContainer) {
+    if (task.completed) {
+      completedAtContainer.classList.remove('hidden');
+      setModalCompletedAtValue(task.completedAt || new Date().toISOString());
+    } else {
+      completedAtContainer.classList.add('hidden');
+      setModalCompletedAtValue('');
+    }
+  }
+
   const titleEl = document.getElementById('modal-title');
   const subEl = document.getElementById('modal-subtitle');
-  if (titleEl) titleEl.textContent = 'Chỉnh sửa công việc';
-  if (subEl) subEl.textContent = 'Cập nhật nội dung và thời hạn hoàn thành';
+  if (titleEl) {
+    titleEl.textContent = task.completed ? 'Chỉnh sửa việc đã xong' : 'Chỉnh sửa công việc';
+  }
+  if (subEl) {
+    subEl.textContent = task.completed 
+      ? 'Chỉnh sửa toàn bộ thông tin, nội dung & thời gian hoàn thành' 
+      : 'Cập nhật nội dung và thời hạn hoàn thành';
+  }
 
   showModal('task-modal');
   lucide.createIcons();
-  document.getElementById('modal-task-title').focus();
+  focusTaskTitleOnDesktop();
 }
 
 function closeTaskModal() {
   hideModal('task-modal');
 }
 
-// Edit History Time Modal Logic
+// Edit History Time Modal Logic - chuyển tiếp sang modal chỉnh sửa toàn diện
 function openEditHistoryModal(id) {
-  const task = state.tasks.find(t => t.id === id);
-  if (!task) return;
-
-  document.getElementById('history-task-id').value = task.id;
-  document.getElementById('history-task-title').textContent = task.title;
-  
-  let dtValue = '';
-  if (task.completedAt) {
-    const d = new Date(task.completedAt);
-    const pad = (n) => String(n).padStart(2, '0');
-    dtValue = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  } else {
-    dtValue = getRelativeDateTime(0, new Date().getHours(), new Date().getMinutes());
-  }
-
-  document.getElementById('history-task-completed-at').value = dtValue;
-  showModal('history-modal');
+  openEditTaskModal(id);
 }
 
 function closeHistoryModal() {
@@ -1089,7 +1387,7 @@ function clearModalDate() {
 
 function triggerReminderPopup(task, isOverdue = false) {
   document.getElementById('reminder-task-title').textContent = task.title;
-  document.getElementById('reminder-badge').textContent = isOverdue ? '⚠️ Quá hạn' : '⏰ Sắp đến hạn';
+  document.getElementById('reminder-badge').textContent = isOverdue ? '⚠️ Trễ hẹn' : '⏰ Sắp đến hạn';
   document.getElementById('reminder-due-text').textContent = task.dueDate ? formatFullDateTime(task.dueDate) : '';
 
   document.getElementById('reminder-done-btn').onclick = () => {
@@ -1115,6 +1413,10 @@ function showModal(modalId) {
     clearTimeout(modal._hideTimeout);
     modal._hideTimeout = null;
   }
+  const featureHost = document.getElementById('todo-feature-host');
+  if (featureHost && featureHost.contains(modal)) {
+    document.getElementById('todo-modal')?.classList.add('todo-child-modal-open');
+  }
   modal.classList.remove('hidden');
   setTimeout(() => {
     modal.classList.add('modal-active');
@@ -1129,6 +1431,12 @@ function hideModal(modalId) {
   modal._hideTimeout = setTimeout(() => {
     modal.classList.add('hidden');
     modal._hideTimeout = null;
+    const featureHost = document.getElementById('todo-feature-host');
+    const hasOpenChildModal = featureHost && Array.from(featureHost.children)
+      .some(child => child.classList.contains('modal-active'));
+    if (!hasOpenChildModal) {
+      document.getElementById('todo-modal')?.classList.remove('todo-child-modal-open');
+    }
   }, 200);
 }
 
@@ -1144,23 +1452,19 @@ function switchTab(tabName) {
     if (viewTasks) viewTasks.classList.add('hidden');
     if (viewHistory) viewHistory.classList.remove('hidden');
     if (headerHistoryBtn) {
-      headerHistoryBtn.classList.add('active', 'text-emerald-600', 'dark:text-emerald-400');
-      headerHistoryBtn.classList.remove('text-slate-400');
+      headerHistoryBtn.classList.add('active');
     }
     if (bottomNavTasks) {
-      bottomNavTasks.classList.remove('active', 'text-brand-600', 'dark:text-brand-400');
-      bottomNavTasks.classList.add('text-slate-400');
+      bottomNavTasks.classList.remove('active');
     }
   } else {
     if (viewTasks) viewTasks.classList.remove('hidden');
     if (viewHistory) viewHistory.classList.add('hidden');
     if (headerHistoryBtn) {
-      headerHistoryBtn.classList.remove('active', 'text-emerald-600', 'dark:text-emerald-400');
-      headerHistoryBtn.classList.add('text-slate-400');
+      headerHistoryBtn.classList.remove('active');
     }
     if (bottomNavTasks) {
-      bottomNavTasks.classList.add('active', 'text-brand-600', 'dark:text-brand-400');
-      bottomNavTasks.classList.remove('text-slate-400');
+      bottomNavTasks.classList.add('active');
     }
   }
 
@@ -1188,6 +1492,16 @@ function escapeHtml(str) {
     '"': '&quot;',
     "'": '&#039;'
   }[m]));
+}
+
+function formatDescriptionText(str) {
+  if (!str) return '';
+  let text = String(str);
+  // Nếu dữ liệu bị encode ký tự xuống dòng dạng chuỗi literal ("\n"), đưa về ký tự newline chuẩn
+  if (text.includes('\\n') && !text.includes('\n')) {
+    text = text.replace(/\\r\\n|\\n|\\r/g, '\n');
+  }
+  return escapeHtml(text);
 }
 
 function toggleTheme() {
@@ -1241,6 +1555,10 @@ function startReminderService() {
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
 
+  // Thiết lập trường chọn ngày dd/mm/yyyy
+  setupDateInputDisplay('modal-task-due-date-display', 'modal-task-due-date', 'modal-task-due-picker-trigger');
+  setupDateInputDisplay('modal-task-completed-date-display', 'modal-task-completed-date', 'modal-task-completed-picker-trigger');
+
   // Header Add Button (+)
   const headerAddBtn = document.getElementById('header-add-btn');
   if (headerAddBtn) headerAddBtn.addEventListener('click', openAddTaskModal);
@@ -1249,11 +1567,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const headerHistoryBtn = document.getElementById('header-history-btn');
   if (headerHistoryBtn) {
     headerHistoryBtn.addEventListener('click', () => {
-      if (state.activeTab === 'history') {
-        switchTab('tasks');
-      } else {
-        switchTab('history');
-      }
+      switchTab('history');
+    });
+  }
+
+  // Tasks Tab Button
+  const bottomNavTasks = document.getElementById('bottom-nav-tasks');
+  if (bottomNavTasks) {
+    bottomNavTasks.addEventListener('click', () => {
+      switchTab('tasks');
     });
   }
 
@@ -1294,6 +1616,11 @@ document.addEventListener('DOMContentLoaded', () => {
         task.description = desc.trim();
         task.dueDate = due;
         task.image = image;
+        if (task.completed) {
+          const completedAtVal = getModalCompletedAtValue();
+          if (completedAtVal) task.completedAt = completedAtVal;
+        }
+        state.tasks = sortTasksArray(state.tasks);
         saveData();
         renderCurrentView();
         showToast('Đã cập nhật lại công việc');
@@ -1378,7 +1705,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setModalDueValue('');
       } else {
         if (dueContainer) dueContainer.classList.remove('opacity-40', 'pointer-events-none');
-        if (dueInput && !dueInput.value) dueInput.value = getRelativeDateTime(0, 18, 0);
+        if (dueInput && !dueInput.value) setModalDueValue(getRelativeDateTime(0, 18, 0));
       }
     });
   }
@@ -1420,7 +1747,10 @@ document.addEventListener('DOMContentLoaded', () => {
     hideModal('confirm-modal');
   });
 
-  document.getElementById('clear-history-btn').addEventListener('click', promptClearAllHistory);
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', promptClearAllHistory);
+  }
 
   // Search Toggle for mobile
   const searchToggleBtn = document.getElementById('search-toggle-btn');
