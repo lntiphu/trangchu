@@ -15,6 +15,9 @@ const state = {
 };
 let supabaseClient = null;
 let supabaseSubscription = null;
+let expenseRevision = 0;
+let expenseFetchSequence = 0;
+let expenseWriteBusy = false;
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 let calendarSelectedDay = null;
@@ -22,6 +25,11 @@ let dashboardCalendarYear = new Date().getFullYear();
 let dashboardCalendarMonth = new Date().getMonth();
 let analysisYear = new Date().getFullYear();
 let analysisMonth = new Date().getMonth();
+let historyYear = new Date().getFullYear();
+let historyMonth = new Date().getMonth();
+let hasUserChangedHistoryMonth = false;
+let isHistoryAllTime = false;
+let historyModalYear = new Date().getFullYear();
 let currentAdjustingSaverId = null;
 let currentAdjustingField = null;
 
@@ -51,9 +59,9 @@ window.goBackToHome = goBackToHome;
 // Sắp xếp chi tiêu: Ngày mới nhất lên đầu, nếu cùng ngày thì ID lớn nhất (mới nhất) lên đầu
 function sortExpenses() {
     state.expenses.sort((a, b) => {
-        const dateCompare = b.date.localeCompare(a.date);
+        const dateCompare = String(b.date || '').localeCompare(String(a.date || ''));
         if (dateCompare !== 0) return dateCompare;
-        return b.id.localeCompare(a.id);
+        return String(b.id || '').localeCompare(String(a.id || ''));
     });
 }
 
@@ -103,23 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
 });
 
-// LOAD DỮ LIỆU TỪ LOCALSTORAGE
+// Khởi tạo: khoản chi chỉ xuất hiện sau khi tải thành công từ Supabase.
 function loadData() {
-    const savedExpenses = localStorage.getItem('money_expenses') || localStorage.getItem('ispend_expenses');
-    if (savedExpenses) {
-        try {
-            state.expenses = JSON.parse(savedExpenses);
-            sortExpenses();
-        } catch (e) {
-            console.error("Lỗi parse dữ liệu chi tiêu:", e);
-            state.expenses = [];
-        }
-    } else {
-        // Tạo một số dữ liệu mẫu ban đầu để giao diện đẹp ngay lập tức
-        state.expenses = getSampleData();
-        sortExpenses();
-        saveData();
-    }
+    // Chỉ hiển thị khoản chi đã được Supabase xác nhận cho tài khoản đăng nhập.
+    state.expenses = [];
 
     // Nạp dữ liệu Saver (Tiết kiệm)
     loadSaverData();
@@ -133,32 +128,68 @@ function saveData() {
     const storageKey = state.currentUserId
         ? `money_expenses_${state.currentUserId}`
         : 'money_expenses';
-    localStorage.setItem(storageKey, JSON.stringify(state.expenses));
+    try {
+        localStorage.setItem(storageKey, JSON.stringify(state.expenses));
+    } catch (error) {
+        console.warn('Không thể lưu bản sao khoản chi trên thiết bị:', error);
+    }
+}
+
+function normalizeExpenseRecord(item) {
+    return {
+        ...item,
+        id: String(item.id),
+        date: String(item.date || '').split('T')[0],
+        amount: Number(item.amount) || 0
+    };
+}
+
+function setExpenseWriteBusy(busy) {
+    expenseWriteBusy = busy;
+    ['#add-expense-form button[type="submit"]', '#btn-save-edit-expense', '#btn-delete-expense']
+        .forEach(selector => {
+            const button = document.querySelector(selector);
+            if (button) button.disabled = busy;
+        });
+}
+
+function showExpenseSyncError(action, error) {
+    console.error(`Lỗi ${action.toLowerCase()} khoản chi trên Supabase:`, error);
+    alert(`${action} không thành công trên Supabase. Dữ liệu chưa được thay đổi. Vui lòng kiểm tra mạng và thử lại.`);
+}
+
+function showExpenseDisplayError(error) {
+    console.error('Supabase đã lưu khoản chi nhưng giao diện chưa cập nhật:', error);
+    alert('Supabase đã lưu thay đổi, nhưng màn hình chưa cập nhật. Vui lòng tải lại trang.');
+}
+
+function preserveUnverifiedLocalExpenses(remoteData) {
+    const cacheKey = `money_expenses_${state.currentUserId}`;
+    const recoveryKey = `money_expenses_recovery_${state.currentUserId}`;
+    try {
+        const cached = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+        const previous = JSON.parse(localStorage.getItem(recoveryKey) || '[]');
+        if (!Array.isArray(cached) || !Array.isArray(previous)) return;
+        const remoteIds = new Set(remoteData.map(item => String(item.id)));
+        const localOnly = cached.filter(item =>
+            item && item.id && item.user_id === state.currentUserId && !remoteIds.has(String(item.id))
+        );
+        if (!localOnly.length) return;
+        const backup = new Map(previous.map(item => [String(item.id), item]));
+        const newIds = new Set(localOnly.filter(item => !backup.has(String(item.id))).map(item => String(item.id)));
+        localOnly.forEach(item => backup.set(String(item.id), item));
+        localStorage.setItem(recoveryKey, JSON.stringify(Array.from(backup.values())));
+        if (newIds.size) {
+            alert(`Có ${newIds.size} khoản chi chỉ lưu trên thiết bị và chưa có trên Supabase. Bản sao đã được giữ trong trình duyệt để đối chiếu; chúng không được cộng vào tổng chi.`);
+        }
+    } catch (error) {
+        console.warn('Không thể sao lưu khoản chi cục bộ chưa xác nhận:', error);
+    }
 }
 
 function loadExpenseDataForCurrentUser() {
-    if (!state.currentUserId) {
-        state.expenses = [];
-        updateUI();
-        return;
-    }
-
-    const savedExpenses = localStorage.getItem(`money_expenses_${state.currentUserId}`);
-    if (!savedExpenses) {
-        state.expenses = [];
-        updateUI();
-        return;
-    }
-
-    try {
-        state.expenses = JSON.parse(savedExpenses);
-        sortExpenses();
-    } catch (e) {
-        console.error("Lỗi parse dữ liệu chi tiêu của tài khoản:", e);
-        state.expenses = [];
-    }
-
-    // Hiển thị dữ liệu đã lưu trên máy ngay, không chờ Supabase phản hồi.
+    state.expenses = [];
+    expenseRevision++;
     updateUI();
 }
 
@@ -406,8 +437,8 @@ function initUI() {
     }
     updateWelcomeDate();
 
-    // Đặt ngày mặc định cho form nhập là ngày hôm nay
-    document.getElementById('expense-date').value = getTodayDateString();
+    // Đặt ngày mặc định cho form nhập là ngày hôm nay và đồng bộ dd/mm/yyyy
+    syncExpenseDateDisplay(getTodayDateString());
 
     // Khởi tạo Lucide Icons
     createLucideIcons();
@@ -416,18 +447,14 @@ function initUI() {
 
 // ĐĂNG KÝ SỰ KIỆN TƯƠNG TÁC (EVENT LISTENERS)
 function registerEventListeners() {
-    // Sự kiện thanh điều hướng dưới (Tabs Switch)
-    const navItems = document.querySelectorAll('.app-nav .nav-item[data-tab]');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const targetTab = item.getAttribute('data-tab');
-            switchTab(targetTab);
-        });
-    });
-
+    // Thiết lập trường chọn ngày dd/mm/yyyy
+    setupExpenseDatePicker();
 
     // Mở / Đóng Modal Thêm Chi Tiêu
-    document.getElementById('btn-open-add-modal').addEventListener('click', openAddModal);
+    const btnOpenAdd = document.getElementById('btn-open-add-modal');
+    if (btnOpenAdd) {
+        btnOpenAdd.addEventListener('click', openAddModal);
+    }
     document.getElementById('btn-close-modal').addEventListener('click', closeAddModal);
     document.getElementById('btn-cancel-add').addEventListener('click', closeAddModal);
     document.getElementById('add-expense-modal').addEventListener('click', (e) => {
@@ -541,10 +568,73 @@ function registerEventListeners() {
 
     // Tìm kiếm lịch sử
     const searchInput = document.getElementById('search-input');
-    searchInput.addEventListener('input', (e) => {
-        state.searchQuery = e.target.value;
-        renderHistoryList();
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            state.searchQuery = e.target.value;
+            renderHistoryList();
+        });
+    }
+
+    // Chuyển tháng Lịch sử thu chi (Trước / Sau)
+    const btnHistoryPrevMonth = document.getElementById('btn-history-prev-month');
+    if (btnHistoryPrevMonth) {
+        btnHistoryPrevMonth.addEventListener('click', () => {
+            changeHistoryMonth(-1);
+        });
+    }
+    const btnHistoryNextMonth = document.getElementById('btn-history-next-month');
+    if (btnHistoryNextMonth) {
+        btnHistoryNextMonth.addEventListener('click', () => {
+            changeHistoryMonth(1);
+        });
+    }
+
+    // Mở / Đóng modal chọn nhanh Tháng Năm & All Time
+    const btnOpenHistoryMonth = document.getElementById('btn-open-history-month-modal');
+    if (btnOpenHistoryMonth) {
+        btnOpenHistoryMonth.addEventListener('click', openHistoryMonthModal);
+    }
+    const btnCloseHistoryMonth = document.getElementById('btn-close-history-month-modal');
+    if (btnCloseHistoryMonth) {
+        btnCloseHistoryMonth.addEventListener('click', () => closeHistoryMonthModal());
+    }
+    const historyMonthModal = document.getElementById('history-month-modal');
+    if (historyMonthModal) {
+        historyMonthModal.addEventListener('click', (e) => {
+            if (e.target.id === 'history-month-modal') closeHistoryMonthModal();
+        });
+    }
+
+    // Chọn All Time
+    const btnHistorySelectAllTime = document.getElementById('btn-history-select-all-time');
+    if (btnHistorySelectAllTime) {
+        btnHistorySelectAllTime.addEventListener('click', selectHistoryAllTime);
+    }
+
+    // Đổi năm trong modal chọn nhanh
+    const btnHistoryModalPrevYear = document.getElementById('btn-history-modal-prev-year');
+    if (btnHistoryModalPrevYear) {
+        btnHistoryModalPrevYear.addEventListener('click', () => {
+            historyModalYear--;
+            renderHistoryModalContent();
+        });
+    }
+    const btnHistoryModalNextYear = document.getElementById('btn-history-modal-next-year');
+    if (btnHistoryModalNextYear) {
+        btnHistoryModalNextYear.addEventListener('click', () => {
+            historyModalYear++;
+            renderHistoryModalContent();
+        });
+    }
+
+    // Về tháng hiện tại
+    const btnHistoryJumpCurrentMonth = document.getElementById('btn-history-jump-current-month');
+    if (btnHistoryJumpCurrentMonth) {
+        btnHistoryJumpCurrentMonth.addEventListener('click', () => {
+            const now = new Date();
+            selectHistoryMonth(now.getFullYear(), now.getMonth());
+        });
+    }
 
     // Mở / Đóng Modal Lịch Chi Tiêu
     const btnCloseCalendar = document.getElementById('btn-close-calendar');
@@ -738,10 +828,172 @@ function switchTab(tabId) {
 
 
 
+// ==========================================================================
+// ĐỊNH DẠNG NGÀY HIỂN THỊ DD/MM/YYYY CHO MODAL THÊM KHOẢN CHI
+// ==========================================================================
+function formatISODateToDisplay(isoStr) {
+    if (!isoStr) return '';
+    const parts = String(isoStr).trim().split('-');
+    if (parts.length === 3) {
+        return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+    }
+    return isoStr;
+}
+
+function isValidExpenseDate(year, month, day) {
+    if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1) return false;
+    return day <= new Date(year, month, 0).getDate();
+}
+
+function parseDisplayDateToISO(displayStr) {
+    if (!displayStr) return '';
+    const cleanStr = String(displayStr).trim();
+    if (!cleanStr) return '';
+
+    // Trường hợp đã là YYYY-MM-DD
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(cleanStr)) {
+        const [y, m, d] = cleanStr.split('-').map(Number);
+        if (isValidExpenseDate(y, m, d)) {
+            return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+
+    // Trường hợp DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY hoặc D/M/YY
+    const parts = cleanStr.split(/[\/\-\.\s]+/);
+    if (parts.length === 3) {
+        let d = parseInt(parts[0], 10);
+        let m = parseInt(parts[1], 10);
+        let y = parseInt(parts[2], 10);
+
+        if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+            if (y < 100) {
+                y += (y < 70 ? 2000 : 1900);
+            }
+            if (isValidExpenseDate(y, m, d)) {
+                return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            }
+        }
+    }
+
+    // Trường hợp gõ liền 8 chữ số: DDMMYYYY (vd 14102026)
+    const digitsOnly = cleanStr.replace(/\D/g, '');
+    if (digitsOnly.length === 8) {
+        const d = parseInt(digitsOnly.slice(0, 2), 10);
+        const m = parseInt(digitsOnly.slice(2, 4), 10);
+        const y = parseInt(digitsOnly.slice(4, 8), 10);
+        if (isValidExpenseDate(y, m, d)) {
+            return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+
+    return '';
+}
+
+function syncExpenseDateDisplay(isoValue) {
+    const hiddenDateInput = document.getElementById('expense-date');
+    const displayInput = document.getElementById('expense-date-display');
+    if (!hiddenDateInput) return;
+
+    if (isoValue) {
+        hiddenDateInput.value = isoValue;
+    }
+    if (displayInput) {
+        displayInput.value = formatISODateToDisplay(hiddenDateInput.value || getTodayDateString());
+    }
+}
+
+function setupExpenseDatePicker() {
+    const hiddenDateInput = document.getElementById('expense-date');
+    const displayInput = document.getElementById('expense-date-display');
+    const triggerWrap = document.getElementById('btn-trigger-date-picker-wrap') || document.getElementById('btn-trigger-date-picker');
+
+    if (!hiddenDateInput || !displayInput) return;
+
+    // Đồng bộ ban đầu
+    if (!hiddenDateInput.value) {
+        hiddenDateInput.value = getTodayDateString();
+    }
+    syncExpenseDateDisplay(hiddenDateInput.value);
+
+    // Khi chọn ngày từ popup lịch của trình duyệt (trên điện thoại hoặc máy tính)
+    hiddenDateInput.addEventListener('change', () => {
+        if (hiddenDateInput.value) {
+            displayInput.value = formatISODateToDisplay(hiddenDateInput.value);
+        }
+    });
+
+    // Mở lịch khi click vào nút wrapper (nếu click ngoài input con)
+    const openNativePicker = () => {
+        if (typeof hiddenDateInput.showPicker === 'function') {
+            try {
+                hiddenDateInput.showPicker();
+                return;
+            } catch (err) {}
+        }
+    };
+
+    if (triggerWrap) {
+        triggerWrap.addEventListener('click', (e) => {
+            if (e.target !== hiddenDateInput) {
+                openNativePicker();
+            }
+        });
+    }
+
+    // Nhập liệu và gỡ/xóa ngày tháng năm trên ô text displayInput
+    displayInput.addEventListener('input', (e) => {
+        // Cho phép người dùng xóa (Backspace/Delete) hoàn toàn tự do
+        if (e.inputType && e.inputType.startsWith('delete')) {
+            const iso = parseDisplayDateToISO(displayInput.value);
+            if (iso) {
+                hiddenDateInput.value = iso;
+            }
+            return;
+        }
+
+        let v = e.target.value.replace(/[^\d]/g, '');
+        if (v.length > 8) v = v.slice(0, 8);
+
+        let formatted = '';
+        if (v.length > 0) {
+            formatted = v.slice(0, 2);
+            if (v.length > 2) {
+                formatted += '/' + v.slice(2, 4);
+                if (v.length > 4) {
+                    formatted += '/' + v.slice(4, 8);
+                }
+            }
+        }
+        e.target.value = formatted;
+
+        if (formatted.length === 10) {
+            const iso = parseDisplayDateToISO(formatted);
+            if (iso) {
+                hiddenDateInput.value = iso;
+            }
+        }
+    });
+
+    // Khi người dùng click ra ngoài (blur): nếu nhập hợp lệ thì format chuẩn, nếu để trống thì lấy hôm nay
+    displayInput.addEventListener('blur', () => {
+        const val = displayInput.value.trim();
+        if (!val) {
+            hiddenDateInput.value = getTodayDateString();
+            displayInput.value = formatISODateToDisplay(hiddenDateInput.value);
+            return;
+        }
+        const iso = parseDisplayDateToISO(val);
+        if (iso) {
+            hiddenDateInput.value = iso;
+            displayInput.value = formatISODateToDisplay(iso);
+        }
+    });
+}
+
 // CÁC HÀM MỞ/ĐÓNG MODAL
 function openAddModal() {
-    // Đặt lại ngày mặc định là hôm nay
-    document.getElementById('expense-date').value = getTodayDateString();
+    // Đặt lại ngày mặc định là hôm nay và hiển thị dạng dd/mm/yyyy
+    syncExpenseDateDisplay(getTodayDateString());
     document.getElementById('add-expense-modal').classList.add('active');
 }
 
@@ -800,10 +1052,10 @@ function openDetailModal(expenseId) {
 
     // Nút Xóa
     const deleteBtn = document.getElementById('btn-delete-expense');
-    deleteBtn.onclick = () => {
+    deleteBtn.onclick = async () => {
+        if (expenseWriteBusy) return;
         if (confirm(`Bạn có chắc chắn muốn xóa chi tiêu "${exp.title}" không?`)) {
-            deleteExpense(exp.id);
-            closeDetailModal();
+            if (await deleteExpense(exp.id)) closeDetailModal();
         }
     };
 
@@ -827,60 +1079,75 @@ function refreshCalendarDayDetailIfOpen() {
     }
 }
 
-function saveEditedExpense(id) {
+async function saveEditedExpense(id) {
     if (!state.currentUserId) {
         showLoginScreen();
-        return;
+        return false;
     }
+    if (expenseWriteBusy) return false;
 
     const exp = state.expenses.find(item => item.id === id);
-    if (!exp) return;
+    if (!exp) return false;
 
     const amountRaw = document.getElementById('detail-amount-input').value.replace(/\D/g, '');
     const amount = parseInt(amountRaw, 10);
-    if (isNaN(amount) || amount <= 0) {
-        alert('Vui lòng nhập số tiền chi tiêu hợp lệ lớn hơn 0!');
-        return;
+    if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) {
+        alert('Vui lòng nhập số tiền chi tiêu từ 1 đến 100.000.000 VNĐ!');
+        return false;
     }
 
     const title = document.getElementById('detail-title-input').value.trim();
     if (!title) {
         alert('Vui lòng nhập nội dung chi tiêu!');
-        return;
+        return false;
     }
 
     const category = document.getElementById('detail-category-select').value;
 
-    exp.amount = amount;
-    exp.title = title;
-    exp.category = category;
-
-    sortExpenses();
-    saveData();
-    updateUI();
-
-    // Đồng bộ lên Supabase nếu có
-    if (supabaseClient && state.currentUserId) {
-        supabaseClient
-            .from('expenses')
-            .update({
-                amount: exp.amount,
-                title: exp.title,
-                category: exp.category
-            })
-            .eq('id', id)
-            .eq('user_id', state.currentUserId)
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Lỗi khi cập nhật giao dịch lên Supabase:", error);
-                } else {
-                    console.log("Đã cập nhật giao dịch lên Supabase thành công.");
-                }
-            });
+    if (!supabaseClient) {
+        alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
+        return false;
     }
 
-    closeDetailModal();
-    refreshCalendarDayDetailIfOpen();
+    const userId = state.currentUserId;
+    let writeSucceeded = false;
+    setExpenseWriteBusy(true);
+    try {
+        const { data, error } = await supabaseClient
+            .from('expenses')
+            .update({
+                amount,
+                title,
+                category
+            })
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select('id');
+        if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Không tìm thấy khoản chi trên Supabase.');
+        writeSucceeded = true;
+        if (state.currentUserId === userId) {
+            const currentExpense = state.expenses.find(item => item.id === id);
+            if (currentExpense) Object.assign(currentExpense, { amount, title, category });
+            expenseRevision++;
+            sortExpenses();
+            saveData();
+            updateUI();
+            closeDetailModal();
+            refreshCalendarDayDetailIfOpen();
+        }
+        return true;
+    } catch (error) {
+        if (writeSucceeded) {
+            showExpenseDisplayError(error);
+            return true;
+        }
+        showExpenseSyncError('Lưu thay đổi', error);
+        return false;
+    } finally {
+        setExpenseWriteBusy(false);
+        if (writeSucceeded && state.currentUserId === userId) fetchExpensesFromSupabase();
+    }
 }
 
 function closeDetailModal() {
@@ -1045,7 +1312,7 @@ function showDayExpensesDetail(dayStr) {
     if (dayDetailTitle) dayDetailTitle.innerText = displayDate;
 
     // Tính tổng ngày
-    const dayTotal = dayExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    const dayTotal = dayExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     const dayTotalEl = document.getElementById('cal-day-detail-total');
     if (dayTotalEl) dayTotalEl.innerText = formatCurrency(dayTotal);
 
@@ -1143,8 +1410,8 @@ function renderCalendar() {
             const d = parseInt(parts[2], 10);
             if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
                 if (y === calendarYear && (m - 1) === calendarMonth) {
-                    dayTotals[d] = (dayTotals[d] || 0) + (exp.amount || 0);
-                    monthTotal += (exp.amount || 0);
+                    dayTotals[d] = (dayTotals[d] || 0) + (Number(exp.amount) || 0);
+                    monthTotal += Number(exp.amount) || 0;
                 }
             }
         }
@@ -1207,31 +1474,41 @@ function renderCalendar() {
 }
 
 // THÊM CHI TIÊU MỚI (SUBMIT FORM)
-function handleAddExpenseSubmit(e) {
+async function handleAddExpenseSubmit(e) {
     e.preventDefault();
 
     if (!state.currentUserId) {
         showLoginScreen();
         return;
     }
+    if (expenseWriteBusy) return;
 
     // Lấy số tiền
     const amountRaw = document.getElementById('expense-amount').value.replace(/\D/g, '');
     const amount = parseInt(amountRaw, 10);
     
-    if (isNaN(amount) || amount <= 0) {
-        alert('Vui lòng nhập số tiền chi tiêu hợp lệ lớn hơn 0!');
+    if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) {
+        alert('Vui lòng nhập số tiền chi tiêu từ 1 đến 100.000.000 VNĐ!');
         return;
     }
 
     // Lấy tên/nội dung
     const title = document.getElementById('expense-title').value.trim();
+    if (!title) {
+        alert('Vui lòng nhập nội dung chi tiêu!');
+        return;
+    }
     
     // Lấy phân loại
     const category = document.getElementById('expense-category').value;
     
     // Lấy ngày
-    const date = document.getElementById('expense-date').value;
+    const displayDateInput = document.getElementById('expense-date-display');
+    const date = parseDisplayDateToISO(displayDateInput?.value || document.getElementById('expense-date').value);
+    if (!date) {
+        alert('Ngày chi tiêu không hợp lệ. Vui lòng nhập ngày đúng theo dd/mm/yyyy.');
+        return;
+    }
 
     // Tạo đối tượng chi tiêu mới (sử dụng ID chứa timestamp để sắp xếp)
     const newExpense = {
@@ -1243,71 +1520,100 @@ function handleAddExpenseSubmit(e) {
         date: date
     };
 
-    // Lưu vào state và LocalStorage
-    state.expenses.unshift(newExpense); // Đưa lên hàng đầu tiên
-    sortExpenses();
-    saveData();
-
-    // Tự động đồng bộ lên Supabase trong nền (nếu đã cấu hình)
-    if (supabaseClient && state.currentUserId) {
-        supabaseClient
-            .from('expenses')
-            .insert([{
-                id: newExpense.id,
-                user_id: state.currentUserId,
-                date: newExpense.date,
-                title: newExpense.title,
-                amount: newExpense.amount,
-                category: newExpense.category
-            }])
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Lỗi khi thêm giao dịch lên Supabase:", error);
-                } else {
-                    console.log("Đã thêm giao dịch lên Supabase thành công.");
-                }
-            });
-    }
-
-    // Đóng modal và reset
-    closeAddModal();
-
-    // Cập nhật lại giao diện và thông báo thành công
-    updateUI();
-    
-    // Hiệu ứng Toast đơn giản hoặc chỉ cần chuyển về Dashboard
-    switchTab('dashboard');
-}
-
-// XÓA KHOẢN CHI TIÊU
-function deleteExpense(id) {
-    if (!state.currentUserId) {
-        showLoginScreen();
+    if (!supabaseClient) {
+        alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
         return;
     }
 
-    const expenseToDelete = state.expenses.find(item => item.id === id);
-    
-    // Xóa cục bộ trên thiết bị trước
-    state.expenses = state.expenses.filter(item => item.id !== id);
-    saveData();
-    updateUI();
-    refreshCalendarDayDetailIfOpen();
+    const userId = state.currentUserId;
+    let writeSucceeded = false;
+    setExpenseWriteBusy(true);
+    try {
+        const { data, error } = await supabaseClient
+            .from('expenses')
+            .insert([newExpense])
+            .select('id');
+        if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Supabase không xác nhận khoản chi mới.');
+        writeSucceeded = true;
+        if (state.currentUserId !== userId) return;
 
-    // Nếu đã kết nối Supabase, tự động xóa dòng tương ứng
-    if (supabaseClient && state.currentUserId) {
-        supabaseClient
+        if (!state.expenses.some(item => item.id === newExpense.id)) {
+            state.expenses.unshift(newExpense);
+        }
+        expenseRevision++;
+        sortExpenses();
+        saveData();
+
+        // Chuyển lịch sử sang tháng của giao dịch vừa thêm.
+        if (!isHistoryAllTime) {
+            const expParts = String(newExpense.date || '').split('-').map(Number);
+            if (expParts.length >= 2 && !isNaN(expParts[0]) && !isNaN(expParts[1])) {
+                historyYear = expParts[0];
+                historyMonth = expParts[1] - 1;
+                hasUserChangedHistoryMonth = true;
+            }
+        }
+
+        closeAddModal();
+
+        updateUI();
+        switchTab('dashboard');
+    } catch (error) {
+        if (writeSucceeded) showExpenseDisplayError(error);
+        else showExpenseSyncError('Thêm', error);
+    } finally {
+        setExpenseWriteBusy(false);
+        if (writeSucceeded && state.currentUserId === userId) fetchExpensesFromSupabase();
+    }
+}
+
+// XÓA KHOẢN CHI TIÊU
+async function deleteExpense(id) {
+    if (!state.currentUserId) {
+        showLoginScreen();
+        return false;
+    }
+    if (expenseWriteBusy) return false;
+
+    const expenseToDelete = state.expenses.find(item => item.id === id);
+    if (!expenseToDelete) return false;
+    if (!supabaseClient) {
+        alert('Chưa kết nối Supabase. Vui lòng kiểm tra mạng rồi thử lại.');
+        return false;
+    }
+
+    const userId = state.currentUserId;
+    let writeSucceeded = false;
+    setExpenseWriteBusy(true);
+    try {
+        const { data, error } = await supabaseClient
             .from('expenses')
             .delete()
             .eq('id', id)
-            .eq('user_id', state.currentUserId)
-            .then(({ error }) => {
-                if (error) {
-                    console.error("Lỗi khi xóa giao dịch trên Supabase:", error);
-                } else {
-                    console.log("Đã xóa giao dịch thành công trên Supabase.");
-                }
-            });
+            .eq('user_id', userId)
+            .select('id');
+        if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Không tìm thấy khoản chi trên Supabase.');
+        writeSucceeded = true;
+        if (state.currentUserId === userId) {
+            state.expenses = state.expenses.filter(item => item.id !== id);
+            expenseRevision++;
+            saveData();
+            updateUI();
+            refreshCalendarDayDetailIfOpen();
+        }
+        return true;
+    } catch (error) {
+        if (writeSucceeded) {
+            showExpenseDisplayError(error);
+            return true;
+        }
+        showExpenseSyncError('Xóa', error);
+        return false;
+    } finally {
+        setExpenseWriteBusy(false);
+        if (writeSucceeded && state.currentUserId === userId) fetchExpensesFromSupabase();
     }
 }
 
@@ -1315,14 +1621,45 @@ function deleteExpense(id) {
 function updateUI() {
     calculateAndRenderSummaries();
     renderDashboardCalendar();
-
-
     
     if (state.currentTab === 'dashboard') {
         renderDashboardCharts();
     } else if (state.currentTab === 'history') {
         renderHistoryList();
     }
+}
+
+// HIỂN THỊ CÁC GIAO DỊCH GẦN ĐÂY TRÊN BẢNG ĐIỀU KHIỂN (DASHBOARD)
+function renderRecentExpensesDashboard() {
+    const listEl = document.getElementById('dashboard-recent-spendings-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    if (!state.expenses || state.expenses.length === 0) {
+        listEl.innerHTML = `
+            <div class="empty-recent-state" style="padding: 24px 12px; text-align: center; color: var(--text-secondary);">
+                <i data-lucide="receipt" style="width: 32px; height: 32px; margin: 0 auto 8px; opacity: 0.6; display: block;"></i>
+                <p style="font-size: 0.82rem; margin: 0;">Chưa có chi tiêu nào được ghi nhận. Hãy bấm nút <strong>+ Thêm chi tiêu</strong> để bắt đầu!</p>
+            </div>
+        `;
+        createLucideIcons();
+        return;
+    }
+
+    // Lấy 6 giao dịch mới nhất (sắp xếp theo ngày giảm dần, rồi id giảm dần)
+    const sorted = [...state.expenses].sort((a, b) => {
+        const dateDiff = String(b.date || '').localeCompare(String(a.date || ''));
+        if (dateDiff !== 0) return dateDiff;
+        return (Number(b.id) || 0) - (Number(a.id) || 0);
+    });
+
+    const recentItems = sorted.slice(0, 6);
+    recentItems.forEach(exp => {
+        const itemEl = createTransactionDOMItem(exp);
+        listEl.appendChild(itemEl);
+    });
+
+    createLucideIcons();
 }
 
 // TÍNH TOÁN VÀ HIỂN THỊ CÁC THẺ TỔNG KẾT
@@ -1351,21 +1688,24 @@ function calculateAndRenderSummaries() {
     let totalMonth = 0;
 
     state.expenses.forEach(exp => {
-        const expDate = new Date(exp.date);
+        const parts = getExpenseDateParts(exp);
+        if (!parts) return;
+        const expDate = new Date(parts.year, parts.month, parts.day);
+        const amount = Number(exp.amount) || 0;
         
         // So sánh Ngày hôm nay
-        if (exp.date === today) {
-            totalToday += exp.amount;
+        if (String(exp.date).split('T')[0] === today) {
+            totalToday += amount;
         }
 
         // So sánh Tuần này
         if (expDate >= startOfWeek && expDate <= endOfWeek) {
-            totalWeek += exp.amount;
+            totalWeek += amount;
         }
 
         // So sánh Tháng này
         if (expDate.getFullYear() === currentYear && expDate.getMonth() === currentMonth) {
-            totalMonth += exp.amount;
+            totalMonth += amount;
         }
     });
 
@@ -1751,27 +2091,259 @@ function closeCategoryExpensesPopup() {
     overlay.setAttribute('aria-hidden', 'true');
 }
 
-// HIỂN THỊ DANH SÁCH LỊCH SỬ (HISTORY TAB)
-function renderHistoryList() {
+// ==========================================================================
+// ĐIỀU HƯỚNG THÁNG LỊCH SỬ THU CHI
+// ==========================================================================
+function expenseBelongsToMonth(exp, targetYear, targetMonth) {
+    if (!exp || !exp.date) return false;
+    const parts = String(exp.date).trim().split('-');
+    if (parts.length >= 2) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1; // 0-based
+        return y === targetYear && m === targetMonth;
+    }
+    const d = new Date(exp.date);
+    if (!isNaN(d.getTime())) {
+        return d.getFullYear() === targetYear && d.getMonth() === targetMonth;
+    }
+    return false;
+}
 
+function ensureHistoryMonthInitialized() {
+    if (isHistoryAllTime) return;
+    if (hasUserChangedHistoryMonth) return;
+    const now = new Date();
+    const currentY = now.getFullYear();
+    const currentM = now.getMonth();
+
+    // Nếu tháng hiện tại có giao dịch hoặc chưa có dữ liệu giao dịch nào
+    const hasCurrentMonth = state.expenses && state.expenses.some(exp => expenseBelongsToMonth(exp, currentY, currentM));
+    if (hasCurrentMonth || !state.expenses || state.expenses.length === 0) {
+        historyYear = currentY;
+        historyMonth = currentM;
+        return;
+    }
+
+    // Nếu tháng hiện tại trống nhưng có giao dịch ở tháng khác, ưu tiên hiển thị tháng có giao dịch mới nhất
+    const sorted = [...state.expenses].filter(e => e && e.date).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    if (sorted.length > 0) {
+        const parts = String(sorted[0].date).split('-').map(Number);
+        if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            historyYear = parts[0];
+            historyMonth = parts[1] - 1;
+        }
+    }
+}
+
+function changeHistoryMonth(delta) {
+    if (isHistoryAllTime) {
+        isHistoryAllTime = false;
+        const now = new Date();
+        historyYear = now.getFullYear();
+        historyMonth = now.getMonth();
+    }
+    hasUserChangedHistoryMonth = true;
+    historyMonth += delta;
+    if (historyMonth < 0) {
+        historyMonth = 11;
+        historyYear--;
+    } else if (historyMonth > 11) {
+        historyMonth = 0;
+        historyYear++;
+    }
+    renderHistoryList();
+}
+
+function handleHistoryMonthPickerChange(e) {
+    if (!e || !e.target || !e.target.value) return;
+    const parts = e.target.value.split('-').map(Number);
+    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        isHistoryAllTime = false;
+        hasUserChangedHistoryMonth = true;
+        historyYear = parts[0];
+        historyMonth = parts[1] - 1;
+        renderHistoryList();
+    }
+}
+
+// CÁC HÀM XỬ LÝ MODAL CHỌN NHANH THÁNG NĂM & ALL TIME
+function openHistoryMonthModal() {
+    const modal = document.getElementById('history-month-modal');
+    if (!modal) return;
+    historyModalYear = isHistoryAllTime ? new Date().getFullYear() : historyYear;
+    renderHistoryModalContent();
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    if (typeof createLucideIcons === 'function') {
+        createLucideIcons();
+    }
+}
+
+function closeHistoryMonthModal() {
+    const modal = document.getElementById('history-month-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function selectHistoryMonth(y, m) {
+    isHistoryAllTime = false;
+    historyYear = y;
+    historyMonth = m;
+    hasUserChangedHistoryMonth = true;
+    closeHistoryMonthModal();
+    renderHistoryList();
+}
+
+function selectHistoryAllTime() {
+    isHistoryAllTime = true;
+    hasUserChangedHistoryMonth = true;
+    closeHistoryMonthModal();
+    renderHistoryList();
+}
+
+function renderHistoryModalContent() {
+    const yearLabel = document.getElementById('history-modal-year-label');
+    if (yearLabel) {
+        yearLabel.innerText = String(historyModalYear);
+    }
+
+    const allTimeBtn = document.getElementById('btn-history-select-all-time');
+    if (allTimeBtn) {
+        allTimeBtn.classList.toggle('active', isHistoryAllTime);
+        const checkIcon = allTimeBtn.querySelector('.history-all-time-check');
+        if (checkIcon) {
+            checkIcon.style.display = isHistoryAllTime ? 'block' : 'none';
+        }
+    }
+
+    const grid = document.getElementById('history-modal-months-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const now = new Date();
+    const currY = now.getFullYear();
+    const currM = now.getMonth();
+
+    const monthNames = [
+        'Thg 1', 'Thg 2', 'Thg 3', 'Thg 4',
+        'Thg 5', 'Thg 6', 'Thg 7', 'Thg 8',
+        'Thg 9', 'Thg 10', 'Thg 11', 'Thg 12'
+    ];
+
+    // Đếm số lượng giao dịch trong mỗi tháng của năm đang hiển thị
+    const monthCounts = Array(12).fill(0);
+    (state.expenses || []).forEach(exp => {
+        if (!exp || !exp.date) return;
+        const parts = String(exp.date).trim().split('-');
+        if (parts.length >= 2) {
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            if (y === historyModalYear && m >= 0 && m < 12) {
+                monthCounts[m]++;
+            }
+        }
+    });
+
+    for (let m = 0; m < 12; m++) {
+        const cell = document.createElement('button');
+        cell.type = 'button';
+        cell.className = 'history-modal-month-cell';
+
+        const isCurrent = currY === historyModalYear && currM === m;
+        const isSelected = !isHistoryAllTime && historyYear === historyModalYear && historyMonth === m;
+
+        if (isCurrent) cell.classList.add('current-month');
+        if (isSelected) cell.classList.add('selected');
+
+        const count = monthCounts[m];
+        const countText = count > 0 ? `${count} mục` : '';
+
+        cell.innerHTML = `
+            <span>${monthNames[m]}</span>
+            ${countText ? `<span class="history-modal-month-count">${countText}</span>` : ''}
+        `;
+
+        cell.onclick = () => {
+            selectHistoryMonth(historyModalYear, m);
+        };
+
+        grid.appendChild(cell);
+    }
+}
+
+// Gắn window cho truy cập từ mọi nơi
+window.openHistoryMonthModal = openHistoryMonthModal;
+window.closeHistoryMonthModal = closeHistoryMonthModal;
+window.selectHistoryMonth = selectHistoryMonth;
+window.selectHistoryAllTime = selectHistoryAllTime;
+
+// HIỂN THỊ DANH SÁCH LỊCH SỬ (HISTORY TAB - THEO TỪNG THÁNG HOẶC ALL TIME)
+function renderHistoryList() {
     const historyListContainer = document.getElementById('history-spendings-list');
+    if (!historyListContainer) return;
     historyListContainer.innerHTML = '';
 
-    // Lọc dữ liệu theo Từ khóa tìm kiếm
-    let filtered = state.expenses;
+    ensureHistoryMonthInitialized();
 
-    if (state.searchQuery.trim() !== '') {
-        filtered = filtered.filter(exp => expenseMatchesHistorySearch(exp, state.searchQuery));
+    // Cập nhật nhãn tháng trên thanh điều hướng lịch sử
+    const monthLabel = document.getElementById('history-month-label');
+    if (monthLabel) {
+        monthLabel.innerText = isHistoryAllTime ? 'Tất cả (All Time)' : `Tháng ${historyMonth + 1}/${historyYear}`;
+    }
+    const monthPicker = document.getElementById('history-month-picker');
+    if (monthPicker) {
+        const mm = String(historyMonth + 1).padStart(2, '0');
+        monthPicker.value = `${historyYear}-${mm}`;
+    }
+
+    // Lọc dữ liệu: Nếu là All Time thì lấy toàn bộ danh sách, ngược lại lọc theo Tháng/Năm
+    let filtered = isHistoryAllTime
+        ? [...(state.expenses || [])]
+        : (state.expenses || []).filter(exp => expenseBelongsToMonth(exp, historyYear, historyMonth));
+
+    // Lọc tiếp theo từ khóa tìm kiếm (nếu có)
+    if (state.searchQuery && state.searchQuery.trim() !== '') {
+        if (typeof expenseMatchesHistorySearch === 'function') {
+            filtered = filtered.filter(exp => expenseMatchesHistorySearch(exp, state.searchQuery));
+        } else {
+            const query = state.searchQuery.toLowerCase().trim();
+            filtered = filtered.filter(exp => 
+                (exp.title && exp.title.toLowerCase().includes(query)) || 
+                (exp.amount && exp.amount.toString().includes(query)) ||
+                (exp.category && exp.category.toLowerCase().includes(query)) ||
+                (exp.date && String(exp.date).includes(query))
+            );
+        }
     }
 
     if (filtered.length === 0) {
-        historyListContainer.innerHTML = `
-            <div class="empty-state">
-                <i data-lucide="search-code"></i>
-                <p>Không tìm thấy khoản chi tiêu nào phù hợp.</p>
-            </div>
-        `;
-        lucide.createIcons();
+        if (state.searchQuery && state.searchQuery.trim() !== '') {
+            const scopeText = isHistoryAllTime ? 'toàn bộ lịch sử' : `Tháng ${historyMonth + 1}/${historyYear}`;
+            historyListContainer.innerHTML = `
+                <div class="empty-state" style="padding: 32px 16px; text-align: center; color: var(--text-secondary);">
+                    <i data-lucide="search-x" style="width: 36px; height: 36px; margin: 0 auto 10px; opacity: 0.6; display: block;"></i>
+                    <p style="margin: 0; font-size: 0.88rem;">Không tìm thấy khoản chi tiêu nào phù hợp trong ${scopeText}.</p>
+                </div>
+            `;
+        } else {
+            if (isHistoryAllTime) {
+                historyListContainer.innerHTML = `
+                    <div class="empty-state" style="padding: 32px 16px; text-align: center; color: var(--text-secondary);">
+                        <i data-lucide="calendar-off" style="width: 36px; height: 36px; margin: 0 auto 10px; opacity: 0.6; display: block;"></i>
+                        <p style="margin: 0; font-size: 0.88rem;">Chưa có chi tiêu nào được ghi nhận trong toàn bộ lịch sử.</p>
+                    </div>
+                `;
+            } else {
+                historyListContainer.innerHTML = `
+                    <div class="empty-state" style="padding: 32px 16px; text-align: center; color: var(--text-secondary);">
+                        <i data-lucide="calendar-off" style="width: 36px; height: 36px; margin: 0 auto 10px; opacity: 0.6; display: block;"></i>
+                        <p style="margin: 0; font-size: 0.88rem;">Chưa có chi tiêu nào trong <strong>Tháng ${historyMonth + 1}/${historyYear}</strong>.</p>
+                    </div>
+                `;
+            }
+        }
+        createLucideIcons();
         return;
     }
 
@@ -2042,6 +2614,8 @@ function setCurrentSupabaseUser(user) {
     const nextUserId = user && user.id ? user.id : null;
     if (state.currentUserId === nextUserId) return;
 
+    expenseFetchSequence++;
+    expenseRevision++;
     state.currentUserId = nextUserId;
     if (nextUserId) {
         loadExpenseDataForCurrentUser();
@@ -2063,9 +2637,11 @@ function setCurrentSupabaseUser(user) {
 // Kiểm tra phiên đăng nhập Supabase Auth
 async function checkAuthSession() {
     if (!supabaseClient) return;
-    
+    const userAtStart = state.currentUserId;
     try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (state.currentUserId !== userAtStart) return;
         if (session && session.user) {
             setCurrentSupabaseUser(session.user);
             hideLoginScreen();
@@ -2187,9 +2763,12 @@ async function handleLogout() {
     if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi ứng dụng?")) {
         if (supabaseClient) {
             try {
-                await supabaseClient.auth.signOut();
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
             } catch (e) {
-                console.warn("Lỗi đăng xuất:", e);
+                console.error("Lỗi đăng xuất:", e);
+                alert('Đăng xuất chưa thành công. Vui lòng kiểm tra mạng và thử lại.');
+                return;
             }
         }
         setCurrentSupabaseUser(null);
@@ -2200,8 +2779,19 @@ async function handleLogout() {
 
 // Khởi tạo Supabase Client và Đăng ký Real-time listener & Auth
 function initSupabase() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm && !loginForm.dataset.authBound) {
+        loginForm.addEventListener('submit', handleLogin);
+        loginForm.dataset.authBound = 'true';
+    }
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout && !btnLogout.dataset.authBound) {
+        btnLogout.addEventListener('click', handleLogout);
+        btnLogout.dataset.authBound = 'true';
+    }
     if (typeof supabase === 'undefined') {
         console.warn("Supabase SDK chưa nạp.");
+        showLoginError('Không tải được kết nối Supabase. Vui lòng kiểm tra mạng và tải lại trang.');
         return;
     }
     
@@ -2214,19 +2804,6 @@ function initSupabase() {
         });
         clientOwner.__QLCT_SUPABASE_CLIENT = supabaseClient;
         
-        // Đăng ký Event Listeners cho Login Form và Logout Button
-        const loginForm = document.getElementById('login-form');
-        if (loginForm && !loginForm.dataset.authBound) {
-            loginForm.addEventListener('submit', handleLogin);
-            loginForm.dataset.authBound = 'true';
-        }
-        
-        const btnLogout = document.getElementById('btn-logout');
-        if (btnLogout && !btnLogout.dataset.authBound) {
-            btnLogout.addEventListener('click', handleLogout);
-            btnLogout.dataset.authBound = 'true';
-        }
-        
         // Lắng nghe sự thay đổi trạng thái xác thực từ Supabase Auth
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
@@ -2234,9 +2811,14 @@ function initSupabase() {
                 hideLoginScreen();
                 showLogoutButton();
                 setupRealtimeSubscription();
+                if (event === 'SIGNED_IN') fetchExpensesFromSupabase();
                 fetchSaversFromSupabase();
             } else if (event === 'SIGNED_OUT') {
                 setCurrentSupabaseUser(null);
+                if (supabaseSubscription) {
+                    supabaseClient.removeChannel(supabaseSubscription);
+                    supabaseSubscription = null;
+                }
                 showLoginScreen();
                 hideLogoutButton();
             }
@@ -2254,54 +2836,57 @@ function initSupabase() {
 // nếu bảng Supabase được mở rộng thêm trong tương lai.
 const EXPENSE_SELECT_FIELDS = 'id,user_id,date,title,amount,category,created_at';
 
-// Lấy danh sách chi tiêu từ Supabase với Timeout 3.5s cực kỳ an toàn
+// Supabase giới hạn số dòng mỗi lần đọc; tải đủ các trang trước khi thay dữ liệu trên màn hình.
 async function fetchExpensesFromSupabase() {
     if (!supabaseClient || !state.currentUserId) return;
-
-    // Timeout 3.5s bằng AbortController để ngăn iOS bị đơ/treo mạng
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
-
+    const userId = state.currentUserId;
+    const revision = expenseRevision;
+    const sequence = ++expenseFetchSequence;
+    const pageSize = 1000;
+    const allExpenses = [];
     try {
-        const { data, error } = await supabaseClient
-            .from('expenses')
-            .select(EXPENSE_SELECT_FIELDS)
-            .eq('user_id', state.currentUserId)
-            .abortSignal(controller.signal);
-            
-        clearTimeout(timeoutId);
-            
-        if (error) throw error;
-        
-        if (data && Array.isArray(data)) {
-            // Hợp nhất dữ liệu Cloud và Local (không xóa mất khoản vừa tạo)
-            mergeLocalAndRemoteExpenses(data);
+        for (let offset = 0; ;) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            let result;
+            try {
+                result = await supabaseClient
+                    .from('expenses')
+                    .select(EXPENSE_SELECT_FIELDS)
+                    .eq('user_id', userId)
+                    .order('id', { ascending: true })
+                    .range(offset, offset + pageSize - 1)
+                    .abortSignal(controller.signal);
+            } finally {
+                clearTimeout(timeoutId);
+            }
+            if (result.error) throw result.error;
+            if (!Array.isArray(result.data)) throw new Error('Supabase không trả danh sách khoản chi.');
+            allExpenses.push(...result.data);
+            if (result.data.length === 0) break;
+            offset += result.data.length;
+            if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
         }
+        if (state.currentUserId !== userId || sequence !== expenseFetchSequence) return;
+        if (revision !== expenseRevision || expenseWriteBusy) {
+            if (!expenseWriteBusy) fetchExpensesFromSupabase();
+            return;
+        }
+        mergeLocalAndRemoteExpenses(allExpenses);
     } catch (err) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-            console.warn("⚡ Fetch Supabase quá 3.5s - Tự động ưu tiên dữ liệu bộ nhớ máy.");
-        } else {
-            console.warn("Lỗi fetch Supabase:", err.message || err);
+        if (state.currentUserId === userId && sequence === expenseFetchSequence) {
+            console.error('Lỗi tải khoản chi từ Supabase:', err);
+            alert('Không tải được dữ liệu thu chi từ Supabase. Vui lòng kiểm tra mạng và tải lại trang.');
         }
     }
 }
 
-// Hợp nhất dữ liệu cloud và local
+// Dữ liệu Supabase là nguồn chuẩn; không gộp lại khoản cũ chỉ còn trong bộ nhớ máy.
 function mergeLocalAndRemoteExpenses(remoteData) {
-    const remoteMap = new Map();
-    remoteData.forEach(item => {
-        if (item && item.id) remoteMap.set(item.id, item);
-    });
-
-    // Keep only unsynced records owned by the current account.
-    state.expenses.forEach(localItem => {
-        if (localItem && localItem.id && localItem.user_id === state.currentUserId && !remoteMap.has(localItem.id)) {
-            remoteMap.set(localItem.id, localItem);
-        }
-    });
-
-    state.expenses = Array.from(remoteMap.values());
+    preserveUnverifiedLocalExpenses(remoteData);
+    state.expenses = remoteData
+        .filter(item => item && item.id && item.user_id === state.currentUserId)
+        .map(normalizeExpenseRecord);
     sortExpenses();
     saveData();
     updateUI();
@@ -2314,24 +2899,34 @@ function handleRealtimeDbChange(payload) {
     const newRecord = payload.new;
     const oldRecord = payload.old;
 
+    if (eventType === 'DELETE' && oldRecord && !oldRecord.user_id) {
+        // Một số cấu hình Realtime chỉ gửi khóa chính của dòng đã xóa.
+        fetchExpensesFromSupabase();
+        return;
+    }
     const changedRecord = eventType === 'DELETE' ? oldRecord : newRecord;
     if (!changedRecord || changedRecord.user_id !== state.currentUserId) return;
     
     if (eventType === 'INSERT') {
-        if (!state.expenses.some(e => e.id === newRecord.id)) {
-            state.expenses.unshift(newRecord);
+        if (!state.expenses.some(e => e.id === String(newRecord.id))) {
+            state.expenses.unshift(normalizeExpenseRecord(newRecord));
             sortExpenses();
         }
     } else if (eventType === 'DELETE') {
-        state.expenses = state.expenses.filter(e => e.id !== oldRecord.id);
+        state.expenses = state.expenses.filter(e => e.id !== String(oldRecord.id));
     } else if (eventType === 'UPDATE') {
-        const idx = state.expenses.findIndex(e => e.id === newRecord.id);
+        const idx = state.expenses.findIndex(e => e.id === String(newRecord.id));
         if (idx !== -1) {
-            state.expenses[idx] = newRecord;
+            state.expenses[idx] = normalizeExpenseRecord(newRecord);
             sortExpenses();
+        } else {
+            expenseRevision++;
+            fetchExpensesFromSupabase();
+            return;
         }
     }
     
+    expenseRevision++;
     saveData();
     updateUI();
 }
