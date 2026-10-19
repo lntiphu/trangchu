@@ -6007,6 +6007,9 @@ function initSupabase() {
                 setupRealtimeSubscription();
                 if (userChanged || event === 'SIGNED_IN') fetchExpensesFromSupabase();
                 fetchSaversFromSupabase();
+                // INITIAL_SESSION có thể đến trước getSession(); khi đó
+                // checkAuthSession() thoát sớm và cần mở trang chọn chức năng tại đây.
+                if (userChanged) showOptionsModal();
             } else if (event === 'SIGNED_OUT') {
                 setCurrentSupabaseUser(null);
                 if (supabaseSubscription) {
