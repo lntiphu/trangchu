@@ -797,15 +797,13 @@ function expenseMatchesHistorySearch(expense, rawQuery) {
 function formatDateTimeVietnamese(exp) {
     if (!exp) return '';
     let d;
-    if (exp.created_at) {
-        d = new Date(exp.created_at);
-    } else if (exp.id && exp.id.startsWith('exp-')) {
-        const parts = exp.id.split('-');
-        const ts = parseInt(parts[1], 10);
-        if (!isNaN(ts)) {
-            d = new Date(ts);
-        }
+    // ID được tạo bằng Date.now() đúng lúc người dùng lưu khoản thu chi.
+    // Ưu tiên mốc này vì created_at trên DB có thể lệch do cấu hình múi giờ.
+    const timestamp = /^exp-(\d{13})-/.exec(String(exp.id || ''));
+    if (timestamp) {
+        d = new Date(Number(timestamp[1]));
     }
+    if ((!d || isNaN(d.getTime())) && exp.created_at) d = new Date(exp.created_at);
     
     const vn = d && !isNaN(d.getTime()) ? getVietnamDateParts(d) : null;
     if (!vn) {
