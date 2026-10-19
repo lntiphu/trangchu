@@ -1166,6 +1166,18 @@
         }
     }
 
+    function getUpcomingAnniversaryTime(item, todayVn) {
+        const clean = String(item.event_date || '').slice(0, 10);
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(clean);
+        if (!match) return Infinity;
+        const [, year, month, day] = match.map(Number);
+        let targetMs = Date.UTC(item.repeat_yearly ? todayVn.year : year, month - 1, day);
+        if (item.repeat_yearly && targetMs < todayVn.midnightUtcMs) {
+            targetMs = Date.UTC(todayVn.year + 1, month - 1, day);
+        }
+        return targetMs >= todayVn.midnightUtcMs ? targetMs : Infinity;
+    }
+
     function updateUpcomingAnniversaryBanner() {
         const card = document.getElementById('her-anniversary-hero-card');
         const titleEl = document.getElementById('her-anni-hero-title');
@@ -1179,26 +1191,11 @@
 
         const todayVn = getVietnamTodayParts();
 
-        // Tìm sự kiện có số ngày còn lại nhỏ nhất
-        let closestEvent = null;
-        let minDiff = Infinity;
-
-        dates.forEach(d => {
-            if (!d.event_date) return;
-            try {
-                const clean = String(d.event_date).slice(0, 10);
-                const [, month, day] = clean.split('-').map(Number);
-                let targetMs = Date.UTC(todayVn.year, month - 1, day);
-                if (targetMs < todayVn.midnightUtcMs) {
-                    targetMs = Date.UTC(todayVn.year + 1, month - 1, day);
-                }
-                const diff = Math.round((targetMs - todayVn.midnightUtcMs) / (1000 * 60 * 60 * 24));
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestEvent = d;
-                }
-            } catch {}
-        });
+        const closestEvent = [...dates].sort((a, b) =>
+            getUpcomingAnniversaryTime(a, todayVn) - getUpcomingAnniversaryTime(b, todayVn)
+        )[0];
+        const closestTime = closestEvent ? getUpcomingAnniversaryTime(closestEvent, todayVn) : Infinity;
+        const minDiff = (closestTime - todayVn.midnightUtcMs) / (1000 * 60 * 60 * 24);
 
         if (closestEvent && minDiff < 366) {
             card.style.display = currentDateSubtab === 'anniversary' ? 'flex' : 'none';
@@ -1227,7 +1224,11 @@
                 return;
             }
 
-            container.innerHTML = dates.map(item => `
+            const todayVn = getVietnamTodayParts();
+            const sortedDates = [...dates].sort((a, b) =>
+                getUpcomingAnniversaryTime(a, todayVn) - getUpcomingAnniversaryTime(b, todayVn)
+            );
+            container.innerHTML = sortedDates.map(item => `
                 <div class="her-item-card her-date-card">
                     <div class="her-item-content">
                         <div class="her-item-header">
