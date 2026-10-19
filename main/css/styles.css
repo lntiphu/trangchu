@@ -7072,6 +7072,89 @@ html, body {
     font-weight: 800;
 }
 
+/* Thanh chuyển tab Wishlist / Đã mua */
+.wishlist-filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 4px 0 12px;
+}
+
+.wishlist-filter-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    background: rgba(173, 86, 115, 0.08);
+    border: 1px solid rgba(173, 86, 115, 0.14);
+    border-radius: 14px;
+}
+
+.wishlist-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #6d4b58;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    white-space: nowrap;
+}
+
+.wishlist-filter-tab i,
+.wishlist-filter-tab svg {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.2;
+}
+
+.wishlist-filter-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.6);
+    color: #ad5673;
+}
+
+.wishlist-filter-tab.active {
+    background: #FFFFFF;
+    color: #ad5673;
+    box-shadow: 0 2px 8px rgba(173, 86, 115, 0.16);
+}
+
+.wishlist-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: rgba(173, 86, 115, 0.12);
+    color: #ad5673;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.wishlist-filter-tab.active .wishlist-tab-badge {
+    background: #ad5673;
+    color: #FFFFFF;
+}
+
+#btn-wishlist-tab-bought.active {
+    color: #059669;
+}
+
+#btn-wishlist-tab-bought.active .wishlist-tab-badge {
+    background: #10B981;
+    color: #FFFFFF;
+}
+
 /* Thẻ bảng Wishlist */
 .wishlist-table-card {
     flex: 1 1 auto;
@@ -7133,11 +7216,11 @@ html, body {
 }
 
 .wishlist-col-action {
-    width: 56px;
-    min-width: 56px;
-    max-width: 56px;
+    width: 128px;
+    min-width: 128px;
+    max-width: 140px;
     text-align: center !important;
-    padding: 12px 4px !important;
+    padding: 12px 6px !important;
 }
 
 /* Các hàng trong bảng Wishlist */
@@ -7231,14 +7314,145 @@ html, body {
     line-height: 1.45;
 }
 
-/* Cột 3: Nút Kéo thả / Xóa bên phải cùng */
+/* Cột 3: Nút Kéo thả / Xóa / Đã mua bên phải cùng */
 .wishlist-action-cell {
-    width: 56px;
-    min-width: 56px;
-    max-width: 56px;
+    width: 128px;
+    min-width: 128px;
+    max-width: 140px;
     text-align: center !important;
-    padding: 10px 4px !important;
+    padding: 8px 6px !important;
     vertical-align: middle;
+}
+
+.wishlist-row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Nút "Đã mua" */
+.wishlist-buy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 9px;
+    border-radius: 9px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.28);
+    color: #047857;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    white-space: nowrap;
+}
+
+.wishlist-buy-btn i,
+.wishlist-buy-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2.8;
+}
+
+.wishlist-buy-btn:hover {
+    background: #10B981;
+    color: #FFFFFF;
+    border-color: #10B981;
+    box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
+.wishlist-buy-btn:active {
+    transform: scale(0.95);
+}
+
+/* Nút "Chưa mua" (chuyển lại về Wishlist) */
+.wishlist-unbuy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 9px;
+    border-radius: 9px;
+    background: rgba(173, 86, 115, 0.08);
+    border: 1px solid rgba(173, 86, 115, 0.22);
+    color: #8c3f59;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    white-space: nowrap;
+}
+
+.wishlist-unbuy-btn i,
+.wishlist-unbuy-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2.5;
+}
+
+.wishlist-unbuy-btn:hover {
+    background: #ad5673;
+    color: #FFFFFF;
+    border-color: #ad5673;
+    box-shadow: 0 3px 8px rgba(173, 86, 115, 0.25);
+    transform: translateY(-1px);
+}
+
+.wishlist-unbuy-btn:active {
+    transform: scale(0.95);
+}
+
+/* Huy hiệu check Đã mua */
+.wishlist-rank-bought {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(16, 185, 129, 0.32) !important;
+    color: #059669 !important;
+}
+
+.wishlist-rank-bought i,
+.wishlist-rank-bought svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2.8;
+}
+
+/* Hàng Đã mua */
+.wishlist-table-row.is-bought {
+    background: rgba(16, 185, 129, 0.035);
+}
+
+.wishlist-table-row.is-bought:hover:not(.support-empty-row) {
+    background: rgba(16, 185, 129, 0.065);
+}
+
+.wishlist-title-text.is-bought {
+    color: #718096;
+    text-decoration: line-through;
+    text-decoration-color: rgba(16, 185, 129, 0.55);
+    text-decoration-thickness: 1.5px;
+}
+
+/* Highlight animation khi vừa chuyển sang tab mới */
+@keyframes wishlistJustMoved {
+    0% {
+        background: rgba(16, 185, 129, 0.28);
+        box-shadow: inset 4px 0 0 #10B981;
+    }
+    100% {
+        background: rgba(16, 185, 129, 0.035);
+        box-shadow: none;
+    }
+}
+
+.wishlist-row-highlight {
+    animation: wishlistJustMoved 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 /* Tay nắm kéo (Touch-friendly Drag Handle) */
@@ -7246,13 +7460,13 @@ html, body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
     margin: 0 auto;
     padding: 0;
     border: 1px solid rgba(173, 86, 115, 0.14);
-    border-radius: 11px;
+    border-radius: 9px;
     background: rgba(173, 86, 115, 0.05);
     color: #ad5673;
     cursor: grab;
@@ -7279,8 +7493,8 @@ html, body {
 
 .wishlist-drag-handle i,
 .wishlist-drag-handle svg {
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
     stroke-width: 2.2;
 }
 
@@ -7379,6 +7593,71 @@ html, body {
     box-shadow: 0 0 0 3px rgba(191, 111, 134, 0.16);
 }
 
+/* Checkbox trạng thái Đã mua trong Form */
+.wishlist-status-field {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    margin-top: 12px;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wishlist-status-field:hover {
+    background: rgba(16, 185, 129, 0.09);
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+.wishlist-status-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0;
+}
+
+.wishlist-status-checkbox {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.wishlist-checkbox-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid rgba(16, 185, 129, 0.45);
+    background: #FFFFFF;
+    color: transparent;
+    transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.wishlist-checkbox-custom i,
+.wishlist-checkbox-custom svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 3.2;
+}
+
+.wishlist-status-checkbox:checked + .wishlist-checkbox-custom {
+    background: #10B981;
+    border-color: #10B981;
+    color: #FFFFFF;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+}
+
 .wishlist-save-btn {
     background: linear-gradient(135deg, #e46487 0%, #b8325a 100%) !important;
     box-shadow: 0 6px 18px rgba(184, 50, 90, 0.35) !important;
@@ -7398,13 +7677,22 @@ html, body {
     #wishlist-modal .wishlist-page-title h2 { font-size: 1.12rem; }
     .wishlist-count-pill { height: 38px; padding: 0 10px; font-size: 0.76rem; border-radius: 12px; }
     .wishlist-col-rank,
-    .wishlist-rank-cell { width: 50px; min-width: 50px; max-width: 50px; }
+    .wishlist-rank-cell { width: 48px; min-width: 48px; max-width: 48px; }
     .wishlist-col-action,
-    .wishlist-action-cell { width: 50px; min-width: 50px; max-width: 50px; }
-    .wishlist-drag-handle { width: 34px; height: 34px; min-width: 34px; }
-    .wishlist-row-select { width: 34px; height: 34px; min-width: 34px; }
+    .wishlist-action-cell { width: 118px; min-width: 118px; max-width: 124px; padding: 8px 3px !important; }
+    .wishlist-drag-handle { width: 30px; height: 30px; min-width: 30px; }
+    .wishlist-row-select { width: 32px; height: 32px; min-width: 32px; }
+    .wishlist-buy-btn,
+    .wishlist-unbuy-btn { height: 30px; padding: 0 7px; font-size: 0.72rem; }
     .wishlist-rank { width: 28px; height: 28px; font-size: 0.74rem; }
-    .wishlist-title-cell { font-size: 0.88rem; padding: 11px 10px !important; }
+    .wishlist-title-cell { font-size: 0.88rem; padding: 11px 8px !important; }
+}
+
+@media (max-width: 380px) {
+    .wishlist-col-action,
+    .wishlist-action-cell { width: 108px; min-width: 108px; max-width: 114px; }
+    .wishlist-buy-btn,
+    .wishlist-unbuy-btn { padding: 0 5px; font-size: 0.7rem; }
 }
 
 
