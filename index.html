@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=97">
+    <link rel="stylesheet" href="main/css/styles.css?v=98">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -863,13 +863,29 @@
             </div>
             <p class="support-storage-notice" id="wishlist-storage-notice" role="status" aria-live="polite" hidden></p>
 
+            <!-- THANH CHUYỂN TAB: WISHLIST / ĐÃ MUA -->
+            <div class="wishlist-filter-row">
+                <div class="wishlist-filter-tabs" role="tablist" aria-label="Phân loại Wishlist">
+                    <button type="button" class="wishlist-filter-tab active" id="btn-wishlist-tab-pending" data-wishlist-tab="pending" role="tab" aria-selected="true">
+                        <i data-lucide="heart"></i>
+                        <span>Wishlist</span>
+                        <span class="wishlist-tab-badge" id="wishlist-tab-badge-pending">0</span>
+                    </button>
+                    <button type="button" class="wishlist-filter-tab" id="btn-wishlist-tab-bought" data-wishlist-tab="bought" role="tab" aria-selected="false">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>Đã mua</span>
+                        <span class="wishlist-tab-badge" id="wishlist-tab-badge-bought">0</span>
+                    </button>
+                </div>
+            </div>
+
             <div class="support-table-card wishlist-table-card">
                 <table class="support-table wishlist-table" aria-label="Danh sách Wishlist">
                     <thead>
                         <tr>
-                            <th class="wishlist-col-rank">TOP</th>
+                            <th class="wishlist-col-rank" id="wishlist-th-rank">TOP</th>
                             <th class="wishlist-col-content">NỘI DUNG WISHLIST</th>
-                            <th class="wishlist-col-action" title="Thứ tự"></th>
+                            <th class="wishlist-col-action" id="wishlist-th-action" title="Thao tác">THAO TÁC</th>
                         </tr>
                     </thead>
                     <tbody id="wishlist-table-body" aria-live="polite"></tbody>
@@ -898,6 +914,13 @@
                         Tên Wishlist / Mục tiêu
                     </label>
                     <input type="text" id="wishlist-entry-title" maxlength="160" placeholder="Ví dụ: Mua máy ảnh mới, Đi Đà Lạt..." required>
+                </div>
+                <div class="support-form-field wishlist-form-field wishlist-status-field" id="wishlist-status-field">
+                    <label class="wishlist-status-checkbox-label" for="wishlist-entry-bought">
+                        <input type="checkbox" id="wishlist-entry-bought" class="wishlist-status-checkbox">
+                        <span class="wishlist-checkbox-custom"><i data-lucide="check"></i></span>
+                        <span class="wishlist-status-label-text">Đã mua mục này</span>
+                    </label>
                 </div>
                 <p class="support-entry-form-error" id="wishlist-entry-form-error" role="alert" hidden></p>
                 <div class="support-entry-form-actions">
@@ -2664,7 +2687,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=83" defer></script>
+    <script src="main/js/app.js?v=84" defer></script>
     <script src="main/js/notes.js?v=4" defer></script>
     <script src="main/js/handbook.js?v=7" defer></script>
     <script src="main/js/her.js?v=13" defer></script>
