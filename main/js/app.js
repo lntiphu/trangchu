@@ -1572,9 +1572,12 @@ function setupExpenseDatePicker() {
 }
 
 // CÁC HÀM MỞ/ĐÓNG MODAL
-function openAddModal() {
-    // Đặt lại ngày mặc định là hôm nay và hiển thị dạng dd/mm/yyyy
-    syncExpenseDateDisplay(getTodayDateString());
+function openAddModal(initialDate) {
+    // Đặt lại ngày mặc định là hôm nay hoặc ngày được truyền vào (dạng YYYY-MM-DD)
+    const validDate = (typeof initialDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(initialDate))
+        ? initialDate
+        : getTodayDateString();
+    syncExpenseDateDisplay(validDate);
     const modal = document.getElementById('add-expense-modal');
     if (!modal || modal.classList.contains('active')) return;
     modal.classList.add('active');
@@ -3125,6 +3128,8 @@ const LUCIDE_EMOJI_FALLBACKS = {
     "edit-3": "✏️",
     "minus": "➖",
     "wallet": "👛",
+    "zap": "⚡",
+    "trending-up": "📈",
     "power": "⏻"
 };
 
