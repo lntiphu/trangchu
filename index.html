@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="main/css/styles.css?v=98">
+    <link rel="stylesheet" href="main/css/styles.css?v=101">
 </head>
 <body>
     <!-- Debug Console Overlay to catch local browser errors -->
@@ -95,17 +95,14 @@
                 <!-- Summary Cards Row -->
                 <div class="summary-cards">
                     <div class="card card-today">
-                        <div class="card-icon"><i data-lucide="calendar-days" aria-hidden="true"></i></div>
                         <span class="card-label">Hôm nay</span>
                         <h2 class="card-amount" id="sum-today">0 VNĐ</h2>
                     </div>
                     <div class="card card-week">
-                        <div class="card-icon"><i data-lucide="trending-up"></i></div>
                         <span class="card-label">Tuần này</span>
                         <h2 class="card-amount" id="sum-week">0 VNĐ</h2>
                     </div>
                     <div class="card card-month">
-                        <div class="card-icon"><i data-lucide="credit-card"></i></div>
                         <span class="card-label">Tháng này</span>
                         <h2 class="card-amount" id="sum-month">0 VNĐ</h2>
                     </div>
@@ -129,25 +126,37 @@
                             <div class="shortcut-icon-bubble">
                                 <i data-lucide="plus-circle"></i>
                             </div>
-                            <span class="shortcut-label">Ghi khoản chi mới</span>
+                            <span class="shortcut-label">
+                                <span class="shortcut-text-full">Ghi khoản chi mới</span>
+                                <span class="shortcut-text-short">Ghi chi</span>
+                            </span>
                         </button>
                         <button type="button" id="btn-open-spending-analysis" class="shortcut-pill shortcut-pill-analysis" onclick="openSpendingAnalysisPage()">
                             <div class="shortcut-icon-bubble">
                                 <i data-lucide="bar-chart-3"></i>
                             </div>
-                            <span class="shortcut-label">Toàn cảnh tài chính</span>
+                            <span class="shortcut-label">
+                                <span class="shortcut-text-full">Toàn cảnh tài chính</span>
+                                <span class="shortcut-text-short">Toàn cảnh</span>
+                            </span>
                         </button>
                         <button type="button" class="shortcut-pill shortcut-pill-history" onclick="switchTab('history')">
                             <div class="shortcut-icon-bubble">
                                 <i data-lucide="receipt"></i>
                             </div>
-                            <span class="shortcut-label">Xem lịch sử chi</span>
+                            <span class="shortcut-label">
+                                <span class="shortcut-text-full">Xem lịch sử chi</span>
+                                <span class="shortcut-text-short">Lịch sử</span>
+                            </span>
                         </button>
                         <button type="button" class="shortcut-pill shortcut-pill-home" onclick="showWelcomeHubPage()">
                             <div class="shortcut-icon-bubble">
                                 <i data-lucide="layout-grid"></i>
                             </div>
-                            <span class="shortcut-label">Trung tâm chức năng</span>
+                            <span class="shortcut-label">
+                                <span class="shortcut-text-full">Trung tâm chức năng</span>
+                                <span class="shortcut-text-short">Chức năng</span>
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -2687,7 +2696,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="main/js/chart-config.js?v=26" defer></script>
-    <script src="main/js/app.js?v=84" defer></script>
+    <script src="main/js/app.js?v=85" defer></script>
     <script src="main/js/notes.js?v=4" defer></script>
     <script src="main/js/handbook.js?v=7" defer></script>
     <script src="main/js/her.js?v=13" defer></script>
