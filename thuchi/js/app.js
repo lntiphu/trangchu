@@ -1563,8 +1563,8 @@ function renderDashboardCalendar() {
             showDayExpensesDetail(dateStr);
         };
         cell.innerHTML = `
+            ${amount > 0 ? `<span class="calendar-day-amount ${tierClass}">${formatShortAmount(amount)}</span>` : ''}
             <span class="calendar-day-number">${day}</span>
-            <span class="calendar-day-amount ${tierClass}">${amount > 0 ? '-' + formatShortAmount(amount) : ''}</span>
         `;
         grid.appendChild(cell);
     }
@@ -1807,8 +1807,8 @@ function renderCalendar() {
         const shortAmtStr = formatShortAmount(amount);
 
         cell.innerHTML = `
+            ${shortAmtStr ? `<span class="calendar-day-amount ${tierClass}">${shortAmtStr}</span>` : ''}
             <span class="calendar-day-number">${day}</span>
-            <span class="calendar-day-amount ${tierClass}">${shortAmtStr ? '-' + shortAmtStr : ''}</span>
         `;
 
         daysGridContainer.appendChild(cell);
