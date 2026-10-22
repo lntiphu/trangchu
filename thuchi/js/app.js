@@ -1548,8 +1548,9 @@ function renderDashboardCalendar() {
         const isToday = today.year === dashboardCalendarYear
             && today.month === dashboardCalendarMonth
             && today.day === day;
+        const tierClass = getExpenseTierClass(amount);
         const cell = document.createElement('div');
-        cell.className = `calendar-day-cell${isToday ? ' today' : ''}${amount > 0 ? ' has-expense' : ''}${dayOfWeek === 0 ? ' sunday' : ''}`;
+        cell.className = `calendar-day-cell${isToday ? ' today' : ''}${amount > 0 ? ' has-expense ' + tierClass : ''}${dayOfWeek === 0 ? ' sunday' : ''}`;
 
         const monthStr = String(dashboardCalendarMonth + 1).padStart(2, '0');
         const dayStr = String(day).padStart(2, '0');
@@ -1563,7 +1564,7 @@ function renderDashboardCalendar() {
         };
         cell.innerHTML = `
             <span class="calendar-day-number">${day}</span>
-            <span class="calendar-day-amount">${amount > 0 ? '-' + formatShortAmount(amount) : ''}</span>
+            <span class="calendar-day-amount ${tierClass}">${amount > 0 ? '-' + formatShortAmount(amount) : ''}</span>
         `;
         grid.appendChild(cell);
     }
@@ -1625,6 +1626,15 @@ function formatShortAmount(amount) {
     }
     return amount.toString();
 }
+
+function getExpenseTierClass(amount) {
+    const val = Number(amount) || 0;
+    if (val <= 0) return '';
+    if (val < 120000) return 'expense-green';
+    if (val <= 500000) return 'expense-yellow';
+    return 'expense-red';
+}
+window.getExpenseTierClass = getExpenseTierClass;
 
 function showDayExpensesDetail(dayStr) {
     calendarSelectedDay = dayStr;
@@ -1782,7 +1792,8 @@ function renderCalendar() {
         if (isToday) classNames += ' today';
 
         const amount = dayTotals[day] || 0;
-        if (amount > 0) classNames += ' has-expense';
+        const tierClass = getExpenseTierClass(amount);
+        if (amount > 0) classNames += ` has-expense ${tierClass}`;
 
         cell.className = classNames;
         cell.style.cursor = 'pointer';
@@ -1797,7 +1808,7 @@ function renderCalendar() {
 
         cell.innerHTML = `
             <span class="calendar-day-number">${day}</span>
-            <span class="calendar-day-amount">${shortAmtStr ? '-' + shortAmtStr : ''}</span>
+            <span class="calendar-day-amount ${tierClass}">${shortAmtStr ? '-' + shortAmtStr : ''}</span>
         `;
 
         daysGridContainer.appendChild(cell);
