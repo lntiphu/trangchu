@@ -463,79 +463,129 @@ html, body {
 .summary-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 18px;
 }
 
 .card {
     border-radius: var(--card-radius);
-    padding: 16px 12px;
+    padding: 14px 12px 12px 12px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     border: 1px solid rgba(52, 66, 55, 0.08);
     position: relative;
     overflow: hidden;
     transition: var(--transition-bounce);
     box-shadow: 0 4px 18px rgba(52, 66, 55, 0.04);
-    min-height: 82px;
+    min-height: 104px;
+    box-sizing: border-box;
 }
 
-.card:active { transform: scale(0.96); }
+.card:active { transform: scale(0.97); }
 
-.card-icon {
-    display: none;
+.card-top-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
 }
 
-/* Thẻ 1 (Hôm nay): Deep Olive Forest Green Card */
+.card-icon-pill {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon-pill i,
+.card-icon-pill svg {
+    width: 13px;
+    height: 13px;
+}
+
+.card-trend-caption {
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin-top: 2px;
+    line-height: 1;
+    letter-spacing: 0.2px;
+}
+
+/* Thẻ 1 (Hôm nay): Deep Emerald Forest Green Hero Card */
 .card-today {
-    background: linear-gradient(145deg, #38493b 0%, #29352c 100%);
-    border-color: rgba(226, 174, 162, 0.22);
-    box-shadow: 0 8px 24px rgba(41, 53, 44, 0.22);
+    background: linear-gradient(150deg, #183e2f 0%, #0e261d 100%);
+    border-color: rgba(74, 222, 128, 0.24);
+    box-shadow: 0 6px 20px rgba(14, 38, 29, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.card-today .card-icon-pill {
+    background: rgba(74, 222, 128, 0.18);
+    color: #4ade80;
 }
 .card-today .card-label {
-    color: rgba(250, 247, 242, 0.82);
+    color: rgba(240, 253, 244, 0.9);
 }
 .card-today .card-amount {
-    color: #F3C3B8 !important;
+    color: #ffffff !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.card-today .card-trend-caption {
+    color: rgba(167, 243, 208, 0.75);
 }
 
-/* Thẻ 2 (Tuần này): Soft Sand Cream Card */
+/* Thẻ 2 (Tuần này): Soft Champagne Cream Card */
 .card-week {
-    background: linear-gradient(145deg, #FAF4ED 0%, #F4ECE3 100%);
-    border-color: rgba(214, 185, 165, 0.45);
-    box-shadow: 0 4px 16px rgba(52, 66, 55, 0.04);
+    background: linear-gradient(150deg, #ffffff 0%, #f7f3ec 100%);
+    border-color: rgba(217, 180, 150, 0.4);
+    box-shadow: 0 4px 16px rgba(52, 66, 55, 0.05), inset 0 1px 0 #ffffff;
+}
+.card-week .card-icon-pill {
+    background: rgba(217, 119, 6, 0.12);
+    color: #d97706;
 }
 .card-week .card-label {
-    color: #6E756D;
+    color: #5d6761;
 }
 .card-week .card-amount {
-    color: #243026 !important;
+    color: #11231a !important;
+}
+.card-week .card-trend-caption {
+    color: #8c9790;
 }
 
-/* Thẻ 3 (Tháng này): Soft Coral Rose Cream Card */
+/* Thẻ 3 (Tháng này): Soft Coral Terracotta Card */
 .card-month {
-    background: linear-gradient(145deg, #FCEEE8 0%, #F5DDD6 100%);
-    border-color: rgba(220, 139, 120, 0.32);
-    box-shadow: 0 4px 16px rgba(220, 139, 120, 0.08);
+    background: linear-gradient(150deg, #fff7f4 0%, #feedea 100%);
+    border-color: rgba(239, 107, 74, 0.3);
+    box-shadow: 0 4px 16px rgba(225, 112, 85, 0.09), inset 0 1px 0 #ffffff;
+}
+.card-month .card-icon-pill {
+    background: rgba(225, 112, 85, 0.16);
+    color: #e17055;
 }
 .card-month .card-label {
-    color: #796C67;
+    color: #83564e;
 }
 .card-month .card-amount {
-    color: #243026 !important;
+    color: #c0392b !important;
+}
+.card-month .card-trend-caption {
+    color: #a4766e;
 }
 
 .card-label {
-    font-size: 0.84rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    letter-spacing: 0.25px;
-    line-height: 1.25;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.15px;
+    line-height: 1.2;
 }
 
 .card-amount {
-    font-size: clamp(1.15rem, 3.8vw, 1.35rem);
+    font-family: var(--font-rounded), var(--ios-font), system-ui, sans-serif;
+    font-size: clamp(1.25rem, 4vw, 1.55rem);
     font-weight: 800;
     white-space: nowrap;
     overflow: hidden;
@@ -2647,23 +2697,26 @@ html, body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: var(--accent-olive);
-    border: 1px solid rgba(52, 66, 55, 0.2);
-    border-radius: 14px;
-    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #1b3325 0%, #112218 100%);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    border-radius: 12px;
+    margin-bottom: 14px;
     font-size: 0.82rem;
     font-weight: 600;
     color: rgba(250, 247, 242, 0.88);
-    box-shadow: 0 6px 18px rgba(52, 66, 55, 0.15);
+    box-shadow: 0 4px 14px rgba(17, 34, 24, 0.2);
 }
 
 .calendar-month-summary strong {
-    font-family: var(--ios-font);
-    color: var(--accent-rose);
-    font-size: 1.2rem;
+    font-family: var(--font-rounded), var(--ios-font), system-ui, sans-serif;
+    color: #fbbf24;
+    text-shadow: 0 1px 8px rgba(251, 191, 36, 0.28);
+    font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: -0.3px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
 }
 
 .calendar-weekdays {
@@ -2694,7 +2747,7 @@ html, body {
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
-    border-radius: 10px;
+    border-radius: 11px;
     padding: 3px;
     cursor: pointer;
     border: 1px solid rgba(52, 66, 55, 0.08);
@@ -2716,31 +2769,31 @@ html, body {
 /* Today: Viền đậm Forest Green bo góc sang trọng chuẩn MONii */
 .calendar-day-cell.today {
     border: 2px solid #1a3c2f !important;
-    border-radius: 10px !important;
+    border-radius: 11px !important;
     background: #ffffff;
-    box-shadow: 0 0 0 1px rgba(26, 60, 47, 0.15);
+    box-shadow: 0 0 0 1.5px rgba(26, 60, 47, 0.22), 0 2px 6px rgba(26, 60, 47, 0.12) !important;
 }
 
 .calendar-day-cell.today .calendar-day-number {
     color: #1a3c2f !important;
-    font-weight: 800 !important;
+    font-weight: 900 !important;
 }
 
 .calendar-day-cell.today.has-expense .calendar-day-number {
-    font-weight: 800 !important;
+    font-weight: 900 !important;
 }
 
 .calendar-day-cell.has-expense:not(.today) {
-    border-color: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Phân loại màu chi tiêu chuẩn MONii: <120k xanh lá | 120k-500k vàng peach | >500k hồng đỏ */
 .calendar-day-cell.expense-green:not(.today) {
-    background: #d5ecd9 !important;
-    border-color: rgba(34, 197, 94, 0.25) !important;
+    background: #dcfce7 !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
 }
 .calendar-day-cell.expense-green .calendar-day-number {
-    color: #1e3a2b !important;
+    color: #15803d !important;
 }
 .calendar-day-cell.expense-green .calendar-day-amount,
 .calendar-day-amount.expense-green {
@@ -2748,11 +2801,11 @@ html, body {
 }
 
 .calendar-day-cell.expense-yellow:not(.today) {
-    background: #fae4ce !important;
-    border-color: rgba(245, 158, 11, 0.25) !important;
+    background: #fef3c7 !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
 }
 .calendar-day-cell.expense-yellow .calendar-day-number {
-    color: #78350f !important;
+    color: #92400e !important;
 }
 .calendar-day-cell.expense-yellow .calendar-day-amount,
 .calendar-day-amount.expense-yellow {
@@ -2760,8 +2813,8 @@ html, body {
 }
 
 .calendar-day-cell.expense-red:not(.today) {
-    background: #fad7db !important;
-    border-color: rgba(239, 68, 68, 0.25) !important;
+    background: #fee2e2 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
 }
 .calendar-day-cell.expense-red .calendar-day-number {
     color: #991b1b !important;
@@ -2773,18 +2826,18 @@ html, body {
 
 /* Khi ngày hôm nay (.today) có chi tiêu */
 .calendar-day-cell.today.expense-green {
-    background: #d5ecd9 !important;
+    background: #dcfce7 !important;
 }
 .calendar-day-cell.today.expense-yellow {
-    background: #fae4ce !important;
+    background: #fef3c7 !important;
 }
 .calendar-day-cell.today.expense-red {
-    background: #fad7db !important;
+    background: #fee2e2 !important;
 }
 
 .calendar-day-cell:not(.empty):not(.today):active {
     background: rgba(52, 66, 55, 0.08);
-    transform: scale(0.95);
+    transform: scale(0.96);
 }
 
 /* Số ngày: Đặt ở góc dưới-trái, font bo tròn SF Pro Rounded / Nunito rõ ràng */
@@ -2792,45 +2845,46 @@ html, body {
     position: absolute;
     bottom: 3px;
     left: 4px;
-    font-family: var(--font-rounded);
-    font-size: 0.68rem;
+    font-family: var(--font-rounded), -apple-system, system-ui, sans-serif;
+    font-size: 0.72rem;
     font-weight: 800;
-    color: #334155;
+    color: #475569;
     line-height: 1;
     letter-spacing: -0.2px;
 }
 
 .calendar-day-cell.has-expense .calendar-day-number {
-    font-size: 0.60rem;
+    font-size: 0.68rem;
     font-weight: 800;
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
 .calendar-day-cell.sunday:not(.has-expense) .calendar-day-number {
-    color: #dc2626;
+    color: #ef4444;
 }
 
 /* Tag Pill Tiền Chi Tiêu: Đặt ở góc trên-phải, bo tròn capsule trắng nổi bật chuẩn MONii */
 .calendar-day-amount {
     position: absolute;
-    top: 3px;
-    right: 3px;
-    font-family: var(--font-rounded);
-    font-size: 0.60rem;
+    top: 2.5px;
+    right: 2.5px;
+    font-family: var(--font-rounded), -apple-system, system-ui, sans-serif;
+    font-size: 0.86rem;
     font-weight: 800;
-    line-height: 1;
-    background: rgba(255, 255, 255, 0.95) !important;
-    padding: 1.5px 3.5px !important;
-    border-radius: 5px !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-    letter-spacing: -0.2px;
+    line-height: 1.05;
+    background: #ffffff !important;
+    padding: 2px 4.5px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.05) !important;
+    letter-spacing: -0.35px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: calc(100% - 6px);
+    max-width: calc(100% - 4px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    z-index: 2;
 }
 
 .calendar-day-expense-item {
@@ -2917,14 +2971,33 @@ html, body {
 }
 
 .dashboard-calendar-summary {
-    margin-bottom: 12px;
-    padding: 9px 12px;
-    font-size: 0.7rem;
-    border-radius: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px 14px;
+    font-size: 0.76rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1b3325 0%, #112218 100%);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    box-shadow: 0 3px 10px rgba(17, 34, 24, 0.2);
+}
+
+.dashboard-calendar-summary span {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(240, 245, 242, 0.88);
 }
 
 .dashboard-calendar-summary strong {
-    font-size: 0.9rem;
+    font-family: var(--font-rounded), var(--ios-font), system-ui, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fbbf24;
+    text-shadow: 0 1px 8px rgba(251, 191, 36, 0.28);
+    line-height: 1.1;
+    letter-spacing: -0.3px;
+    font-variant-numeric: tabular-nums;
 }
 
 .dashboard-calendar-grid {
@@ -2933,19 +3006,18 @@ html, body {
 
 .dashboard-calendar-grid .calendar-day-cell {
     min-height: 42px;
-    border-radius: 9px;
+    border-radius: 11px;
 }
 
 .dashboard-calendar-grid .calendar-day-number {
-    font-size: 0.76rem;
+    font-size: 0.74rem;
 }
 
 .dashboard-calendar-grid .calendar-day-amount {
-    font-size: 0.62rem;
+    font-size: 0.76rem;
     font-weight: 800;
-    color: var(--accent-coral);
     letter-spacing: -0.02em;
-    line-height: 1.05;
+    line-height: 1.1;
 }
 
 /* SPENDING ANALYSIS PAGE */
@@ -14409,124 +14481,136 @@ body:has(#her-modal.active) {
 }
 
 /* ==========================================================================
-   MOBILE FIT-IN-ONE-VIEW OPTIMIZATION (KHUNG VIEW 1 MÀN HÌNH KHÔNG CẦN CUỘN)
+   MOBILE FULL-VIEW OPTIMIZATION (HIỂN THỊ ĐẦY ĐỦ, TIỆN ÍCH ĐẸP, PHỦ KÍN MÀN HÌNH)
    ========================================================================== */
-.shortcut-text-short {
-    display: none;
-}
-
 @media (max-width: 600px) {
-    /* 1. Reset khoảng đệm khung chính */
+    /* 1. App Container & Layout: Lấp đầy màn hình điện thoại, không để lại khoảng trống thừa ở đáy */
     .app-container {
         min-height: 100vh !important;
         min-height: 100dvh !important;
         display: flex !important;
         flex-direction: column !important;
+        box-sizing: border-box !important;
     }
 
     .ios-status-bar-spacer {
-        height: max(4px, env(safe-area-inset-top, 10px)) !important;
+        height: max(6px, env(safe-area-inset-top, 12px)) !important;
     }
 
-    /* 2. Thu gọn Header */
+    /* 2. Header Overview: Hiển thị đầy đủ thông tin trang nhã, to rõ dễ nhìn */
     .app-header.header-overview {
-        padding: 5px 12px 3px 12px !important;
-        gap: 8px !important;
-        border-bottom: 1px solid rgba(52, 66, 55, 0.05) !important;
+        padding: 9px 14px 7px 14px !important;
+        gap: 10px !important;
+        border-bottom: 1px solid rgba(52, 66, 55, 0.06) !important;
         flex-shrink: 0 !important;
     }
 
     .header-overview .header-left {
-        gap: 1px !important;
+        gap: 2px !important;
     }
 
     .header-eyebrow {
-        gap: 5px !important;
-        margin-bottom: 0 !important;
+        gap: 6px !important;
+        margin-bottom: 2px !important;
     }
 
     .header-status-badge {
-        padding: 1px 6px !important;
-        font-size: 0.58rem !important;
+        padding: 2.5px 8px !important;
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
         letter-spacing: 0.4px !important;
     }
 
     .status-pulse-dot {
-        width: 5px !important;
-        height: 5px !important;
+        width: 6px !important;
+        height: 6px !important;
     }
 
     .header-clock-wrap {
-        padding: 1px 6px !important;
-        font-size: 0.62rem !important;
+        padding: 2.5px 8px !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
     }
 
     .header-clock-wrap i,
     .header-clock-wrap svg {
-        width: 10px !important;
-        height: 10px !important;
+        width: 12px !important;
+        height: 12px !important;
     }
 
     .header-main-date {
-        font-size: 1.02rem !important;
+        font-size: 1.20rem !important;
         font-weight: 800 !important;
-        line-height: 1.15 !important;
-        letter-spacing: -0.2px !important;
+        line-height: 1.22 !important;
+        letter-spacing: -0.25px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
     }
 
     .header-date-sub {
-        margin-top: 1px !important;
-        gap: 4px !important;
+        margin-top: 2px !important;
+        gap: 5px !important;
+        display: flex !important;
+        align-items: center !important;
     }
 
     .header-sub-tag {
-        font-size: 0.7rem !important;
+        font-size: 0.76rem !important;
+        font-weight: 700 !important;
     }
 
     .header-sub-tag i,
     .header-sub-tag svg {
-        width: 11px !important;
-        height: 11px !important;
+        width: 12px !important;
+        height: 12px !important;
     }
 
-    .header-sub-sep,
+    .header-sub-sep {
+        display: inline !important;
+        opacity: 0.5 !important;
+    }
+
     .header-sub-desc {
-        display: none !important;
+        display: inline !important;
+        font-size: 0.72rem !important;
+        color: var(--text-secondary) !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .header-calendar-badge {
-        width: 35px !important;
-        border-radius: 9px !important;
+        width: 42px !important;
+        border-radius: 11px !important;
     }
 
     .calendar-badge-top {
-        font-size: 0.5rem !important;
-        padding: 1px 0 !important;
+        font-size: 0.58rem !important;
+        padding: 1.5px 0 !important;
         line-height: 1.1 !important;
     }
 
     .calendar-badge-day {
-        font-size: 0.92rem !important;
+        font-size: 1.08rem !important;
         font-weight: 800 !important;
         line-height: 1.1 !important;
     }
 
     .calendar-badge-bottom {
-        font-size: 0.48rem !important;
-        padding: 1px 0 !important;
+        font-size: 0.54rem !important;
+        padding: 1.5px 0 !important;
         line-height: 1.1 !important;
     }
 
-    /* 3. Thu gọn App Main */
+    /* 3. App Main: Co giãn toàn màn hình */
     .app-main {
-        padding: 4px 8px 6px 8px !important;
+        padding: 4px 10px 6px 10px !important;
         flex: 1 !important;
         display: flex !important;
         flex-direction: column !important;
         overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
     .tab-panel:not(.active) {
@@ -14536,7 +14620,9 @@ body:has(#her-modal.active) {
     #tab-dashboard.active {
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
+        gap: clamp(7px, 1.4vh, 12px) !important;
+        flex: 1 !important;
+        min-height: 0 !important;
     }
 
     #tab-history.active {
@@ -14546,54 +14632,101 @@ body:has(#her-modal.active) {
         width: 100% !important;
     }
 
-    /* 4. Thu gọn 3 Thẻ Tổng Quan (Hôm nay, Tuần này, Tháng này) */
+    /* 4. 3 Thẻ Tổng Quan (Hôm nay, Tuần này, Tháng này): To lớn, hình vuông sang trọng chuẩn MONii/Apple */
     .summary-cards {
-        gap: 5px !important;
+        gap: 8px !important;
         margin-bottom: 0 !important;
         flex-shrink: 0 !important;
     }
 
     .card {
-        padding: 5px 6px !important;
-        min-height: 42px !important;
-        border-radius: 11px !important;
-        box-shadow: 0 2px 6px rgba(52, 66, 55, 0.03) !important;
+        padding: 10px 9px 9px 9px !important;
+        min-height: 104px !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 14px rgba(52, 66, 55, 0.06) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        box-sizing: border-box !important;
     }
 
-    .card-label {
-        font-size: 0.66rem !important;
-        margin-bottom: 1px !important;
-        font-weight: 600 !important;
-        line-height: 1 !important;
+    .card-top-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        min-width: 0 !important;
     }
 
-    .card-amount {
-        font-size: 1.02rem !important;
-        font-weight: 800 !important;
-        line-height: 1.1 !important;
-    }
-
-    /* 5. Thu gọn Thẻ Tiện Ích Nhanh (Dàn ngang 4 nút 1 hàng) */
-    .dashboard-shortcuts-card {
-        padding: 5px 7px 5px 7px !important;
-        margin-bottom: 0 !important;
-        border-radius: 12px !important;
+    .card-icon-pill {
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 7px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         flex-shrink: 0 !important;
     }
 
+    .card-icon-pill i,
+    .card-icon-pill svg {
+        width: 12px !important;
+        height: 12px !important;
+    }
+
+    .card-label {
+        font-size: 0.74rem !important;
+        margin-bottom: 0 !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .card-amount {
+        font-family: var(--font-rounded), var(--ios-font), system-ui, sans-serif !important;
+        font-size: 1.48rem !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+        letter-spacing: -0.35px !important;
+        font-variant-numeric: tabular-nums !important;
+        margin: 3px 0 2px 0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .card-trend-caption {
+        font-size: 0.62rem !important;
+        font-weight: 600 !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* 5. Thẻ Tiện Ích Nhanh: Gọn gàng thanh lịch, bảo vệ chiều cao cho khung lịch */
+    .dashboard-shortcuts-card {
+        padding: 8px 10px !important;
+        margin-bottom: 0 !important;
+        border-radius: 14px !important;
+        flex-shrink: 0 !important;
+        box-shadow: 0 2px 8px rgba(52, 66, 55, 0.04) !important;
+    }
+
     .dashboard-shortcuts-card .dashboard-card-header {
-        margin-bottom: 3px !important;
+        margin-bottom: 5px !important;
         padding: 0 1px !important;
     }
 
     .dashboard-card-title-group {
-        gap: 5px !important;
+        gap: 6px !important;
     }
 
     .dashboard-card-icon-bubble {
-        width: 18px !important;
-        height: 18px !important;
-        border-radius: 5px !important;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 6px !important;
     }
 
     .dashboard-card-icon-bubble i,
@@ -14603,124 +14736,156 @@ body:has(#her-modal.active) {
     }
 
     .dashboard-card-title {
-        font-size: 0.7rem !important;
-        font-weight: 700 !important;
-        line-height: 1.1 !important;
+        font-size: 0.80rem !important;
+        font-weight: 800 !important;
+        line-height: 1.2 !important;
     }
 
     .dashboard-card-sub {
-        display: none !important;
+        display: block !important;
+        font-size: 0.64rem !important;
+        color: var(--text-secondary) !important;
+        line-height: 1.15 !important;
     }
 
     .dashboard-shortcuts-grid {
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 4px !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
     }
 
     .shortcut-pill {
-        flex-direction: column !important;
+        flex-direction: row !important;
         align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        padding: 4px 1px !important;
-        gap: 2px !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        padding: 6px 9px !important;
+        gap: 7px !important;
         min-height: 40px !important;
-        border-radius: 9px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .shortcut-pill:active {
+        transform: scale(0.97) !important;
     }
 
     .shortcut-icon-bubble {
-        width: 20px !important;
-        height: 20px !important;
-        border-radius: 6px !important;
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important;
     }
 
     .shortcut-icon-bubble i,
     .shortcut-icon-bubble svg {
-        width: 11px !important;
-        height: 11px !important;
+        width: 14px !important;
+        height: 14px !important;
     }
 
     .shortcut-label {
-        font-size: 0.6rem !important;
+        font-size: 0.74rem !important;
         font-weight: 700 !important;
-        line-height: 1.1 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        max-width: 100% !important;
-        letter-spacing: -0.2px !important;
+        line-height: 1.2 !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        letter-spacing: -0.15px !important;
+        flex: 1 !important;
     }
 
-    .shortcut-text-full {
-        display: none !important;
-    }
-
-    .shortcut-text-short {
-        display: inline !important;
-    }
-
-    /* 6. Thu gọn Khung Lịch Tháng */
+    /* 6. Khung Lịch Tháng: Ôm vừa vặn các ô ngày, không kéo giãn tạo mảng trắng thừa ở đáy */
     .spending-calendar-card {
-        padding: 6px 8px 6px 8px !important;
-        margin-bottom: 0 !important;
-        border-radius: 12px !important;
+        padding: 12px 10px 14px 10px !important;
+        margin-bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+        border-radius: 16px !important;
         box-sizing: border-box !important;
         width: 100% !important;
         max-width: 100% !important;
+        flex: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: auto !important;
+        box-shadow: 0 4px 16px rgba(52, 66, 55, 0.05) !important;
     }
 
     .dashboard-calendar-header {
-        margin-bottom: 2px !important;
-        padding: 0 1px !important;
+        margin-bottom: 6px !important;
+        padding: 0 2px !important;
         flex-shrink: 0 !important;
     }
 
     .dashboard-calendar-header .calendar-year-label {
-        font-size: 0.6rem !important;
+        font-size: 0.65rem !important;
         line-height: 1 !important;
     }
 
     .dashboard-calendar-header .calendar-month-label {
-        font-size: 0.88rem !important;
-        line-height: 1.15 !important;
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        line-height: 1.2 !important;
     }
 
     .dashboard-calendar-header .calendar-nav-btn {
-        width: 20px !important;
-        height: 20px !important;
-        border-radius: 5px !important;
+        width: 26px !important;
+        height: 26px !important;
+        border-radius: 7px !important;
     }
 
     .dashboard-calendar-header .calendar-nav-btn i,
     .dashboard-calendar-header .calendar-nav-btn svg {
-        width: 11px !important;
-        height: 11px !important;
+        width: 13px !important;
+        height: 13px !important;
     }
 
     .dashboard-calendar-summary {
-        margin-bottom: 3px !important;
-        padding: 3px 8px !important;
-        border-radius: 7px !important;
-        font-size: 0.66rem !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 6px !important;
+        padding: 6px 12px !important;
+        border-radius: 11px !important;
+        font-size: 0.72rem !important;
         flex-shrink: 0 !important;
+        background: linear-gradient(135deg, #1b3325 0%, #112218 100%) !important;
+        border: 1px solid rgba(251, 191, 36, 0.25) !important;
+        box-shadow: 0 2px 8px rgba(17, 34, 24, 0.2) !important;
+        box-sizing: border-box !important;
+    }
+
+    .dashboard-calendar-summary span {
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        color: rgba(240, 245, 242, 0.88) !important;
+        letter-spacing: 0.15px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
     }
 
     .dashboard-calendar-summary strong {
-        font-size: 0.78rem !important;
+        font-family: var(--font-rounded), var(--ios-font), system-ui, sans-serif !important;
+        font-size: 1.25rem !important;
+        font-weight: 800 !important;
+        color: #fbbf24 !important;
+        text-shadow: 0 1px 8px rgba(251, 191, 36, 0.28) !important;
+        letter-spacing: -0.3px !important;
+        line-height: 1.1 !important;
+        font-variant-numeric: tabular-nums !important;
+        white-space: nowrap !important;
     }
 
     .calendar-weekdays {
         display: grid !important;
         grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-        gap: 2px !important;
+        gap: 3px !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 4px !important;
         padding: 0 !important;
-        font-size: 0.64rem !important;
+        font-size: 0.68rem !important;
         font-weight: 700 !important;
         text-align: center !important;
+        color: #8c9891 !important;
         flex-shrink: 0 !important;
     }
 
@@ -14728,73 +14893,77 @@ body:has(#her-modal.active) {
     .calendar-days-grid {
         display: grid !important;
         grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-        gap: 2px !important;
+        grid-auto-rows: auto !important;
+        gap: 3px !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        flex: none !important;
+        min-height: 0 !important;
+        align-content: start !important;
     }
 
     .dashboard-calendar-grid .calendar-day-cell,
     .calendar-days-grid .calendar-day-cell {
-        aspect-ratio: 1 !important;
+        aspect-ratio: 1 / 1 !important;
         width: 100% !important;
         min-width: 0 !important;
         max-width: 100% !important;
-        min-height: 28px !important;
-        max-height: 48px !important;
-        padding: 2px 2px !important;
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 2.5px !important;
         box-sizing: border-box !important;
         position: relative !important;
-        border-radius: 9px !important;
+        border-radius: 10px !important;
     }
 
     .dashboard-calendar-grid .calendar-day-cell:not(.today),
     .calendar-days-grid .calendar-day-cell:not(.today) {
-        border-radius: 9px !important;
+        border-radius: 10px !important;
     }
 
     .dashboard-calendar-grid .calendar-day-cell.today,
     .calendar-days-grid .calendar-day-cell.today {
-        border-radius: 9px !important;
+        border-radius: 10px !important;
         border: 2px solid #1a3c2f !important;
-        box-shadow: 0 0 0 1px rgba(26, 60, 47, 0.15) !important;
+        box-shadow: 0 0 0 1.5px rgba(26, 60, 47, 0.22), 0 2px 6px rgba(26, 60, 47, 0.12) !important;
     }
 
     .dashboard-calendar-grid .calendar-day-number,
     .calendar-days-grid .calendar-day-number {
         position: absolute !important;
-        bottom: 2px !important;
-        left: 3px !important;
-        font-family: var(--font-rounded) !important;
-        font-size: 0.64rem !important;
+        bottom: 2.5px !important;
+        left: 3.5px !important;
+        font-family: var(--font-rounded), -apple-system, system-ui, sans-serif !important;
+        font-size: 0.72rem !important;
         line-height: 1 !important;
         font-weight: 800 !important;
-        color: #334155 !important;
+        color: #475569 !important;
         letter-spacing: -0.2px !important;
     }
 
     .dashboard-calendar-grid .calendar-day-cell.has-expense .calendar-day-number,
     .calendar-days-grid .calendar-day-cell.has-expense .calendar-day-number {
-        font-size: 0.58rem !important;
+        font-size: 0.68rem !important;
         font-weight: 800 !important;
-        opacity: 0.92 !important;
+        opacity: 0.95 !important;
     }
 
     /* Tag Pill Số tiền chi chuẩn MONii */
     .dashboard-calendar-grid .calendar-day-amount,
     .calendar-days-grid .calendar-day-amount {
         position: absolute !important;
-        top: 2px !important;
-        right: 2px !important;
-        font-family: var(--font-rounded) !important;
-        font-size: 0.58rem !important;
+        top: 2.5px !important;
+        right: 2.5px !important;
+        font-family: var(--font-rounded), -apple-system, system-ui, sans-serif !important;
+        font-size: 0.86rem !important;
         font-weight: 800 !important;
-        line-height: 1 !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        padding: 1.5px 3px !important;
-        border-radius: 4.5px !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-        letter-spacing: -0.2px !important;
+        line-height: 1.05 !important;
+        background: #ffffff !important;
+        padding: 2px 4.5px !important;
+        border-radius: 6px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.05) !important;
+        letter-spacing: -0.35px !important;
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
@@ -14805,3 +14974,4 @@ body:has(#her-modal.active) {
         z-index: 2 !important;
     }
 }
+
