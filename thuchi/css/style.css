@@ -276,93 +276,79 @@ html, body {
 
 .card {
     border-radius: var(--card-radius);
-    padding: 14px 12px;
+    padding: 16px 12px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     border: 1px solid rgba(52, 66, 55, 0.08);
     position: relative;
     overflow: hidden;
     transition: var(--transition-bounce);
-    box-shadow: 0 6px 20px rgba(52, 66, 55, 0.03);
+    box-shadow: 0 4px 18px rgba(52, 66, 55, 0.04);
+    min-height: 82px;
 }
 
-.card:active { transform: scale(0.95); }
+.card:active { transform: scale(0.96); }
 
 .card-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
+    display: none;
 }
-
-.card-icon i { width: 15px; height: 15px; }
 
 /* Thẻ 1 (Hôm nay): Deep Olive Forest Green Card */
 .card-today {
-    background: var(--accent-olive);
-    border-color: var(--accent-olive);
-    box-shadow: 0 8px 24px rgba(52, 66, 55, 0.2);
-}
-.card-today .card-icon {
-    background: rgba(226, 174, 162, 0.2);
-    color: var(--accent-rose);
+    background: linear-gradient(145deg, #38493b 0%, #29352c 100%);
+    border-color: rgba(226, 174, 162, 0.22);
+    box-shadow: 0 8px 24px rgba(41, 53, 44, 0.22);
 }
 .card-today .card-label {
-    color: rgba(250, 247, 242, 0.75);
+    color: rgba(250, 247, 242, 0.82);
 }
 .card-today .card-amount {
-    color: var(--accent-rose) !important;
+    color: #F3C3B8 !important;
 }
 
 /* Thẻ 2 (Tuần này): Soft Sand Cream Card */
 .card-week {
-    background: var(--accent-sand-cream);
-    border-color: rgba(226, 174, 162, 0.3);
-}
-.card-week .card-icon {
-    background: rgba(52, 66, 55, 0.1);
-    color: var(--accent-olive);
+    background: linear-gradient(145deg, #FAF4ED 0%, #F4ECE3 100%);
+    border-color: rgba(214, 185, 165, 0.45);
+    box-shadow: 0 4px 16px rgba(52, 66, 55, 0.04);
 }
 .card-week .card-label {
-    color: var(--text-secondary);
+    color: #6E756D;
 }
 .card-week .card-amount {
-    color: var(--accent-olive) !important;
+    color: #243026 !important;
 }
 
 /* Thẻ 3 (Tháng này): Soft Coral Rose Cream Card */
 .card-month {
-    background: var(--accent-rose-cream);
-    border-color: rgba(220, 139, 120, 0.2);
-}
-.card-month .card-icon {
-    background: rgba(52, 66, 55, 0.1);
-    color: var(--accent-olive);
+    background: linear-gradient(145deg, #FCEEE8 0%, #F5DDD6 100%);
+    border-color: rgba(220, 139, 120, 0.32);
+    box-shadow: 0 4px 16px rgba(220, 139, 120, 0.08);
 }
 .card-month .card-label {
-    color: var(--text-secondary);
+    color: #796C67;
 }
 .card-month .card-amount {
-    color: var(--accent-olive) !important;
+    color: #243026 !important;
 }
 
 .card-label {
-    font-size: 0.68rem;
+    font-size: 0.84rem;
     font-weight: 600;
-    margin-bottom: 4px;
-    letter-spacing: 0.2px;
+    margin-bottom: 6px;
+    letter-spacing: 0.25px;
+    line-height: 1.25;
 }
 
 .card-amount {
-    font-size: 0.92rem;
+    font-size: clamp(1.15rem, 3.8vw, 1.35rem);
     font-weight: 800;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.4px;
+    line-height: 1.15;
 }
 
 /* SECTION CARDS - Clean Warm White Cards */
@@ -1829,6 +1815,44 @@ html, body {
     border-color: rgba(220, 139, 120, 0.3);
 }
 
+/* Phân loại màu chi tiêu: <120k xanh lá | 120k-500k vàng | >500k đỏ */
+.calendar-day-cell.expense-green:not(.today) {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.35);
+}
+.calendar-day-cell.expense-yellow:not(.today) {
+    background: rgba(245, 158, 11, 0.13);
+    border-color: rgba(245, 158, 11, 0.38);
+}
+.calendar-day-cell.expense-red:not(.today) {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.calendar-day-amount.expense-green,
+.calendar-day-cell.expense-green .calendar-day-amount {
+    color: #16a34a !important;
+}
+.calendar-day-amount.expense-yellow,
+.calendar-day-cell.expense-yellow .calendar-day-amount {
+    color: #b45309 !important;
+}
+.calendar-day-amount.expense-red,
+.calendar-day-cell.expense-red .calendar-day-amount {
+    color: #dc2626 !important;
+}
+
+/* Khi ngày hôm nay (.today) có chi tiêu */
+.calendar-day-cell.today .calendar-day-amount.expense-green {
+    color: #4ade80 !important;
+}
+.calendar-day-cell.today .calendar-day-amount.expense-yellow {
+    color: #fde047 !important;
+}
+.calendar-day-cell.today .calendar-day-amount.expense-red {
+    color: #fca5a5 !important;
+}
+
 .calendar-day-cell:not(.empty):not(.today):active {
     background: rgba(52, 66, 55, 0.08);
     transform: scale(0.92);
@@ -1967,7 +1991,7 @@ html, body {
 .dashboard-calendar-grid .calendar-day-amount {
     font-size: 0.62rem;
     font-weight: 800;
-    color: #d97967;
+    color: var(--accent-coral);
     letter-spacing: -0.02em;
     line-height: 1.05;
 }
@@ -3316,6 +3340,14 @@ html, body {
     }
     .card {
         padding: 18px 16px;
+        min-height: 96px;
+    }
+    .card-label {
+        font-size: 0.92rem;
+        margin-bottom: 8px;
+    }
+    .card-amount {
+        font-size: 1.55rem;
     }
     .header-title {
         font-size: 2.2rem;
@@ -3363,7 +3395,15 @@ html, body {
         gap: 20px;
     }
     .card {
-        padding: 20px 18px;
+        padding: 22px 20px;
+        min-height: 104px;
+    }
+    .card-label {
+        font-size: 0.98rem;
+        margin-bottom: 8px;
+    }
+    .card-amount {
+        font-size: 1.75rem;
     }
     .welcome-hub-cards {
         grid-template-columns: repeat(3, 1fr);
@@ -6231,4 +6271,327 @@ html, body {
 .history-jump-current-btn i {
     width: 13px;
     height: 13px;
+}
+
+/* ==========================================================================
+   MOBILE FIT-IN-ONE-VIEW OPTIMIZATION (KHUNG VIEW 1 MÀN HÌNH KHÔNG CẦN CUỘN)
+   ========================================================================== */
+.shortcut-text-short {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    /* 1. Reset khoảng đệm khung chính */
+    .app-container {
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .ios-status-bar-spacer {
+        height: max(4px, env(safe-area-inset-top, 10px)) !important;
+    }
+
+    /* 2. Thu gọn Header */
+    .app-header.header-overview {
+        padding: 5px 12px 3px 12px !important;
+        gap: 8px !important;
+        border-bottom: 1px solid rgba(52, 66, 55, 0.05) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .header-overview .header-left {
+        gap: 1px !important;
+    }
+
+    .header-eyebrow {
+        gap: 5px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .header-status-badge {
+        padding: 1px 6px !important;
+        font-size: 0.58rem !important;
+        letter-spacing: 0.4px !important;
+    }
+
+    .status-pulse-dot {
+        width: 5px !important;
+        height: 5px !important;
+    }
+
+    .header-clock-wrap {
+        padding: 1px 6px !important;
+        font-size: 0.62rem !important;
+    }
+
+    .header-clock-wrap i,
+    .header-clock-wrap svg {
+        width: 10px !important;
+        height: 10px !important;
+    }
+
+    .header-main-date {
+        font-size: 1.02rem !important;
+        font-weight: 800 !important;
+        line-height: 1.15 !important;
+        letter-spacing: -0.2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .header-date-sub {
+        margin-top: 1px !important;
+        gap: 4px !important;
+    }
+
+    .header-sub-tag {
+        font-size: 0.7rem !important;
+    }
+
+    .header-sub-tag i,
+    .header-sub-tag svg {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .header-sub-sep,
+    .header-sub-desc {
+        display: none !important;
+    }
+
+    .header-calendar-badge {
+        width: 35px !important;
+        border-radius: 9px !important;
+    }
+
+    .calendar-badge-top {
+        font-size: 0.5rem !important;
+        padding: 1px 0 !important;
+        line-height: 1.1 !important;
+    }
+
+    .calendar-badge-day {
+        font-size: 0.92rem !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+    }
+
+    .calendar-badge-bottom {
+        font-size: 0.48rem !important;
+        padding: 1px 0 !important;
+        line-height: 1.1 !important;
+    }
+
+    /* 3. Thu gọn App Main */
+    .app-main {
+        padding: 4px 8px 6px 8px !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #tab-dashboard {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        flex: 1 !important;
+    }
+
+    /* 4. Thu gọn 3 Thẻ Tổng Quan (Hôm nay, Tuần này, Tháng này) */
+    .summary-cards {
+        gap: 5px !important;
+        margin-bottom: 0 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .card {
+        padding: 5px 6px !important;
+        min-height: 42px !important;
+        border-radius: 11px !important;
+        box-shadow: 0 2px 6px rgba(52, 66, 55, 0.03) !important;
+    }
+
+    .card-label {
+        font-size: 0.66rem !important;
+        margin-bottom: 1px !important;
+        font-weight: 600 !important;
+        line-height: 1 !important;
+    }
+
+    .card-amount {
+        font-size: 1.02rem !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+    }
+
+    /* 5. Thu gọn Thẻ Tiện Ích Nhanh (Dàn ngang 4 nút 1 hàng) */
+    .dashboard-shortcuts-card {
+        padding: 5px 7px 5px 7px !important;
+        margin-bottom: 0 !important;
+        border-radius: 12px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .dashboard-shortcuts-card .dashboard-card-header {
+        margin-bottom: 3px !important;
+        padding: 0 1px !important;
+    }
+
+    .dashboard-card-title-group {
+        gap: 5px !important;
+    }
+
+    .dashboard-card-icon-bubble {
+        width: 18px !important;
+        height: 18px !important;
+        border-radius: 5px !important;
+    }
+
+    .dashboard-card-icon-bubble i,
+    .dashboard-card-icon-bubble svg {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .dashboard-card-title {
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+    }
+
+    .dashboard-card-sub {
+        display: none !important;
+    }
+
+    .dashboard-shortcuts-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+    }
+
+    .shortcut-pill {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 4px 1px !important;
+        gap: 2px !important;
+        min-height: 40px !important;
+        border-radius: 9px !important;
+    }
+
+    .shortcut-icon-bubble {
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 6px !important;
+    }
+
+    .shortcut-icon-bubble i,
+    .shortcut-icon-bubble svg {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .shortcut-label {
+        font-size: 0.6rem !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+        letter-spacing: -0.2px !important;
+    }
+
+    .shortcut-text-full {
+        display: none !important;
+    }
+
+    .shortcut-text-short {
+        display: inline !important;
+    }
+
+    /* 6. Thu gọn Khung Lịch Tháng */
+    .spending-calendar-card {
+        padding: 6px 8px 6px 8px !important;
+        margin-bottom: 0 !important;
+        border-radius: 12px !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+
+    .dashboard-calendar-header {
+        margin-bottom: 2px !important;
+        padding: 0 1px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .dashboard-calendar-header .calendar-year-label {
+        font-size: 0.6rem !important;
+        line-height: 1 !important;
+    }
+
+    .dashboard-calendar-header .calendar-month-label {
+        font-size: 0.88rem !important;
+        line-height: 1.15 !important;
+    }
+
+    .dashboard-calendar-header .calendar-nav-btn {
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 5px !important;
+    }
+
+    .dashboard-calendar-header .calendar-nav-btn i,
+    .dashboard-calendar-header .calendar-nav-btn svg {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .dashboard-calendar-summary {
+        margin-bottom: 3px !important;
+        padding: 3px 8px !important;
+        border-radius: 7px !important;
+        font-size: 0.66rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    .dashboard-calendar-summary strong {
+        font-size: 0.78rem !important;
+    }
+
+    .calendar-weekdays {
+        margin-bottom: 2px !important;
+        font-size: 0.64rem !important;
+        font-weight: 700 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .dashboard-calendar-grid {
+        gap: 2px !important;
+        flex: 1 !important;
+    }
+
+    .dashboard-calendar-grid .calendar-day-cell {
+        min-height: 28px !important;
+        border-radius: 6px !important;
+        padding: 1px 1px !important;
+        gap: 1px !important;
+    }
+
+    .dashboard-calendar-grid .calendar-day-number {
+        font-size: 0.68rem !important;
+        line-height: 1 !important;
+    }
+
+    .dashboard-calendar-grid .calendar-day-amount {
+        font-size: 0.5rem !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+        letter-spacing: -0.2px !important;
+    }
 }
