@@ -101,6 +101,15 @@
         renderNotesList();
     }
 
+    function pinFromCloudRow(row, localNote) {
+        if (typeof row.is_favorite !== 'boolean') return Boolean(localNote && localNote.isFavorite);
+        if (localNote && Boolean(localNote.isFavorite) !== row.is_favorite &&
+            Date.parse(localNote.updatedAt) >= Date.parse(row.updated_at)) {
+            return Boolean(localNote.isFavorite);
+        }
+        return row.is_favorite;
+    }
+
     // Tải ghi chú từ bảng "notes" trên Supabase
     async function fetchNotesFromSupabase() {
         if (!notesClient || !currentUserId) return;
@@ -126,7 +135,7 @@
                     id: row.id,
                     title: row.title || '',
                     content: row.content || '',
-                    isFavorite: Boolean(row.is_favorite || row.isFavorite),
+                    isFavorite: pinFromCloudRow(row, notes.find(note => note.id === row.id)),
                     createdAt: row.created_at || new Date().toISOString(),
                     updatedAt: row.updated_at || new Date().toISOString()
                 }));
@@ -153,9 +162,17 @@
                 updated_at: new Date().toISOString()
             };
 
-            const { error } = await notesClient
+            let { error } = await notesClient
                 .from('notes')
                 .upsert([payload], { onConflict: 'user_id,id' });
+
+            // Tương thích bảng notes cũ chưa có cột is_favorite.
+            if (error && ['42703', 'PGRST204'].includes(error.code)) {
+                const { is_favorite, ...legacyPayload } = payload;
+                ({ error } = await notesClient
+                    .from('notes')
+                    .upsert([legacyPayload], { onConflict: 'user_id,id' }));
+            }
 
             if (error && error.code !== '42P01') {
                 console.warn('[Notes] Lỗi đồng bộ ghi chú:', error.message);
@@ -218,7 +235,7 @@
                     id: newRow.id,
                     title: newRow.title || '',
                     content: newRow.content || '',
-                    isFavorite: Boolean(newRow.is_favorite || newRow.isFavorite),
+                    isFavorite: pinFromCloudRow(newRow, null),
                     createdAt: newRow.created_at,
                     updatedAt: newRow.updated_at
                 });
@@ -233,7 +250,7 @@
                         id: newRow.id,
                         title: newRow.title || '',
                         content: newRow.content || '',
-                        isFavorite: Boolean(newRow.is_favorite || newRow.isFavorite),
+                        isFavorite: pinFromCloudRow(newRow, notes[idx]),
                         createdAt: newRow.created_at,
                         updatedAt: newRow.updated_at
                     };
