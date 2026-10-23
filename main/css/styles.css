@@ -5712,6 +5712,8 @@ html, body {
     opacity: 1 !important;
     pointer-events: auto !important;
     transform: scale(1) !important;
+    /* Khung chức năng được ẩn ngay khi Back; hiện trang chủ ngay để không lộ Thu chi bên dưới. */
+    transition: none !important;
 }
 
 .welcome-hub-header {
