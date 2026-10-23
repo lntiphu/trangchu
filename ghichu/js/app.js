@@ -95,6 +95,16 @@
         renderNotesList();
     }
 
+    function pinFromCloudRow(row, localNote) {
+        if (typeof row.is_favorite !== 'boolean') return Boolean(localNote && localNote.isFavorite);
+        // Ghim vừa đổi trên máy này có thể chưa kịp đồng bộ khi người dùng F5.
+        if (localNote && Boolean(localNote.isFavorite) !== row.is_favorite &&
+            Date.parse(localNote.updatedAt) >= Date.parse(row.updated_at)) {
+            return Boolean(localNote.isFavorite);
+        }
+        return row.is_favorite;
+    }
+
     async function fetchNotesFromSupabase() {
         if (!notesClient || !currentUserId) return;
 
@@ -123,7 +133,7 @@
                     content: row.content || '',
                     createdAt: row.created_at || new Date().toISOString(),
                     updatedAt: row.updated_at || new Date().toISOString(),
-                    isFavorite: Boolean(localNote && localNote.isFavorite)
+                    isFavorite: pinFromCloudRow(row, localNote)
                     };
                 });
                 saveNotesLocally();
@@ -143,13 +153,22 @@
                 user_id: currentUserId,
                 title: note.title,
                 content: note.content || '',
+                is_favorite: Boolean(note.isFavorite),
                 created_at: note.createdAt || new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
 
-            const { error } = await notesClient
+            let { error } = await notesClient
                 .from('notes')
                 .upsert([payload], { onConflict: 'user_id,id' });
+
+            // Bảng cũ chưa có cột ghim: vẫn lưu nội dung, giữ ghim ở máy này.
+            if (error && ['42703', 'PGRST204'].includes(error.code)) {
+                const { is_favorite, ...legacyPayload } = payload;
+                ({ error } = await notesClient
+                    .from('notes')
+                    .upsert([legacyPayload], { onConflict: 'user_id,id' }));
+            }
 
             if (error && error.code !== '42P01') {
                 console.warn('[Ghi Chú] Lỗi đồng bộ ghi chú:', error.message);
@@ -211,7 +230,7 @@
                     content: newRow.content || '',
                     createdAt: newRow.created_at,
                     updatedAt: newRow.updated_at,
-                    isFavorite: false
+                    isFavorite: pinFromCloudRow(newRow, null)
                 });
                 saveNotesLocally();
                 renderNotesList();
@@ -226,7 +245,7 @@
                         content: newRow.content || '',
                         createdAt: newRow.created_at,
                         updatedAt: newRow.updated_at,
-                        isFavorite: Boolean(notes[idx].isFavorite)
+                        isFavorite: pinFromCloudRow(newRow, notes[idx])
                     };
                     saveNotesLocally();
                     renderNotesList();
@@ -431,8 +450,10 @@
         const note = notes.find(n => n.id === id);
         if (!note) return;
         note.isFavorite = !Boolean(note.isFavorite);
+        note.updatedAt = new Date().toISOString();
         saveNotesLocally();
         renderNotesList();
+        syncNoteToSupabase(note);
         showNotesToast(note.isFavorite ? 'Đã ghim ghi chú' : 'Đã bỏ ghim ghi chú');
     }
 
