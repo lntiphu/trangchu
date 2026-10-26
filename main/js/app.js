@@ -576,15 +576,34 @@ function loadExpenseDataForCurrentUser() {
     updateUI();
 }
 
+function getSaverStorage() {
+    try {
+        if (typeof localStorage !== 'undefined' && localStorage) return localStorage;
+    } catch (error) {}
+    try {
+        if (clientOwner !== window && clientOwner.localStorage) return clientOwner.localStorage;
+    } catch (error) {}
+    return null;
+}
+
 function loadSaverData() {
     const currentUserId = state.currentUserId;
     const userStorageKey = currentUserId ? `money_savers_${currentUserId}` : 'money_savers';
-    const legacyOwnerId = localStorage.getItem('money_savers_owner_id');
-    const savedSavers = localStorage.getItem(userStorageKey) || (
-        currentUserId && (!legacyOwnerId || legacyOwnerId === currentUserId)
-            ? localStorage.getItem('money_savers')
-            : null
-    );
+    let storage = getSaverStorage();
+    let savedSavers = null;
+    if (storage) {
+        try {
+            const legacyOwnerId = storage.getItem('money_savers_owner_id');
+            savedSavers = storage.getItem(userStorageKey) || (
+                currentUserId && (!legacyOwnerId || legacyOwnerId === currentUserId)
+                    ? storage.getItem('money_savers')
+                    : null
+            );
+        } catch (error) {
+            console.warn('Không thể đọc bộ nhớ đệm tiết kiệm:', error);
+            storage = null;
+        }
+    }
     if (savedSavers) {
         try {
             state.savers = JSON.parse(savedSavers);
@@ -593,16 +612,24 @@ function loadSaverData() {
             state.savers = [];
         }
     } else {
-        state.savers = getSampleSaverData();
-        saveSaverData();
+        // Không tạo dữ liệu mẫu khi trình duyệt chặn storage: lần tải cloud kế tiếp
+        // có thể nhầm dữ liệu mẫu là dữ liệu của người dùng và đồng bộ ngược lên.
+        state.savers = storage ? getSampleSaverData() : [];
+        if (storage) saveSaverData();
     }
 }
 
 function saveSaverData() {
+    const storage = getSaverStorage();
+    if (!storage) return;
     const storageKey = state.currentUserId ? `money_savers_${state.currentUserId}` : 'money_savers';
-    localStorage.setItem(storageKey, JSON.stringify(state.savers));
-    if (state.currentUserId) {
-        localStorage.setItem('money_savers_owner_id', state.currentUserId);
+    try {
+        storage.setItem(storageKey, JSON.stringify(state.savers));
+        if (state.currentUserId) {
+            storage.setItem('money_savers_owner_id', state.currentUserId);
+        }
+    } catch (error) {
+        console.warn('Không thể lưu bộ nhớ đệm tiết kiệm:', error);
     }
 }
 
