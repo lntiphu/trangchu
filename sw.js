@@ -1,5 +1,5 @@
 // Service Worker for "Làm chủ mọi thứ" PWA
-const CACHE_NAME = 'lam-chu-moi-thu-v78';
+const CACHE_NAME = 'lam-chu-moi-thu-v80';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -10,11 +10,11 @@ const STATIC_ASSETS = [
     './assets/pwa-icon-512.png',
     './assets/web-avatar.png',
     './assets/logo-chu-dong.svg',
-    './main/css/styles.css?v=112',
+    './main/css/styles.css?v=114',
     './main/js/app.js?v=91',
     './main/js/her.js?v=13',
     './thuchi/index.html',
-    './thuchi/css/style.css?v=33',
+    './thuchi/css/style.css?v=35',
     './thuchi/js/app.js?v=30'
 ];
 
