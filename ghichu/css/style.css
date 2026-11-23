@@ -1029,261 +1029,362 @@ body {
 }
 
 /* ==========================================================================
-   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (GHI CHÚ TOÀN BỘ)
-   Nâng cấp toàn diện giao diện Ghi Chú theo phong cách Instagram của Meta:
-   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
-   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
-   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
-   - Phím hủy / phụ: Instagram Neutral Gray #efefef
-   - HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM
+   APPLE / LINEAR PRECISION MINIMALIST DESIGN SYSTEM & UNIFIED MODAL SYSTEM
+   (PHÂN HỆ GHI CHÚ CÁ NHÂN - NOTES)
    ========================================================================== */
 
-body {
-    background: #fafafa !important;
-    color: #262626 !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+:root {
+    --al-canvas: #F6F7F9;
+    --al-surface: #FFFFFF;
+    --al-subtle: #F1F4F8;
+    --al-elevated: #F8FAFC;
+    --al-ink: #0F172A;
+    --al-ink-2: #475569;
+    --al-ink-3: #94A3B8;
+    --al-border: rgba(15, 23, 42, 0.08);
+    --al-border-strong: rgba(15, 23, 42, 0.14);
+    --al-primary: #111827;
+    --al-primary-hover: #1E293B;
+    --al-accent: #4F46E5;
+    --al-accent-ring: rgba(79, 70, 229, 0.16);
+    --al-font: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --al-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+    --al-shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --al-shadow-dialog: 0 24px 64px -12px rgba(15, 23, 42, 0.24), 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    --al-shadow-sheet: 0 -16px 48px rgba(15, 23, 42, 0.18), 0 -1px 0 rgba(15, 23, 42, 0.06);
+}
+
+html, body {
+    background: var(--al-canvas) !important;
+    color: var(--al-ink) !important;
+    font-family: var(--al-font) !important;
+    -webkit-font-smoothing: antialiased !important;
 }
 
 .notes-header-bar {
-    background: #ffffff !important;
-    border-bottom: 1px solid #dbdbdb !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid var(--al-border) !important;
+    box-shadow: none !important;
 }
 
 .notes-header-back-btn {
-    background: #ffffff !important;
-    border: 1px solid #dbdbdb !important;
-    border-radius: 10px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    color: #262626 !important;
-    transition: all 0.15s ease !important;
+    width: 38px !important;
+    height: 38px !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border-strong) !important;
+    border-radius: 11px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    color: var(--al-ink) !important;
+    transition: all 0.16s ease !important;
+}
+
+.notes-header-back-btn:hover {
+    background: var(--al-subtle) !important;
 }
 
 .notes-header-back-btn:active {
     transform: scale(0.92) !important;
 }
 
+.notes-brand-badge {
+    background: #FFFBEB !important;
+    border: 1px solid rgba(180, 83, 9, 0.14) !important;
+    color: #B45309 !important;
+    border-radius: 12px !important;
+}
+
+.notes-header-eyebrow {
+    color: var(--al-accent) !important;
+}
+
+.notes-header-heading {
+    color: var(--al-ink) !important;
+    letter-spacing: -0.025em !important;
+}
+
 .notes-header-add-btn {
-    border-radius: 10px !important;
-    background: #0095f6 !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
-    color: #ffffff !important;
+    border-radius: 11px !important;
+    background: var(--al-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    color: #FFFFFF !important;
     font-weight: 700 !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: all 0.18s ease !important;
 }
 
 .notes-header-add-btn:hover {
-    background: #1877f2 !important;
+    background: var(--al-primary-hover) !important;
+    transform: translateY(-1px) !important;
 }
 
 .notes-header-add-btn:active {
     transform: scale(0.96) !important;
-    background: #0074cc !important;
 }
 
 .notes-search-box {
-    background: #efefef !important;
-    border: 1px solid #dbdbdb !important;
-    border-radius: 10px !important;
-    box-shadow: none !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border-strong) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
 }
 
-.notes-search-box input:focus {
-    background: #ffffff !important;
-    border-color: #0095f6 !important;
+.notes-search-box:focus-within {
+    border-color: var(--al-accent) !important;
+    box-shadow: 0 0 0 3px var(--al-accent-ring) !important;
 }
 
 .notes-counter-badge {
-    background: #efefef !important;
-    border: 1px solid #dbdbdb !important;
-    color: #262626 !important;
+    background: var(--al-subtle) !important;
+    border: 1px solid var(--al-border) !important;
+    color: var(--al-ink-2) !important;
     border-radius: 999px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
 }
 
 .note-card {
-    background: #ffffff !important;
-    border: 1px solid #dbdbdb !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border) !important;
     border-radius: 16px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    box-shadow: var(--al-shadow-sm) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .note-card:hover {
     transform: translateY(-2px) !important;
-    border-color: #b0b0b0 !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+    border-color: rgba(15, 23, 42, 0.16) !important;
+    box-shadow: var(--al-shadow-md) !important;
 }
 
-.note-card:active {
-    transform: scale(0.985) !important;
+.note-card.is-pinned {
+    border-left: 3.5px solid var(--al-accent) !important;
+}
+
+.note-pinned-tag {
+    background: rgba(79, 70, 229, 0.1) !important;
+    color: var(--al-accent) !important;
+    border-color: rgba(79, 70, 229, 0.2) !important;
 }
 
 .note-card-actions {
-    background: #f0f2f5 !important;
-    border: 1px solid #dbdbdb !important;
+    background: var(--al-subtle) !important;
+    border: 1px solid var(--al-border) !important;
     border-radius: 10px !important;
 }
 
 .note-action-btn {
-    border-radius: 6px !important;
-    color: #262626 !important;
+    border-radius: 7px !important;
+    color: var(--al-ink-2) !important;
     transition: all 0.15s ease !important;
 }
 
 .note-action-btn:hover {
-    background: #ffffff !important;
-    color: #0095f6 !important;
+    background: #FFFFFF !important;
+    color: var(--al-ink) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   UNIFIED MODAL SYSTEM — CHUẨN APP HIỆN ĐẠI (APPLE / LINEAR)
    ══════════════════════════════════════════════════════════════════════════ */
 .notes-modal-overlay {
-    background: rgba(0, 0, 0, 0.65) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
-    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    background: rgba(15, 23, 42, 0.46) !important;
+    backdrop-filter: blur(10px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+    transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.notes-modal-sheet {
-    background: #ffffff !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-bottom: none !important;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
-    scrollbar-width: thin !important;
-    scrollbar-color: #dbdbdb transparent !important;
-}
+@media (max-width: 639px) {
+    .notes-modal-overlay {
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
 
-@media (min-width: 580px) {
     .notes-modal-sheet {
-        border-radius: 16px !important;
-        border: 1px solid #dbdbdb !important;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 90dvh !important;
+        margin: 0 !important;
+        background: #FFFFFF !important;
+        border-radius: 24px 24px 0 0 !important;
+        border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        box-shadow: var(--al-shadow-sheet) !important;
+        padding: 12px 20px max(20px, env(safe-area-inset-bottom)) 20px !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .notes-modal-overlay.active .notes-modal-sheet {
+        transform: translateY(0) !important;
+    }
+
+    .notes-drag-handle {
+        display: block !important;
+        width: 36px !important;
+        height: 4px !important;
+        background: #CBD5E1 !important;
+        border-radius: 999px !important;
+        margin: 2px auto 14px !important;
     }
 }
 
-.notes-drag-handle {
-    width: 36px !important;
-    height: 4px !important;
-    background: #dbdbdb !important;
-    border-radius: 999px !important;
-    margin: 8px auto 12px !important;
-    box-shadow: none !important;
-    border: none !important;
-    align-self: center !important;
+@media (min-width: 640px) {
+    .notes-modal-overlay {
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 24px !important;
+    }
+
+    .notes-modal-sheet {
+        width: min(92vw, 500px) !important;
+        max-width: 500px !important;
+        max-height: min(86vh, 740px) !important;
+        margin: auto !important;
+        background: #FFFFFF !important;
+        border-radius: 22px !important;
+        border: 1px solid rgba(15, 23, 42, 0.1) !important;
+        box-shadow: var(--al-shadow-dialog) !important;
+        padding: 24px 26px !important;
+        transform: translateY(10px) scale(0.97) !important;
+        opacity: 0 !important;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease !important;
+    }
+
+    .notes-modal-overlay.active .notes-modal-sheet {
+        transform: translateY(0) scale(1) !important;
+        opacity: 1 !important;
+    }
+
+    .notes-drag-handle {
+        display: none !important;
+    }
 }
 
+.notes-modal-header {
+    border-bottom: 1px solid var(--al-border) !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 16px !important;
+}
+
+.notes-modal-kicker {
+    color: var(--al-accent) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.07em !important;
+}
+
+.notes-modal-sheet h2,
+.notes-modal-sheet h3,
+#notes-form-heading {
+    font-family: var(--al-font) !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: var(--al-ink) !important;
+    letter-spacing: -0.025em !important;
+}
+
+.notes-pin-btn,
 .notes-modal-close-btn {
     width: 32px !important;
     height: 32px !important;
-    border-radius: 50% !important;
-    background: transparent !important;
+    border-radius: 10px !important;
+    background: var(--al-subtle) !important;
     border: none !important;
-    box-shadow: none !important;
-    color: #262626 !important;
+    color: var(--al-ink-2) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
 }
 
+.notes-pin-btn:hover,
 .notes-modal-close-btn:hover {
-    background: #f2f2f2 !important;
-    color: #000000 !important;
+    background: #E2E8F0 !important;
+    color: var(--al-ink) !important;
 }
 
-.notes-modal-close-btn:active {
-    transform: scale(0.92) !important;
-}
-
-.notes-modal-header {
-    border-bottom: 1px solid #efefef !important;
-    padding-bottom: 12px !important;
-    margin-bottom: 16px !important;
-}
-
-.notes-modal-sheet h2,
-.notes-modal-sheet h3 {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    color: #262626 !important;
-    letter-spacing: -0.2px !important;
+.notes-pin-btn.is-active {
+    background: rgba(79, 70, 229, 0.12) !important;
+    color: var(--al-accent) !important;
 }
 
 .notes-modal-sheet input,
 .notes-modal-sheet textarea {
-    background: #fafafa !important;
-    border: 1px solid #dbdbdb !important;
-    border-radius: 10px !important;
-    padding: 10px 14px !important;
-    font-size: 14px !important;
-    color: #262626 !important;
-    box-shadow: none !important;
-    transition: border-color 0.15s ease, background-color 0.15s ease !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border-strong) !important;
+    border-radius: 11px !important;
+    padding: 11px 14px !important;
+    font-size: 14.5px !important;
+    color: var(--al-ink) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+    font-family: var(--al-font) !important;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
+}
+
+.notes-keep-editor {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
 }
 
 .notes-modal-sheet input:focus,
 .notes-modal-sheet textarea:focus {
-    background: #ffffff !important;
-    border-color: #0095f6 !important;
-    box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+    background: #FFFFFF !important;
+    border-color: var(--al-accent) !important;
+    box-shadow: 0 0 0 3.5px var(--al-accent-ring) !important;
     outline: none !important;
 }
 
+.notes-form-actions {
+    border-top: 1px solid var(--al-border) !important;
+    padding-top: 16px !important;
+    margin-top: 14px !important;
+}
+
 .notes-modal-save {
-    background: #0095f6 !important;
-    border: none !important;
-    border-radius: 10px !important;
-    color: #ffffff !important;
+    background: var(--al-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    color: #FFFFFF !important;
+    font-family: var(--al-font) !important;
     font-weight: 700 !important;
     font-size: 14px !important;
-    padding: 11px 18px !important;
-    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+    min-height: 42px !important;
+    padding: 10px 18px !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
     cursor: pointer !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.16s ease, transform 0.16s ease !important;
 }
 
 .notes-modal-save:hover {
-    background: #1877f2 !important;
-}
-
-.notes-modal-save:active {
-    background: #0074cc !important;
-    transform: scale(0.98) !important;
+    background: var(--al-primary-hover) !important;
+    transform: translateY(-1px) !important;
 }
 
 .notes-modal-cancel {
-    background: #efefef !important;
-    border: none !important;
-    border-radius: 10px !important;
-    color: #262626 !important;
+    background: var(--al-subtle) !important;
+    border: 1px solid var(--al-border) !important;
+    border-radius: 12px !important;
+    color: var(--al-ink-2) !important;
+    font-family: var(--al-font) !important;
     font-weight: 600 !important;
     font-size: 14px !important;
-    padding: 11px 18px !important;
+    min-height: 42px !important;
+    padding: 10px 18px !important;
     box-shadow: none !important;
     cursor: pointer !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.16s ease, color 0.16s ease !important;
 }
 
 .notes-modal-cancel:hover {
-    background: #dbdbdb !important;
+    background: #E2E8F0 !important;
+    color: var(--al-ink) !important;
 }
 
-.notes-modal-cancel:active {
-    background: #cfcfcf !important;
-    transform: scale(0.98) !important;
-}
 
 
 
