@@ -2208,3 +2208,167 @@ main.view-panel {
   line-height: 1.2;
 }
 
+/* ==========================================================================
+   APPLE IOS LIQUID GLASS MODAL SYSTEM (iOS 18 Liquid Glassmorphism)
+   Nâng cấp giao diện kính lỏng cho các modal To-do List (Light & Dark)
+   ========================================================================== */
+#task-modal,
+#history-modal,
+#reminder-modal,
+#confirm-modal,
+#image-viewer-modal {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#task-modal .modal-content,
+#history-modal .history-modal-content,
+#reminder-modal .reminder-content,
+#confirm-modal .confirm-content {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.92) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 
+    0 -18px 50px -10px rgba(15, 23, 42, 0.18),
+    0 4px 18px rgba(0, 0, 0, 0.04),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+  border-top-left-radius: 32px !important;
+  border-top-right-radius: 32px !important;
+  transition: transform 0.32s cubic-bezier(0.2, 0.85, 0.32, 1.05), opacity 0.24s ease !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(60, 60, 67, 0.2) transparent !important;
+}
+
+/* Dark Mode Liquid Glass cho To-do List */
+.dark #task-modal .modal-content,
+.dark #history-modal .history-modal-content,
+.dark #reminder-modal .reminder-content,
+.dark #confirm-modal .confirm-content {
+  background: rgba(30, 41, 59, 0.82) !important;
+  backdrop-filter: blur(36px) saturate(210%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(210%) contrast(105%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 
+    0 -18px 50px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+}
+
+@media (min-width: 640px) {
+  #task-modal .modal-content,
+  #history-modal .history-modal-content,
+  #reminder-modal .reminder-content,
+  #confirm-modal .confirm-content {
+    border-radius: 28px !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 
+      0 32px 80px -10px rgba(15, 23, 42, 0.26),
+      0 12px 28px -5px rgba(15, 23, 42, 0.12),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+  }
+
+  .dark #task-modal .modal-content,
+  .dark #history-modal .history-modal-content,
+  .dark #reminder-modal .reminder-content,
+  .dark #confirm-modal .confirm-content {
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 
+      0 32px 80px -10px rgba(0, 0, 0, 0.6),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+#close-modal-btn,
+#close-history-modal-btn,
+#close-reminder-modal-btn,
+#close-confirm-modal-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(142, 142, 147, 0.16) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+  color: #48484a !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.dark #close-modal-btn,
+.dark #close-history-modal-btn,
+.dark #close-reminder-modal-btn,
+.dark #close-confirm-modal-btn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #cbd5e1 !important;
+}
+
+#task-modal input,
+#task-modal textarea,
+#task-modal select,
+#history-modal input {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(60, 60, 67, 0.14) !important;
+  border-radius: 14px !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(255, 255, 255, 0.65) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dark #task-modal input,
+.dark #task-modal textarea,
+.dark #task-modal select,
+.dark #history-modal input {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+#task-modal input:focus,
+#task-modal textarea:focus,
+#task-modal select:focus,
+#history-modal input:focus {
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.dark #task-modal input:focus,
+.dark #task-modal textarea:focus,
+.dark #task-modal select:focus,
+.dark #history-modal input:focus {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 3.5px rgba(129, 140, 248, 0.25) !important;
+}
+
+.quick-preset-btn {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 14px !important;
+}
+
+.dark .quick-preset-btn {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+
