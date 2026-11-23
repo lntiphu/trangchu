@@ -1027,3 +1027,119 @@ body {
         margin-top: 2px;
     }
 }
+
+/* ==========================================================================
+   APPLE IOS LIQUID GLASS MODAL SYSTEM (iOS 18 Liquid Glassmorphism)
+   Nâng cấp giao diện kính lỏng cho các modal Ghi Chú
+   ========================================================================== */
+.notes-modal-overlay {
+    background: rgba(15, 23, 20, 0.42) !important;
+    backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.notes-modal-sheet {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.92) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 
+        0 -18px 50px -10px rgba(18, 25, 20, 0.18),
+        0 4px 18px rgba(0, 0, 0, 0.04),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+    border-top-left-radius: 32px !important;
+    border-top-right-radius: 32px !important;
+    transition: transform 0.32s cubic-bezier(0.2, 0.85, 0.32, 1.05), opacity 0.24s ease !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(60, 60, 67, 0.2) transparent !important;
+}
+
+@media (min-width: 580px) {
+    .notes-modal-sheet {
+        border-radius: 28px !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 
+            0 32px 80px -10px rgba(18, 25, 20, 0.26),
+            0 12px 28px -5px rgba(18, 25, 20, 0.12),
+            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+            inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+    }
+}
+
+.notes-drag-handle {
+    width: 38px !important;
+    height: 5px !important;
+    background: rgba(60, 60, 67, 0.28) !important;
+    border-radius: 999px !important;
+    margin: 4px auto 16px !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+    border: none !important;
+}
+
+.notes-modal-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: rgba(142, 142, 147, 0.16) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+    color: #48484a !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.notes-modal-close-btn:hover {
+    background: rgba(142, 142, 147, 0.24) !important;
+    color: #1c1c1e !important;
+}
+
+.notes-modal-close-btn:active {
+    transform: scale(0.92) !important;
+    background: rgba(142, 142, 147, 0.32) !important;
+}
+
+.notes-modal-sheet input,
+.notes-modal-sheet textarea {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border: 1px solid rgba(60, 60, 67, 0.14) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(255, 255, 255, 0.65) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.notes-modal-sheet input:focus,
+.notes-modal-sheet textarea:focus {
+    background: #ffffff !important;
+    border-color: rgba(46, 125, 50, 0.6) !important;
+    box-shadow: 0 0 0 3.5px rgba(46, 125, 50, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.notes-modal-save {
+    border-radius: 16px !important;
+    background: linear-gradient(145deg, #2e7d32 0%, #1b5e20 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 
+        0 8px 24px -4px rgba(46, 125, 50, 0.35),
+        inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+}
+
+.notes-modal-cancel {
+    border-radius: 16px !important;
+    background: rgba(142, 142, 147, 0.14) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    color: #48484a !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.75) !important;
+}
+
