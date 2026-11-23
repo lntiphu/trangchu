@@ -14977,3 +14977,303 @@ body:has(#her-modal.active) {
     }
 }
 
+/* ==========================================================================
+   APPLE IOS LIQUID GLASS MODAL SYSTEM (iOS 18 Liquid Glassmorphism)
+   Nâng cấp toàn diện giao diện kính lỏng cho tất cả modal trong hệ thống
+   ========================================================================== */
+
+/* 1. Backdrop Overlay (Hiệu ứng mờ nền sâu chuẩn iOS Depth) */
+.modal-overlay,
+.history-month-modal-overlay,
+.support-entry-form-overlay,
+.her-entry-modal {
+    background: rgba(15, 23, 20, 0.42) !important;
+    backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* 2. Liquid Glass Modal Container (Bottom Sheet & Dialog) */
+.modal-sheet,
+.expense-entry-sheet,
+.calendar-modal-sheet,
+.history-month-modal-sheet,
+.add-saver-sheet,
+.adjust-amount-sheet,
+.support-entry-form-sheet,
+.handbook-entry-sheet,
+.handbook-detail-sheet,
+.her-entry-sheet,
+.notes-entry-sheet,
+.ckkn-modal-sheet {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.92) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
+    box-shadow: 
+        0 -18px 50px -10px rgba(18, 25, 20, 0.18),
+        0 4px 18px rgba(0, 0, 0, 0.04),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+    border-top-left-radius: 32px !important;
+    border-top-right-radius: 32px !important;
+    transition: transform 0.32s cubic-bezier(0.2, 0.85, 0.32, 1.05), opacity 0.24s ease !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(60, 60, 67, 0.2) transparent !important;
+}
+
+/* Scrollbar chuẩn iOS */
+.modal-sheet::-webkit-scrollbar,
+.expense-entry-sheet::-webkit-scrollbar,
+.calendar-modal-sheet::-webkit-scrollbar,
+.history-month-modal-sheet::-webkit-scrollbar,
+.support-entry-form-sheet::-webkit-scrollbar,
+.handbook-entry-sheet::-webkit-scrollbar,
+.handbook-detail-sheet::-webkit-scrollbar,
+.her-entry-sheet::-webkit-scrollbar,
+.notes-entry-sheet::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+}
+
+.modal-sheet::-webkit-scrollbar-track,
+.expense-entry-sheet::-webkit-scrollbar-track,
+.support-entry-form-sheet::-webkit-scrollbar-track,
+.her-entry-sheet::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+.modal-sheet::-webkit-scrollbar-thumb,
+.expense-entry-sheet::-webkit-scrollbar-thumb,
+.support-entry-form-sheet::-webkit-scrollbar-thumb,
+.her-entry-sheet::-webkit-scrollbar-thumb {
+    background: rgba(60, 60, 67, 0.22) !important;
+    border-radius: 999px !important;
+}
+
+/* Responsive Modal Dialog on Desktop & Tablet (Centered Glass Card) */
+@media (min-width: 580px) {
+    .modal-sheet,
+    .expense-entry-sheet,
+    .calendar-modal-sheet,
+    .history-month-modal-sheet,
+    .add-saver-sheet,
+    .adjust-amount-sheet,
+    .support-entry-form-sheet,
+    .handbook-entry-sheet,
+    .handbook-detail-sheet,
+    .her-entry-sheet,
+    .notes-entry-sheet {
+        border-radius: 28px !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 
+            0 32px 80px -10px rgba(18, 25, 20, 0.26),
+            0 12px 28px -5px rgba(18, 25, 20, 0.12),
+            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+            inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+    }
+}
+
+/* 3. Sheet Grabber Handle (Thanh kéo capsule chuẩn iOS) */
+.modal-drag-indicator,
+.handbook-detail-drag-bar,
+.notes-drag-handle,
+.support-entry-form-sheet::before {
+    width: 38px !important;
+    height: 5px !important;
+    background: rgba(60, 60, 67, 0.28) !important;
+    border-radius: 999px !important;
+    margin: 4px auto 16px !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+    border: none !important;
+    align-self: center !important;
+}
+
+/* 4. Close Button (Nút đóng tròn SF Symbol Glass Circle) */
+.modal-close-btn,
+.history-modal-close-btn,
+.notes-modal-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: rgba(142, 142, 147, 0.16) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+    color: #48484a !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    flex-shrink: 0 !important;
+}
+
+.modal-close-btn:hover,
+.history-modal-close-btn:hover,
+.notes-modal-close-btn:hover {
+    background: rgba(142, 142, 147, 0.24) !important;
+    color: #1c1c1e !important;
+}
+
+.modal-close-btn:active,
+.history-modal-close-btn:active,
+.notes-modal-close-btn:active {
+    transform: scale(0.92) !important;
+    background: rgba(142, 142, 147, 0.32) !important;
+}
+
+/* 5. Khối thẻ kính nội dung bên trong modal (Glass Cards) */
+.modal-sheet .amount-card {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    border-radius: 22px !important;
+    box-shadow: 0 8px 24px -4px rgba(35, 44, 37, 0.05), inset 0 1.5px 1px rgba(255, 255, 255, 0.98) !important;
+}
+
+.modal-sheet .form-section {
+    background: rgba(255, 255, 255, 0.65) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 6px 20px -2px rgba(35, 44, 37, 0.035), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
+}
+
+/* 6. Trường nhập liệu kính lỏng (Glass Form Inputs & Selects) */
+.modal-sheet .input-wrapper input,
+.modal-sheet select,
+.modal-sheet textarea,
+.support-entry-form-sheet input,
+.support-entry-form-sheet select,
+.support-entry-form-sheet textarea,
+.handbook-entry-sheet input,
+.handbook-entry-sheet select,
+.handbook-entry-sheet textarea,
+.her-entry-sheet input,
+.her-entry-sheet select,
+.her-entry-sheet textarea,
+.notes-entry-sheet input,
+.notes-entry-sheet textarea {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border: 1px solid rgba(60, 60, 67, 0.14) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(255, 255, 255, 0.65) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    font-family: inherit !important;
+}
+
+.modal-sheet .input-wrapper input:focus,
+.modal-sheet select:focus,
+.modal-sheet textarea:focus,
+.support-entry-form-sheet input:focus,
+.support-entry-form-sheet select:focus,
+.support-entry-form-sheet textarea:focus,
+.handbook-entry-sheet input:focus,
+.handbook-entry-sheet select:focus,
+.handbook-entry-sheet textarea:focus,
+.her-entry-sheet input:focus,
+.her-entry-sheet select:focus,
+.her-entry-sheet textarea:focus,
+.notes-entry-sheet input:focus,
+.notes-entry-sheet textarea:focus {
+    background: #ffffff !important;
+    border-color: rgba(52, 66, 55, 0.5) !important;
+    box-shadow: 0 0 0 3.5px rgba(52, 66, 55, 0.12), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 7. Action Buttons (Nút bấm kiểu iOS Glass Pill) */
+.modal-sheet .btn-primary,
+.modal-sheet .btn-submit,
+.support-entry-form-sheet .btn-primary,
+.handbook-entry-sheet .btn-primary,
+.her-entry-sheet .btn-primary,
+.notes-entry-sheet .btn-primary {
+    border-radius: 16px !important;
+    background: linear-gradient(145deg, #38493b 0%, #29362c 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 
+        0 8px 24px -4px rgba(35, 44, 37, 0.32),
+        inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.modal-sheet .btn-primary:active,
+.modal-sheet .btn-submit:active,
+.support-entry-form-sheet .btn-primary:active,
+.handbook-entry-sheet .btn-primary:active,
+.her-entry-sheet .btn-primary:active,
+.notes-entry-sheet .btn-primary:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 3px 10px rgba(35, 44, 37, 0.22) !important;
+}
+
+.modal-sheet .btn-secondary,
+.modal-sheet .btn-cancel,
+.support-entry-form-sheet .btn-secondary,
+.support-entry-form-sheet .btn-cancel,
+.handbook-entry-sheet .btn-secondary,
+.her-entry-sheet .btn-secondary,
+.notes-entry-sheet .btn-secondary {
+    border-radius: 16px !important;
+    background: rgba(142, 142, 147, 0.14) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    color: #48484a !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.75) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.modal-sheet .btn-secondary:active,
+.modal-sheet .btn-cancel:active {
+    transform: scale(0.97) !important;
+    background: rgba(142, 142, 147, 0.22) !important;
+}
+
+/* 8. Lịch chi tiêu Modal (Calendar Sheet) Liquid Glass Card */
+.calendar-modal-sheet {
+    border-radius: 28px !important;
+    padding: 18px 20px 22px !important;
+}
+
+.calendar-modal-sheet .calendar-header-row {
+    background: rgba(255, 255, 255, 0.55) !important;
+    border-radius: 16px !important;
+    padding: 6px 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* 9. Modal Lọc tháng / năm (History Month Modal) Liquid Glass */
+.history-month-modal-sheet {
+    border-radius: 28px !important;
+    padding: 22px 20px 20px !important;
+}
+
+.history-modal-months-grid {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: 20px !important;
+    padding: 10px !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.history-modal-all-time-btn,
+.history-year-selector-pill {
+    background: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-radius: 16px !important;
+}
+
+
