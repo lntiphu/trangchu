@@ -2209,54 +2209,78 @@ main.view-panel {
 }
 
 /* ==========================================================================
-   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (TO-DO LIST TOÀN BỘ)
-   Nâng cấp toàn diện giao diện To-Do List theo phong cách Instagram của Meta:
-   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
-   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
-   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
-   - Phím hủy / phụ: Instagram Neutral Gray #efefef
-   - HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM
+   APPLE / LINEAR PRECISION MINIMALIST DESIGN SYSTEM & UNIFIED MODAL SYSTEM
+   (PHÂN HỆ CÔNG VIỆC - TO-DO LIST)
    ========================================================================== */
 
+:root {
+  --al-canvas: #F6F7F9;
+  --al-surface: #FFFFFF;
+  --al-subtle: #F1F4F8;
+  --al-elevated: #F8FAFC;
+  --al-ink: #0F172A;
+  --al-ink-2: #475569;
+  --al-ink-3: #94A3B8;
+  --al-border: rgba(15, 23, 42, 0.08);
+  --al-border-strong: rgba(15, 23, 42, 0.14);
+  --al-primary: #111827;
+  --al-primary-hover: #1E293B;
+  --al-accent: #4F46E5;
+  --al-accent-ring: rgba(79, 70, 229, 0.16);
+  --al-danger: #E11D48;
+  --al-font: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --al-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+  --al-shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --al-shadow-dialog: 0 24px 64px -12px rgba(15, 23, 42, 0.24), 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
+  --al-shadow-sheet: 0 -16px 48px rgba(15, 23, 42, 0.18), 0 -1px 0 rgba(15, 23, 42, 0.06);
+
+  --qlct-olive: #0F172A;
+  --qlct-sage: #475569;
+  --qlct-text: #0F172A;
+  --qlct-muted: #64748B;
+}
+
 body {
-  background: #fafafa !important;
-  color: #262626 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  background: var(--al-canvas) !important;
+  color: var(--al-ink) !important;
+  font-family: var(--al-font) !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
 .dark body {
-  background: #000000 !important;
-  color: #f5f5f5 !important;
+  background: #090D16 !important;
+  color: #F8FAFC !important;
 }
 
-/* Header Instagram Bar */
+/* Header Apple / Linear */
 .todo-header-wrap {
-  background: #ffffff !important;
-  border-bottom: 1px solid #dbdbdb !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid var(--al-border) !important;
+  box-shadow: none !important;
 }
 
 .dark .todo-header-wrap {
-  background: #121212 !important;
-  border-bottom: 1px solid #262626 !important;
+  background: rgba(15, 23, 42, 0.88) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .todo-back-btn,
 .todo-action-icon-btn {
-  background: #ffffff !important;
-  border: 1px solid #dbdbdb !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 10px !important;
-  color: #262626 !important;
-  transition: all 0.15s ease !important;
+  width: 38px !important;
+  height: 38px !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border-strong) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  border-radius: 11px !important;
+  color: var(--al-ink) !important;
+  transition: all 0.16s ease !important;
 }
 
-.dark .todo-back-btn,
-.dark .todo-action-icon-btn {
-  background: #262626 !important;
-  border: 1px solid #363636 !important;
-  color: #f5f5f5 !important;
+.todo-back-btn:hover,
+.todo-action-icon-btn:hover {
+  background: var(--al-subtle) !important;
 }
 
 .todo-back-btn:active,
@@ -2264,157 +2288,131 @@ body {
   transform: scale(0.92) !important;
 }
 
-.todo-header-add-btn {
-  background: #0095f6 !important;
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
-  border-radius: 10px !important;
-  color: #ffffff !important;
+.todo-badge-icon {
+  background: #F0F9FF !important;
+  border: 1px solid rgba(3, 105, 161, 0.14) !important;
+  color: #0369A1 !important;
+  border-radius: 12px !important;
+}
+
+.todo-header-add-btn,
+#header-add-btn {
+  background: var(--al-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  border-radius: 11px !important;
+  color: #FFFFFF !important;
   font-weight: 700 !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
+  transition: all 0.18s ease !important;
 }
 
-.todo-header-add-btn:hover {
-  background: #1877f2 !important;
+.todo-header-add-btn:hover,
+#header-add-btn:hover {
+  background: var(--al-primary-hover) !important;
+  transform: translateY(-1px) !important;
 }
 
-.todo-header-add-btn:active {
-  transform: scale(0.96) !important;
-  background: #0074cc !important;
-}
-
-/* Segmented Tabs Bar Instagram */
+/* Segmented Tabs Bar */
 .todo-segmented-tabs {
-  background: #efefef !important;
-  border: 1px solid #dbdbdb !important;
+  background: var(--al-subtle) !important;
+  border: 1px solid var(--al-border) !important;
   border-radius: 12px !important;
   padding: 3px !important;
   box-shadow: none !important;
 }
 
-.dark .todo-segmented-tabs {
-  background: #1e1e1e !important;
-  border-color: #333333 !important;
-}
-
 .todo-tab-btn.active {
-  background: #ffffff !important;
-  border: 1px solid #dbdbdb !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
   border-radius: 9px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-  color: #0095f6 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  color: var(--al-ink) !important;
   font-weight: 700 !important;
 }
 
-.dark .todo-tab-btn.active {
-  background: #262626 !important;
-  border-color: #363636 !important;
-  color: #3897f0 !important;
-}
-
-/* Task Cards Instagram Post Style */
-.task-item {
-  background: #ffffff !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 14px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+/* Task & History Cards */
+.task-item,
+.history-card {
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--al-shadow-sm) !important;
   transition: all 0.18s ease !important;
 }
 
-.dark .task-item {
-  background: #121212 !important;
-  border-color: #262626 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
-}
-
-.task-item:hover {
-  border-color: #b0b0b0 !important;
-}
-
-.dark .task-item:hover {
-  border-color: #444444 !important;
-}
-
-.task-item:active {
-  transform: scale(0.985) !important;
+.task-item:hover,
+.history-card:hover {
+  border-color: rgba(15, 23, 42, 0.16) !important;
+  box-shadow: var(--al-shadow-md) !important;
 }
 
 #todo-search-input {
-  background: #efefef !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-  color: #262626 !important;
-}
-
-.dark #todo-search-input {
-  background: #1e1e1e !important;
-  border-color: #333333 !important;
-  color: #f5f5f5 !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border-strong) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+  color: var(--al-ink) !important;
 }
 
 #todo-search-input:focus {
-  background: #ffffff !important;
-  border-color: #0095f6 !important;
+  background: #FFFFFF !important;
+  border-color: var(--al-accent) !important;
+  box-shadow: 0 0 0 3px var(--al-accent-ring) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   UNIFIED MODAL SYSTEM — CHUẨN APP HIỆN ĐẠI (APPLE / LINEAR)
    ══════════════════════════════════════════════════════════════════════════ */
 #task-modal,
 #history-modal,
 #reminder-modal,
 #confirm-modal,
 #image-viewer-modal {
-  background-color: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background-color: rgba(15, 23, 42, 0.46) !important;
+  backdrop-filter: blur(10px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-#task-modal .modal-content,
-#history-modal .history-modal-content,
-#reminder-modal .reminder-content,
-#confirm-modal .confirm-content {
-  background: #ffffff !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
-  border-top-left-radius: 20px !important;
-  border-top-right-radius: 20px !important;
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
-  color: #262626 !important;
-}
-
-.dark #task-modal .modal-content,
-.dark #history-modal .history-modal-content,
-.dark #reminder-modal .reminder-content,
-.dark #confirm-modal .confirm-content {
-  background: #1e1e1e !important;
-  border-color: #2e2e2e !important;
-  color: #f5f5f5 !important;
+@media (max-width: 639px) {
+  #task-modal .modal-content,
+  #history-modal .history-modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #FFFFFF !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: var(--al-shadow-sheet) !important;
+    padding: 14px 20px max(20px, env(safe-area-inset-bottom)) 20px !important;
+    color: var(--al-ink) !important;
+  }
 }
 
 @media (min-width: 640px) {
   #task-modal .modal-content,
-  #history-modal .history-modal-content,
-  #reminder-modal .reminder-content,
-  #confirm-modal .confirm-content {
-    border-radius: 16px !important;
-    border: 1px solid #dbdbdb !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
+  #history-modal .history-modal-content {
+    width: min(92vw, 480px) !important;
+    max-width: 480px !important;
+    background: #FFFFFF !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    box-shadow: var(--al-shadow-dialog) !important;
+    padding: 24px 26px !important;
+    color: var(--al-ink) !important;
   }
+}
 
-  .dark #task-modal .modal-content,
-  .dark #history-modal .history-modal-content,
-  .dark #reminder-modal .reminder-content,
-  .dark #confirm-modal .confirm-content {
-    border: 1px solid #333333 !important;
-  }
+#reminder-modal .reminder-content,
+#confirm-modal .confirm-content {
+  background: #FFFFFF !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: var(--al-shadow-dialog) !important;
+  padding: 24px !important;
+  color: var(--al-ink) !important;
 }
 
 #close-modal-btn,
@@ -2423,150 +2421,133 @@ body {
 #close-confirm-modal-btn {
   width: 32px !important;
   height: 32px !important;
-  border-radius: 50% !important;
-  background: transparent !important;
+  border-radius: 10px !important;
+  background: var(--al-subtle) !important;
   border: none !important;
-  box-shadow: none !important;
-  color: #262626 !important;
+  color: var(--al-ink-2) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
-}
-
-.dark #close-modal-btn,
-.dark #close-history-modal-btn,
-.dark #close-reminder-modal-btn,
-.dark #close-confirm-modal-btn {
-  color: #f5f5f5 !important;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
 }
 
 #close-modal-btn:hover,
-#close-history-modal-btn:hover,
-#close-reminder-modal-btn:hover,
-#close-confirm-modal-btn:hover {
-  background: #f2f2f2 !important;
-  color: #000000 !important;
-}
-
-.dark #close-modal-btn:hover,
-.dark #close-history-modal-btn:hover,
-.dark #close-reminder-modal-btn:hover,
-.dark #close-confirm-modal-btn:hover {
-  background: #333333 !important;
+#close-history-modal-btn:hover {
+  background: #E2E8F0 !important;
+  color: var(--al-ink) !important;
 }
 
 #close-modal-btn:active,
-#close-history-modal-btn:active,
-#close-reminder-modal-btn:active,
-#close-confirm-modal-btn:active {
+#close-history-modal-btn:active {
   transform: scale(0.92) !important;
 }
 
-#task-modal input,
+/* Ô nhập liệu trong Task Modal & History Modal (tránh đè native-date-input ẩn) */
+#task-modal input:not([type="hidden"]):not([type="checkbox"]):not([type="file"]):not(.native-date-input),
 #task-modal textarea,
 #task-modal select,
-#history-modal input {
-  background: #fafafa !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 10px !important;
-  padding: 10px 14px !important;
+#history-modal input:not([type="hidden"]) {
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border-strong) !important;
+  border-radius: 11px !important;
   font-size: 14px !important;
-  color: #262626 !important;
-  box-shadow: none !important;
-  transition: border-color 0.15s ease, background-color 0.15s ease !important;
+  font-weight: 500 !important;
+  color: var(--al-ink) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
 }
 
-.dark #task-modal input,
-.dark #task-modal textarea,
-.dark #task-modal select,
-.dark #history-modal input {
-  background: #121212 !important;
-  border-color: #333333 !important;
-  color: #f5f5f5 !important;
+#modal-task-title {
+  padding-left: 34px !important;
 }
 
-#task-modal input:focus,
+#task-modal input:not([type="hidden"]):not([type="checkbox"]):not([type="file"]):not(.native-date-input):focus,
 #task-modal textarea:focus,
 #task-modal select:focus,
-#history-modal input:focus {
-  background: #ffffff !important;
-  border-color: #0095f6 !important;
-  box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+#history-modal input:not([type="hidden"]):focus {
+  background: #FFFFFF !important;
+  border-color: var(--al-accent) !important;
+  box-shadow: 0 0 0 3.5px var(--al-accent-ring) !important;
   outline: none !important;
 }
 
-.dark #task-modal input:focus,
-.dark #task-modal textarea:focus,
-.dark #task-modal select:focus,
-.dark #history-modal input:focus {
-  background: #1a1a1a !important;
-  border-color: #3897f0 !important;
-}
-
 .quick-preset-btn {
-  background: #f0f2f5 !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 999px !important;
+  background: var(--al-elevated) !important;
+  border: 1px solid var(--al-border-strong) !important;
+  border-radius: 10px !important;
   font-size: 12px !important;
-  font-weight: 700 !important;
-  color: #262626 !important;
+  font-weight: 600 !important;
+  color: var(--al-ink) !important;
   box-shadow: none !important;
   transition: all 0.15s ease !important;
 }
 
-.dark .quick-preset-btn {
-  background: #262626 !important;
-  border-color: #363636 !important;
-  color: #f5f5f5 !important;
-}
-
 .quick-preset-btn:hover {
-  background: #e4e6eb !important;
-  border-color: #0095f6 !important;
-  color: #0095f6 !important;
+  background: var(--al-subtle) !important;
+  border-color: var(--al-accent) !important;
+  color: var(--al-accent) !important;
 }
 
 #cancel-modal-btn,
-#cancel-history-modal-btn {
-  background: #efefef !important;
-  border: none !important;
-  border-radius: 10px !important;
-  color: #262626 !important;
+#cancel-history-modal-btn,
+#reminder-dismiss-btn,
+#confirm-cancel-btn {
+  background: var(--al-subtle) !important;
+  border: 1px solid var(--al-border) !important;
+  border-radius: 12px !important;
+  color: var(--al-ink-2) !important;
   font-weight: 600 !important;
-  font-size: 14px !important;
-  padding: 11px 18px !important;
+  font-size: 13.5px !important;
+  min-height: 42px !important;
+  padding: 10px 16px !important;
   box-shadow: none !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
 }
 
-.dark #cancel-modal-btn,
-.dark #cancel-history-modal-btn {
-  background: #262626 !important;
-  color: #f5f5f5 !important;
+#cancel-modal-btn:hover,
+#cancel-history-modal-btn:hover,
+#reminder-dismiss-btn:hover,
+#confirm-cancel-btn:hover {
+  background: #E2E8F0 !important;
+  color: var(--al-ink) !important;
 }
 
-#save-task-btn {
-  background: #0095f6 !important;
-  border: none !important;
-  border-radius: 10px !important;
-  color: #ffffff !important;
+#task-form button[type="submit"],
+#history-form button[type="submit"],
+#save-task-btn,
+#reminder-done-btn {
+  background: var(--al-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  color: #FFFFFF !important;
   font-weight: 700 !important;
-  font-size: 14px !important;
-  padding: 11px 18px !important;
-  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
+  font-size: 13.5px !important;
+  min-height: 42px !important;
+  padding: 10px 18px !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  transition: background-color 0.16s ease, transform 0.16s ease !important;
 }
 
-#save-task-btn:hover {
-  background: #1877f2 !important;
+#task-form button[type="submit"]:hover,
+#history-form button[type="submit"]:hover,
+#save-task-btn:hover,
+#reminder-done-btn:hover {
+  background: var(--al-primary-hover) !important;
+  transform: translateY(-1px) !important;
 }
 
-#save-task-btn:active {
-  background: #0074cc !important;
-  transform: scale(0.98) !important;
+#confirm-accept-btn {
+  background: var(--al-danger) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  min-height: 42px !important;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.24) !important;
 }
+
 
 
 
