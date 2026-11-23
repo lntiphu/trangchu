@@ -6923,11 +6923,580 @@ html, body {
 }
 
 /* ==========================================================================
-   APPLE IOS LIQUID GLASS MODAL SYSTEM (iOS 18 Liquid Glassmorphism)
-   Nâng cấp toàn diện giao diện kính lỏng cho tất cả modal trong module Thu Chi
+   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (THU CHI TOÀN BỘ)
+   Nâng cấp toàn diện giao diện Thu Chi theo phong cách Instagram của Meta:
+   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
+   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
+   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
+   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
+   - Phím hủy / phụ: Instagram Neutral Gray #efefef
+   - Phím xóa / cảnh báo: Instagram Red #ed4956
+   - HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM
    ========================================================================== */
 
-/* 1. Backdrop Overlay (Hiệu ứng mờ nền sâu chuẩn iOS Depth) */
+body, .app-container {
+    background: #fafafa !important;
+    color: #262626 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+::selection {
+    background: #0095f6 !important;
+    color: #ffffff !important;
+}
+
+.app-header.header-overview {
+    background: #ffffff !important;
+    border-bottom: 1px solid #dbdbdb !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+.header-status-badge,
+.header-clock-wrap {
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    color: #262626 !important;
+}
+
+.header-calendar-badge {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.summary-cards .card {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.summary-cards .card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07) !important;
+}
+
+.card.card-today {
+    background: linear-gradient(135deg, #18232c 0%, #0d1419 100%) !important;
+    border: 1px solid #2f3e4e !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card.card-today .card-title,
+.card.card-today .card-amount,
+.card.card-today .card-subtitle {
+    color: #ffffff !important;
+}
+
+.card.card-week {
+    border-top: 3px solid #f09433 !important;
+}
+
+.card.card-month {
+    border-top: 3px solid #bc1888 !important;
+}
+
+.card .card-icon-pill {
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 8px !important;
+}
+
+.dashboard-shortcuts-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.shortcut-pill {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    color: #262626 !important;
+    font-weight: 600 !important;
+    transition: all 0.18s ease !important;
+}
+
+.shortcut-pill:hover {
+    transform: translateY(-1px) !important;
+    border-color: #0095f6 !important;
+    color: #0095f6 !important;
+    box-shadow: 0 3px 8px rgba(0, 149, 246, 0.12) !important;
+}
+
+.shortcut-pill:active {
+    transform: scale(0.96) !important;
+    background: #f0f2f5 !important;
+}
+
+.shortcut-icon-bubble {
+    border-radius: 50% !important;
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+}
+
+.spending-calendar-card {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+.calendar-nav-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    color: #262626 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+}
+
+.calendar-nav-btn:hover {
+    background: #f2f2f2 !important;
+}
+
+.calendar-nav-btn:active {
+    transform: scale(0.92) !important;
+}
+
+.calendar-month-summary {
+    background: #f8fafc !important;
+    border: 1px solid #efefef !important;
+    border-radius: 12px !important;
+}
+
+.calendar-day-cell {
+    border-radius: 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+.calendar-day-cell:active {
+    transform: scale(0.95) !important;
+}
+
+.history-back-btn {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 10px !important;
+    color: #262626 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.15s ease !important;
+}
+
+.history-back-btn:active {
+    transform: scale(0.94) !important;
+}
+
+.history-month-selector {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.history-month-nav-btn {
+    border-radius: 8px !important;
+    background: #f0f2f5 !important;
+    color: #262626 !important;
+    transition: all 0.15s ease !important;
+}
+
+.history-month-nav-btn:active {
+    transform: scale(0.9) !important;
+}
+
+.history-controls .search-bar {
+    background: #efefef !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+}
+
+.history-controls .search-bar input:focus {
+    background: #ffffff !important;
+    border-color: #0095f6 !important;
+}
+
+.spending-item {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.18s ease !important;
+}
+
+.spending-item:hover {
+    border-color: #a8a8a8 !important;
+}
+
+.spending-item:active {
+    transform: scale(0.985) !important;
+    background: #fafafa !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   ══════════════════════════════════════════════════════════════════════════ */
+.modal-overlay,
+.history-month-modal-overlay {
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.modal-sheet,
+.expense-entry-sheet,
+.calendar-modal-sheet,
+.history-month-modal-sheet {
+    background: #ffffff !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #dbdbdb transparent !important;
+}
+
+@media (min-width: 580px) {
+    .modal-sheet,
+    .expense-entry-sheet,
+    .calendar-modal-sheet,
+    .history-month-modal-sheet {
+        border-radius: 16px !important;
+        border: 1px solid #dbdbdb !important;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
+    }
+}
+
+.modal-drag-indicator {
+    width: 36px !important;
+    height: 4px !important;
+    background: #dbdbdb !important;
+    border-radius: 999px !important;
+    margin: 8px auto 12px !important;
+    box-shadow: none !important;
+    border: none !important;
+    align-self: center !important;
+}
+
+.modal-close-btn,
+.history-modal-close-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #262626 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    flex-shrink: 0 !important;
+}
+
+.modal-close-btn:hover,
+.history-modal-close-btn:hover {
+    background: #f2f2f2 !important;
+    color: #000000 !important;
+}
+
+.modal-close-btn:active,
+.history-modal-close-btn:active {
+    transform: scale(0.92) !important;
+}
+
+.modal-sheet .modal-header {
+    border-bottom: 1px solid #efefef !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 16px !important;
+}
+
+.modal-sheet h2,
+.modal-sheet h3 {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #262626 !important;
+    letter-spacing: -0.2px !important;
+}
+
+.modal-sheet .amount-card {
+    background: #fafafa !important;
+    border: 1px solid #efefef !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+.modal-sheet .form-section {
+    background: #fafafa !important;
+    border: 1px solid #efefef !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+.amount-card-chip {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    color: #262626 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.modal-sheet .input-wrapper input,
+.modal-sheet select,
+.modal-sheet textarea {
+    background: #fafafa !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    color: #262626 !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease, background-color 0.15s ease !important;
+    font-family: inherit !important;
+}
+
+.modal-sheet .input-wrapper input:focus,
+.modal-sheet select:focus,
+.modal-sheet textarea:focus {
+    background: #ffffff !important;
+    border-color: #0095f6 !important;
+    box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+    outline: none !important;
+}
+
+.modal-sheet .btn-primary,
+.modal-sheet .btn-submit {
+    background: #0095f6 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 11px 18px !important;
+    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.modal-sheet .btn-primary:hover,
+.modal-sheet .btn-submit:hover {
+    background: #1877f2 !important;
+}
+
+.modal-sheet .btn-primary:active,
+.modal-sheet .btn-submit:active {
+    background: #0074cc !important;
+    transform: scale(0.98) !important;
+}
+
+.modal-sheet .btn-secondary,
+.modal-sheet .btn-cancel {
+    background: #efefef !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #262626 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 11px 18px !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.modal-sheet .btn-secondary:hover,
+.modal-sheet .btn-cancel:hover {
+    background: #dbdbdb !important;
+}
+
+.modal-sheet .btn-secondary:active,
+.modal-sheet .btn-cancel:active {
+    background: #cfcfcf !important;
+    transform: scale(0.98) !important;
+}
+
+.modal-sheet .btn-danger,
+.modal-sheet .btn-delete-expense {
+    background: #ed4956 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 11px 18px !important;
+    box-shadow: 0 4px 12px rgba(237, 73, 86, 0.22) !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.modal-sheet .btn-danger:hover,
+.modal-sheet .btn-delete-expense:hover {
+    background: #c62828 !important;
+}
+
+.modal-sheet .btn-danger:active,
+.modal-sheet .btn-delete-expense:active {
+    transform: scale(0.98) !important;
+}
+
+
+/* ── 2. HEADER TRANG THU CHI ── */
+.app-header {
+    background: rgba(255, 255, 255, 0.72) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), inset 0 -1px 1px rgba(255, 255, 255, 0.6) !important;
+}
+
+.header-status-badge,
+.header-clock-wrap {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    border-radius: 999px !important;
+}
+
+.header-calendar-badge {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 8px 24px -4px rgba(35, 44, 37, 0.08), inset 0 1.5px 1px #ffffff !important;
+}
+
+/* ── 3. THẺ TỔNG QUAN (Summary Cards) ── */
+.summary-cards .card {
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    border-radius: 24px !important;
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.card.card-today {
+    background: linear-gradient(150deg, rgba(24, 62, 47, 0.92) 0%, rgba(14, 38, 29, 0.96) 100%) !important;
+    border: 1.5px solid rgba(74, 222, 128, 0.35) !important;
+    box-shadow: 0 14px 34px -4px rgba(14, 38, 29, 0.35), inset 0 1.5px 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+.card.card-week {
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.84) 0%, rgba(248, 244, 237, 0.68) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 12px 28px -4px rgba(52, 66, 55, 0.08), inset 0 1.5px 1px #ffffff !important;
+}
+
+.card.card-month {
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.84) 0%, rgba(254, 246, 243, 0.68) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 12px 28px -4px rgba(52, 66, 55, 0.08), inset 0 1.5px 1px #ffffff !important;
+}
+
+/* ── 4. PHÍM TẮT TIỆN ÍCH DASHBOARD ── */
+.shortcut-pill {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.8) 0%, rgba(250, 248, 245, 0.62) 100%) !important;
+    backdrop-filter: blur(24px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 24px -4px rgba(35, 44, 37, 0.06), inset 0 1.5px 1px rgba(255, 255, 255, 0.98) !important;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.shortcut-pill:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px -4px rgba(35, 44, 37, 0.1), inset 0 2px 2px #ffffff !important;
+}
+
+.shortcut-pill:active {
+    transform: scale(0.97) !important;
+}
+
+.shortcut-icon-bubble {
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04), inset 0 1px 1px #ffffff !important;
+}
+
+/* ── 5. LỊCH CHI TIÊU THÁNG ── */
+.spending-calendar-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.78) 0%, rgba(250, 248, 245, 0.62) 100%) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.88) !important;
+    border-radius: 26px !important;
+    box-shadow: 0 14px 36px -6px rgba(35, 44, 37, 0.08), inset 0 1.5px 1px rgba(255, 255, 255, 0.98) !important;
+}
+
+.calendar-nav-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px #ffffff !important;
+}
+
+/* ── 6. LỊCH SỬ THU CHI ── */
+.history-back-btn {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04), inset 0 1px 1px #ffffff !important;
+}
+
+.history-month-selector {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04), inset 0 1px 1px #ffffff !important;
+}
+
+.history-controls .search-bar {
+    background: rgba(255, 255, 255, 0.78) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 6px 20px -2px rgba(35, 44, 37, 0.04), inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.spending-item {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 6px 20px -3px rgba(35, 44, 37, 0.05), inset 0 1.5px 1px rgba(255, 255, 255, 0.98) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.spending-item:active {
+    transform: scale(0.98) !important;
+}
+
+/* ── 7. TOÀN BỘ MODAL VÀ PHÍM CHỨC NĂNG TRONG MODAL ── */
 .modal-overlay,
 .history-month-modal-overlay {
     background: rgba(15, 23, 20, 0.42) !important;
@@ -6936,7 +7505,6 @@ html, body {
     transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* 2. Liquid Glass Modal Container (Bottom Sheet & Dialog) */
 .modal-sheet,
 .expense-entry-sheet,
 .calendar-modal-sheet,
@@ -6961,22 +7529,6 @@ html, body {
     scrollbar-color: rgba(60, 60, 67, 0.2) transparent !important;
 }
 
-/* Scrollbar chuẩn iOS */
-.modal-sheet::-webkit-scrollbar,
-.expense-entry-sheet::-webkit-scrollbar,
-.calendar-modal-sheet::-webkit-scrollbar,
-.history-month-modal-sheet::-webkit-scrollbar {
-    width: 5px !important;
-    height: 5px !important;
-}
-
-.modal-sheet::-webkit-scrollbar-thumb,
-.expense-entry-sheet::-webkit-scrollbar-thumb {
-    background: rgba(60, 60, 67, 0.22) !important;
-    border-radius: 999px !important;
-}
-
-/* Responsive Modal Dialog on Desktop & Tablet (Centered Glass Card) */
 @media (min-width: 580px) {
     .modal-sheet,
     .expense-entry-sheet,
@@ -6992,7 +7544,6 @@ html, body {
     }
 }
 
-/* 3. Sheet Grabber Handle */
 .modal-drag-indicator {
     width: 38px !important;
     height: 5px !important;
@@ -7004,17 +7555,16 @@ html, body {
     align-self: center !important;
 }
 
-/* 4. Close Button (Nút đóng tròn SF Symbol Glass Circle) */
 .modal-close-btn,
 .history-modal-close-btn {
-    width: 32px !important;
-    height: 32px !important;
+    width: 34px !important;
+    height: 34px !important;
     border-radius: 50% !important;
-    background: rgba(142, 142, 147, 0.16) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.65) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+    background: rgba(142, 142, 147, 0.18) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
     color: #48484a !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -7026,41 +7576,46 @@ html, body {
 
 .modal-close-btn:hover,
 .history-modal-close-btn:hover {
-    background: rgba(142, 142, 147, 0.24) !important;
+    background: rgba(142, 142, 147, 0.28) !important;
     color: #1c1c1e !important;
 }
 
 .modal-close-btn:active,
 .history-modal-close-btn:active {
     transform: scale(0.92) !important;
-    background: rgba(142, 142, 147, 0.32) !important;
+    background: rgba(142, 142, 147, 0.36) !important;
 }
 
-/* 5. Khối thẻ kính nội dung bên trong modal (Glass Cards) */
 .modal-sheet .amount-card {
-    background: rgba(255, 255, 255, 0.72) !important;
+    background: rgba(255, 255, 255, 0.48) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
     border-radius: 22px !important;
     box-shadow: 0 8px 24px -4px rgba(35, 44, 37, 0.05), inset 0 1.5px 1px rgba(255, 255, 255, 0.98) !important;
 }
 
 .modal-sheet .form-section {
-    background: rgba(255, 255, 255, 0.65) !important;
+    background: rgba(255, 255, 255, 0.42) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
     border-radius: 20px !important;
     box-shadow: 0 6px 20px -2px rgba(35, 44, 37, 0.035), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
 }
 
-/* 6. Trường nhập liệu kính lỏng */
+.amount-card-chip {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.85) !important;
+    border-radius: 999px !important;
+}
+
 .modal-sheet .input-wrapper input,
 .modal-sheet select,
 .modal-sheet textarea {
-    background: rgba(255, 255, 255, 0.88) !important;
-    border: 1px solid rgba(60, 60, 67, 0.14) !important;
+    background: rgba(255, 255, 255, 0.65) !important;
+    border: 1px solid rgba(60, 60, 67, 0.15) !important;
     border-radius: 14px !important;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(255, 255, 255, 0.65) !important;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -7069,12 +7624,11 @@ html, body {
 .modal-sheet .input-wrapper input:focus,
 .modal-sheet select:focus,
 .modal-sheet textarea:focus {
-    background: #ffffff !important;
+    background: rgba(255, 255, 255, 0.92) !important;
     border-color: rgba(52, 66, 55, 0.5) !important;
     box-shadow: 0 0 0 3.5px rgba(52, 66, 55, 0.12), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
-/* 7. Action Buttons */
 .modal-sheet .btn-primary,
 .modal-sheet .btn-submit {
     border-radius: 16px !important;
@@ -7083,7 +7637,10 @@ html, body {
     box-shadow: 
         0 8px 24px -4px rgba(35, 44, 37, 0.32),
         inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
     transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    cursor: pointer !important;
 }
 
 .modal-sheet .btn-primary:active,
@@ -7095,59 +7652,35 @@ html, body {
 .modal-sheet .btn-secondary,
 .modal-sheet .btn-cancel {
     border-radius: 16px !important;
-    background: rgba(142, 142, 147, 0.14) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.55) !important;
-    color: #48484a !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.75) !important;
+    background: rgba(142, 142, 147, 0.16) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    color: #3a3a3c !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
     transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    cursor: pointer !important;
 }
 
 .modal-sheet .btn-secondary:active,
 .modal-sheet .btn-cancel:active {
     transform: scale(0.97) !important;
-    background: rgba(142, 142, 147, 0.22) !important;
+    background: rgba(142, 142, 147, 0.26) !important;
 }
 
-/* 8. Lịch chi tiêu Modal (Calendar Sheet) */
-.calendar-modal-sheet {
-    border-radius: 28px !important;
-    padding: 18px 20px 22px !important;
-}
-
-.calendar-modal-sheet .calendar-header-row {
-    background: rgba(255, 255, 255, 0.55) !important;
+.modal-sheet .btn-danger,
+.modal-sheet .btn-delete-expense {
     border-radius: 16px !important;
-    padding: 6px 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.7) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-}
-
-/* 9. Modal Lọc tháng / năm */
-.history-month-modal-sheet {
-    border-radius: 28px !important;
-    padding: 22px 20px 20px !important;
-}
-
-.history-modal-months-grid {
-    background: rgba(255, 255, 255, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.7) !important;
-    border-radius: 20px !important;
-    padding: 10px !important;
+    background: rgba(239, 68, 68, 0.14) !important;
     backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+    cursor: pointer !important;
 }
 
-.history-modal-all-time-btn,
-.history-year-selector-pill {
-    background: rgba(255, 255, 255, 0.65) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    border-radius: 16px !important;
-}
 
 
 
