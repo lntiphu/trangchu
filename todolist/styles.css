@@ -2209,59 +2209,194 @@ main.view-panel {
 }
 
 /* ==========================================================================
-   APPLE IOS LIQUID GLASS MODAL SYSTEM (iOS 18 Liquid Glassmorphism)
-   Nâng cấp giao diện kính lỏng cho các modal To-do List (Light & Dark)
+   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (TO-DO LIST TOÀN BỘ)
+   Nâng cấp toàn diện giao diện To-Do List theo phong cách Instagram của Meta:
+   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
+   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
+   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
+   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
+   - Phím hủy / phụ: Instagram Neutral Gray #efefef
+   - HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM
    ========================================================================== */
+
+body {
+  background: #fafafa !important;
+  color: #262626 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.dark body {
+  background: #000000 !important;
+  color: #f5f5f5 !important;
+}
+
+/* Header Instagram Bar */
+.todo-header-wrap {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dbdbdb !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+.dark .todo-header-wrap {
+  background: #121212 !important;
+  border-bottom: 1px solid #262626 !important;
+}
+
+.todo-back-btn,
+.todo-action-icon-btn {
+  background: #ffffff !important;
+  border: 1px solid #dbdbdb !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 10px !important;
+  color: #262626 !important;
+  transition: all 0.15s ease !important;
+}
+
+.dark .todo-back-btn,
+.dark .todo-action-icon-btn {
+  background: #262626 !important;
+  border: 1px solid #363636 !important;
+  color: #f5f5f5 !important;
+}
+
+.todo-back-btn:active,
+.todo-action-icon-btn:active {
+  transform: scale(0.92) !important;
+}
+
+.todo-header-add-btn {
+  background: #0095f6 !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.todo-header-add-btn:hover {
+  background: #1877f2 !important;
+}
+
+.todo-header-add-btn:active {
+  transform: scale(0.96) !important;
+  background: #0074cc !important;
+}
+
+/* Segmented Tabs Bar Instagram */
+.todo-segmented-tabs {
+  background: #efefef !important;
+  border: 1px solid #dbdbdb !important;
+  border-radius: 12px !important;
+  padding: 3px !important;
+  box-shadow: none !important;
+}
+
+.dark .todo-segmented-tabs {
+  background: #1e1e1e !important;
+  border-color: #333333 !important;
+}
+
+.todo-tab-btn.active {
+  background: #ffffff !important;
+  border: 1px solid #dbdbdb !important;
+  border-radius: 9px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  color: #0095f6 !important;
+  font-weight: 700 !important;
+}
+
+.dark .todo-tab-btn.active {
+  background: #262626 !important;
+  border-color: #363636 !important;
+  color: #3897f0 !important;
+}
+
+/* Task Cards Instagram Post Style */
+.task-item {
+  background: #ffffff !important;
+  border: 1px solid #dbdbdb !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.18s ease !important;
+}
+
+.dark .task-item {
+  background: #121212 !important;
+  border-color: #262626 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.task-item:hover {
+  border-color: #b0b0b0 !important;
+}
+
+.dark .task-item:hover {
+  border-color: #444444 !important;
+}
+
+.task-item:active {
+  transform: scale(0.985) !important;
+}
+
+#todo-search-input {
+  background: #efefef !important;
+  border: 1px solid #dbdbdb !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  color: #262626 !important;
+}
+
+.dark #todo-search-input {
+  background: #1e1e1e !important;
+  border-color: #333333 !important;
+  color: #f5f5f5 !important;
+}
+
+#todo-search-input:focus {
+  background: #ffffff !important;
+  border-color: #0095f6 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   ══════════════════════════════════════════════════════════════════════════ */
 #task-modal,
 #history-modal,
 #reminder-modal,
 #confirm-modal,
 #image-viewer-modal {
-  background-color: rgba(15, 23, 42, 0.45) !important;
-  backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
-  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background-color: rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 #task-modal .modal-content,
 #history-modal .history-modal-content,
 #reminder-modal .reminder-content,
 #confirm-modal .confirm-content {
-  background: rgba(255, 255, 255, 0.82) !important;
-  backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(210%) contrast(103%) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.92) !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.6) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.6) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
-  box-shadow: 
-    0 -18px 50px -10px rgba(15, 23, 42, 0.18),
-    0 4px 18px rgba(0, 0, 0, 0.04),
-    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
-  border-top-left-radius: 32px !important;
-  border-top-right-radius: 32px !important;
-  transition: transform 0.32s cubic-bezier(0.2, 0.85, 0.32, 1.05), opacity 0.24s ease !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(60, 60, 67, 0.2) transparent !important;
+  background: #ffffff !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
+  color: #262626 !important;
 }
 
-/* Dark Mode Liquid Glass cho To-do List */
 .dark #task-modal .modal-content,
 .dark #history-modal .history-modal-content,
 .dark #reminder-modal .reminder-content,
 .dark #confirm-modal .confirm-content {
-  background: rgba(30, 41, 59, 0.82) !important;
-  backdrop-filter: blur(36px) saturate(210%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(210%) contrast(105%) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3) !important;
-  box-shadow: 
-    0 -18px 50px -10px rgba(0, 0, 0, 0.5),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
-  color: #f1f5f9 !important;
+  background: #1e1e1e !important;
+  border-color: #2e2e2e !important;
+  color: #f5f5f5 !important;
 }
 
 @media (min-width: 640px) {
@@ -2269,23 +2404,16 @@ main.view-panel {
   #history-modal .history-modal-content,
   #reminder-modal .reminder-content,
   #confirm-modal .confirm-content {
-    border-radius: 28px !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 
-      0 32px 80px -10px rgba(15, 23, 42, 0.26),
-      0 12px 28px -5px rgba(15, 23, 42, 0.12),
-      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
-      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+    border-radius: 16px !important;
+    border: 1px solid #dbdbdb !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
   }
 
   .dark #task-modal .modal-content,
   .dark #history-modal .history-modal-content,
   .dark #reminder-modal .reminder-content,
   .dark #confirm-modal .confirm-content {
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 
-      0 32px 80px -10px rgba(0, 0, 0, 0.6),
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid #333333 !important;
   }
 }
 
@@ -2296,47 +2424,67 @@ main.view-panel {
   width: 32px !important;
   height: 32px !important;
   border-radius: 50% !important;
-  background: rgba(142, 142, 147, 0.16) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
-  color: #48484a !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #262626 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  transition: background-color 0.15s ease, transform 0.15s ease !important;
 }
 
 .dark #close-modal-btn,
 .dark #close-history-modal-btn,
 .dark #close-reminder-modal-btn,
 .dark #close-confirm-modal-btn {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: #cbd5e1 !important;
+  color: #f5f5f5 !important;
+}
+
+#close-modal-btn:hover,
+#close-history-modal-btn:hover,
+#close-reminder-modal-btn:hover,
+#close-confirm-modal-btn:hover {
+  background: #f2f2f2 !important;
+  color: #000000 !important;
+}
+
+.dark #close-modal-btn:hover,
+.dark #close-history-modal-btn:hover,
+.dark #close-reminder-modal-btn:hover,
+.dark #close-confirm-modal-btn:hover {
+  background: #333333 !important;
+}
+
+#close-modal-btn:active,
+#close-history-modal-btn:active,
+#close-reminder-modal-btn:active,
+#close-confirm-modal-btn:active {
+  transform: scale(0.92) !important;
 }
 
 #task-modal input,
 #task-modal textarea,
 #task-modal select,
 #history-modal input {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border: 1px solid rgba(60, 60, 67, 0.14) !important;
-  border-radius: 14px !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(255, 255, 255, 0.65) !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: #fafafa !important;
+  border: 1px solid #dbdbdb !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-size: 14px !important;
+  color: #262626 !important;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease, background-color 0.15s ease !important;
 }
 
 .dark #task-modal input,
 .dark #task-modal textarea,
 .dark #task-modal select,
 .dark #history-modal input {
-  background: rgba(15, 23, 42, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #f8fafc !important;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  background: #121212 !important;
+  border-color: #333333 !important;
+  color: #f5f5f5 !important;
 }
 
 #task-modal input:focus,
@@ -2344,31 +2492,82 @@ main.view-panel {
 #task-modal select:focus,
 #history-modal input:focus {
   background: #ffffff !important;
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  border-color: #0095f6 !important;
+  box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+  outline: none !important;
 }
 
 .dark #task-modal input:focus,
 .dark #task-modal textarea:focus,
 .dark #task-modal select:focus,
 .dark #history-modal input:focus {
-  background: rgba(15, 23, 42, 0.9) !important;
-  border-color: #818cf8 !important;
-  box-shadow: 0 0 0 3.5px rgba(129, 140, 248, 0.25) !important;
+  background: #1a1a1a !important;
+  border-color: #3897f0 !important;
 }
 
 .quick-preset-btn {
-  background: rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.8) !important;
-  border-radius: 14px !important;
+  background: #f0f2f5 !important;
+  border: 1px solid #dbdbdb !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #262626 !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease !important;
 }
 
 .dark .quick-preset-btn {
-  background: rgba(30, 41, 59, 0.7) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #e2e8f0 !important;
+  background: #262626 !important;
+  border-color: #363636 !important;
+  color: #f5f5f5 !important;
 }
+
+.quick-preset-btn:hover {
+  background: #e4e6eb !important;
+  border-color: #0095f6 !important;
+  color: #0095f6 !important;
+}
+
+#cancel-modal-btn,
+#cancel-history-modal-btn {
+  background: #efefef !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: #262626 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 11px 18px !important;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.dark #cancel-modal-btn,
+.dark #cancel-history-modal-btn {
+  background: #262626 !important;
+  color: #f5f5f5 !important;
+}
+
+#save-task-btn {
+  background: #0095f6 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  padding: 11px 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+  transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+#save-task-btn:hover {
+  background: #1877f2 !important;
+}
+
+#save-task-btn:active {
+  background: #0074cc !important;
+  transform: scale(0.98) !important;
+}
+
+
 
 
