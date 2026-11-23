@@ -14978,22 +14978,415 @@ body:has(#her-modal.active) {
 }
 
 /* ==========================================================================
-   APPLE IOS LIQUID GLASS MODAL SYSTEM (iOS 18 Liquid Glassmorphism)
-   Nâng cấp toàn diện giao diện kính lỏng cho tất cả modal trong hệ thống
+   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (TOÀN BỘ HỆ THỐNG)
+   Nâng cấp toàn diện giao diện theo phong cách Instagram của Meta:
+   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
+   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
+   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
+   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
+   - Phím hủy / phụ: Instagram Neutral Gray #efefef
+   - Phím xóa / cảnh báo: Instagram Red #ed4956
+   - HỆ THỐNG MODAL ĐỒNG BỘ 100% MỘT KIỂU DÁNG TRÊN TOÀN BỘ CÁC TRANG & PHÂN HỆ
    ========================================================================== */
 
-/* 1. Backdrop Overlay (Hiệu ứng mờ nền sâu chuẩn iOS Depth) */
+/* ── 1. NỀN & KHÔNG GIAN INSTAGRAM TOÀN DIỆN (Meta Canvas) ── */
+body, .app-container {
+    background: #fafafa !important;
+    color: #262626 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+::selection {
+    background: #0095f6 !important;
+    color: #ffffff !important;
+}
+
+/* ── 2. TRANG CHỦ WELCOME HUB (Instagram Stories & Highlights Launcher) ── */
+.welcome-hub-page {
+    background: #fafafa !important;
+}
+
+.welcome-hub-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #dbdbdb !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Nút Logout Instagram Minimalist Circle */
+.welcome-hub-logout-btn {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    color: #262626 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.18s ease !important;
+}
+
+.welcome-hub-logout-btn:hover {
+    background: #f2f2f2 !important;
+}
+
+.welcome-hub-logout-btn:active {
+    transform: scale(0.92) !important;
+    background: #fee2e2 !important;
+    color: #ed4956 !important;
+    border-color: #fca5a5 !important;
+}
+
+/* Các thẻ tính năng dạng Instagram Feed Cards */
+.welcome-card {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    padding: 16px 18px !important;
+}
+
+.welcome-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: #b0b0b0 !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08) !important;
+}
+
+.welcome-card:active {
+    transform: scale(0.98) !important;
+}
+
+/* Biểu tượng với vòng tròn Instagram Story Ring chính hãng Meta */
+.welcome-card-icon-wrap {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 50% !important;
+    padding: 2.5px !important;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+    box-shadow: 0 3px 10px rgba(220, 39, 67, 0.22) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.welcome-card-icon-wrap > * {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+}
+
+.welcome-card-arrow {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background: #f0f2f5 !important;
+    border: 1px solid #e4e6eb !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #737373 !important;
+    transition: all 0.15s ease !important;
+}
+
+.welcome-card:hover .welcome-card-arrow {
+    background: #0095f6 !important;
+    color: #ffffff !important;
+    border-color: #0095f6 !important;
+}
+
+.welcome-card-name {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #262626 !important;
+    letter-spacing: -0.2px !important;
+}
+
+.welcome-card-badge-pink {
+    background: rgba(237, 73, 86, 0.1) !important;
+    color: #ed4956 !important;
+    border: 1px solid rgba(237, 73, 86, 0.25) !important;
+    border-radius: 999px !important;
+    padding: 2px 8px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+/* ── 3. TRANG DASHBOARD THU CHI (Header & Summary Cards) ── */
+.app-header.header-overview {
+    background: #ffffff !important;
+    border-bottom: 1px solid #dbdbdb !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+.header-status-badge,
+.header-clock-wrap {
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    color: #262626 !important;
+}
+
+.header-calendar-badge {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Bộ ba Thẻ Tổng Quan Thu Chi Instagram Cards */
+.summary-cards .card {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.summary-cards .card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07) !important;
+}
+
+.card.card-today {
+    background: linear-gradient(135deg, #18232c 0%, #0d1419 100%) !important;
+    border: 1px solid #2f3e4e !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card.card-today .card-title,
+.card.card-today .card-amount,
+.card.card-today .card-subtitle {
+    color: #ffffff !important;
+}
+
+.card.card-week {
+    border-top: 3px solid #f09433 !important;
+}
+
+.card.card-month {
+    border-top: 3px solid #bc1888 !important;
+}
+
+.card .card-icon-pill {
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 8px !important;
+}
+
+/* ── 4. PHÍM TẮT TIỆN ÍCH DASHBOARD (Instagram Action Pills) ── */
+.dashboard-shortcuts-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.shortcut-pill {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    color: #262626 !important;
+    font-weight: 600 !important;
+    transition: all 0.18s ease !important;
+}
+
+.shortcut-pill:hover {
+    transform: translateY(-1px) !important;
+    border-color: #0095f6 !important;
+    color: #0095f6 !important;
+    box-shadow: 0 3px 8px rgba(0, 149, 246, 0.12) !important;
+}
+
+.shortcut-pill:active {
+    transform: scale(0.96) !important;
+    background: #f0f2f5 !important;
+}
+
+.shortcut-icon-bubble {
+    border-radius: 50% !important;
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+}
+
+/* ── 5. LỊCH CHI TIÊU THÁNG DASHBOARD (Instagram Post Calendar) ── */
+.spending-calendar-card {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+.calendar-nav-btn {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    color: #262626 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+}
+
+.calendar-nav-btn:hover {
+    background: #f2f2f2 !important;
+}
+
+.calendar-nav-btn:active {
+    transform: scale(0.92) !important;
+}
+
+.calendar-month-summary {
+    background: #f8fafc !important;
+    border: 1px solid #efefef !important;
+    border-radius: 12px !important;
+}
+
+.calendar-day-cell {
+    border-radius: 8px !important;
+    transition: all 0.15s ease !important;
+}
+
+.calendar-day-cell:active {
+    transform: scale(0.95) !important;
+}
+
+/* ── 6. TRANG LỊCH SỬ THU CHI & PHÍM CHỨC NĂNG ── */
+.history-back-btn {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 10px !important;
+    color: #262626 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.15s ease !important;
+}
+
+.history-back-btn:active {
+    transform: scale(0.94) !important;
+}
+
+.history-month-selector {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.history-month-nav-btn {
+    border-radius: 8px !important;
+    background: #f0f2f5 !important;
+    color: #262626 !important;
+    transition: all 0.15s ease !important;
+}
+
+.history-month-nav-btn:active {
+    transform: scale(0.9) !important;
+}
+
+.history-controls .search-bar {
+    background: #efefef !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+}
+
+.history-controls .search-bar input:focus {
+    background: #ffffff !important;
+    border-color: #0095f6 !important;
+}
+
+.spending-item {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.18s ease !important;
+}
+
+.spending-item:hover {
+    border-color: #a8a8a8 !important;
+}
+
+.spending-item:active {
+    transform: scale(0.985) !important;
+    background: #fafafa !important;
+}
+
+/* ── 7. TRANG TOÀN CẢNH TÀI CHÍNH (Analysis Page) ── */
+.analysis-page {
+    background: #fafafa !important;
+}
+
+.analysis-page-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #dbdbdb !important;
+}
+
+.analysis-back-btn {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    color: #262626 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.15s ease !important;
+}
+
+.analysis-back-btn:active {
+    transform: scale(0.92) !important;
+}
+
+.analysis-period-card,
+.analysis-kpi-card,
+.analysis-section-card,
+.analysis-insight-card {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8. HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   Toàn bộ modal của hệ thống áp dụng đồng nhất 1 ngôn ngữ giao diện Instagram:
+   - Nền scrim tối Instagram
+   - Thân sheet bo góc chuẩn Instagram
+   - Drag handle pill
+   - Header có đường kẻ chia hairline #efefef và nút đóng X
+   - Form controls & Input #fafafa với viền focus Instagram Blue #0095f6
+   - Nút Thêm/Lưu #0095f6, Nút Hủy #efefef, Nút Xóa #ed4956
+   - Viên thuốc Quick Adjust #f0f2f5
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Scrim Mờ Tối Instagram cho tất cả Overlay */
 .modal-overlay,
 .history-month-modal-overlay,
 .support-entry-form-overlay,
-.her-entry-modal {
-    background: rgba(15, 23, 20, 0.42) !important;
-    backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(170%) contrast(102%) !important;
-    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+.her-entry-modal,
+.ckkn-page-modal,
+.todo-page-modal,
+.support-page-modal {
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-/* 2. Liquid Glass Modal Container (Bottom Sheet & Dialog) */
+/* Thân Container Tất Cả Modal (Sheet) - Đồng Bộ 100% */
 .modal-sheet,
 .expense-entry-sheet,
 .calendar-modal-sheet,
@@ -15006,56 +15399,21 @@ body:has(#her-modal.active) {
 .her-entry-sheet,
 .notes-entry-sheet,
 .ckkn-modal-sheet {
-    background: linear-gradient(168deg, rgba(255, 255, 255, 0.72) 0%, rgba(246, 248, 250, 0.58) 100%) !important;
-    backdrop-filter: blur(32px) saturate(200%) contrast(104%) !important;
-    -webkit-backdrop-filter: blur(32px) saturate(200%) contrast(104%) !important;
-    border-top: 1.5px solid rgba(255, 255, 255, 0.95) !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.65) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.65) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
-    box-shadow: 
-        0 -20px 60px -10px rgba(18, 25, 20, 0.22),
-        0 4px 18px rgba(0, 0, 0, 0.04),
-        0 0 0 1px rgba(255, 255, 255, 0.5),
-        inset 0 2px 2px 0 rgba(255, 255, 255, 1),
-        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
-    border-top-left-radius: 32px !important;
-    border-top-right-radius: 32px !important;
-    transition: transform 0.32s cubic-bezier(0.2, 0.85, 0.32, 1.05), opacity 0.24s ease !important;
+    background: #ffffff !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
     scrollbar-width: thin !important;
-    scrollbar-color: rgba(60, 60, 67, 0.2) transparent !important;
+    scrollbar-color: #dbdbdb transparent !important;
 }
 
-/* Scrollbar chuẩn iOS */
-.modal-sheet::-webkit-scrollbar,
-.expense-entry-sheet::-webkit-scrollbar,
-.calendar-modal-sheet::-webkit-scrollbar,
-.history-month-modal-sheet::-webkit-scrollbar,
-.support-entry-form-sheet::-webkit-scrollbar,
-.handbook-entry-sheet::-webkit-scrollbar,
-.handbook-detail-sheet::-webkit-scrollbar,
-.her-entry-sheet::-webkit-scrollbar,
-.notes-entry-sheet::-webkit-scrollbar {
-    width: 5px !important;
-    height: 5px !important;
-}
-
-.modal-sheet::-webkit-scrollbar-track,
-.expense-entry-sheet::-webkit-scrollbar-track,
-.support-entry-form-sheet::-webkit-scrollbar-track,
-.her-entry-sheet::-webkit-scrollbar-track {
-    background: transparent !important;
-}
-
-.modal-sheet::-webkit-scrollbar-thumb,
-.expense-entry-sheet::-webkit-scrollbar-thumb,
-.support-entry-form-sheet::-webkit-scrollbar-thumb,
-.her-entry-sheet::-webkit-scrollbar-thumb {
-    background: rgba(60, 60, 67, 0.22) !important;
-    border-radius: 999px !important;
-}
-
-/* Responsive Modal Dialog on Desktop & Tablet (Centered Glass Card) */
 @media (min-width: 580px) {
     .modal-sheet,
     .expense-entry-sheet,
@@ -15067,87 +15425,108 @@ body:has(#her-modal.active) {
     .handbook-entry-sheet,
     .handbook-detail-sheet,
     .her-entry-sheet,
-    .notes-entry-sheet {
-        border-radius: 28px !important;
-        border: 1px solid rgba(255, 255, 255, 0.8) !important;
-        box-shadow: 
-            0 32px 80px -10px rgba(18, 25, 20, 0.26),
-            0 12px 28px -5px rgba(18, 25, 20, 0.12),
-            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
-            inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03) !important;
+    .notes-entry-sheet,
+    .ckkn-modal-sheet {
+        border-radius: 16px !important;
+        border: 1px solid #dbdbdb !important;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
     }
 }
 
-/* 3. Sheet Grabber Handle (Thanh kéo capsule chuẩn iOS) */
+/* Thanh Kéo Mobile Drag Handle Pill - Đồng Bộ 100% */
 .modal-drag-indicator,
 .handbook-detail-drag-bar,
 .notes-drag-handle,
 .support-entry-form-sheet::before {
-    width: 38px !important;
-    height: 5px !important;
-    background: rgba(60, 60, 67, 0.28) !important;
+    width: 36px !important;
+    height: 4px !important;
+    background: #dbdbdb !important;
     border-radius: 999px !important;
-    margin: 4px auto 16px !important;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(255, 255, 255, 0.65) !important;
+    margin: 8px auto 12px !important;
+    box-shadow: none !important;
     border: none !important;
     align-self: center !important;
 }
 
-/* 4. Close Button (Nút đóng tròn SF Symbol Glass Circle) */
+/* Nút Đóng Close Button 'X' Instagram - Đồng Bộ 100% */
 .modal-close-btn,
 .history-modal-close-btn,
-.notes-modal-close-btn {
+.notes-modal-close-btn,
+.support-modal-close {
     width: 32px !important;
     height: 32px !important;
     border-radius: 50% !important;
-    background: rgba(142, 142, 147, 0.16) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.65) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
-    color: #48484a !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #262626 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
     flex-shrink: 0 !important;
 }
 
 .modal-close-btn:hover,
 .history-modal-close-btn:hover,
-.notes-modal-close-btn:hover {
-    background: rgba(142, 142, 147, 0.24) !important;
-    color: #1c1c1e !important;
+.notes-modal-close-btn:hover,
+.support-modal-close:hover {
+    background: #f2f2f2 !important;
+    color: #000000 !important;
 }
 
 .modal-close-btn:active,
 .history-modal-close-btn:active,
-.notes-modal-close-btn:active {
+.notes-modal-close-btn:active,
+.support-modal-close:active {
     transform: scale(0.92) !important;
-    background: rgba(142, 142, 147, 0.32) !important;
 }
 
-/* 5. Khối thẻ kính nội dung bên trong modal (Glass Cards) */
+/* Header & Tiêu Đề Modal - Đồng Bộ 100% */
+.modal-sheet .modal-header,
+.support-entry-header,
+.her-entry-header {
+    border-bottom: 1px solid #efefef !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 16px !important;
+}
+
+.modal-sheet h2,
+.modal-sheet h3,
+.support-entry-header h2,
+.her-entry-header h2 {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #262626 !important;
+    letter-spacing: -0.2px !important;
+}
+
+/* Khối Section & Amount Card Bên Trong Modal */
 .modal-sheet .amount-card {
-    background: rgba(255, 255, 255, 0.48) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.85) !important;
-    border-radius: 22px !important;
-    box-shadow: 0 8px 24px -4px rgba(35, 44, 37, 0.05), inset 0 1.5px 1px rgba(255, 255, 255, 0.98) !important;
+    background: #fafafa !important;
+    border: 1px solid #efefef !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
 }
 
-.modal-sheet .form-section {
-    background: rgba(255, 255, 255, 0.42) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    border-radius: 20px !important;
-    box-shadow: 0 6px 20px -2px rgba(35, 44, 37, 0.035), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
+.modal-sheet .form-section,
+.adjust-current-box {
+    background: #fafafa !important;
+    border: 1px solid #efefef !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
 }
 
-/* 6. Trường nhập liệu kính lỏng (Glass Form Inputs & Selects) */
+.amount-card-chip {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    color: #262626 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Tất Cả Form Input, Select, Textarea Trong Tất Cả Modal - Đồng Bộ 100% */
 .modal-sheet .input-wrapper input,
 .modal-sheet select,
 .modal-sheet textarea,
@@ -15162,11 +15541,14 @@ body:has(#her-modal.active) {
 .her-entry-sheet textarea,
 .notes-entry-sheet input,
 .notes-entry-sheet textarea {
-    background: rgba(255, 255, 255, 0.65) !important;
-    border: 1px solid rgba(60, 60, 67, 0.15) !important;
-    border-radius: 14px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(255, 255, 255, 0.65) !important;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    background: #fafafa !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    color: #262626 !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s ease, background-color 0.15s ease !important;
     font-family: inherit !important;
 }
 
@@ -15184,25 +15566,42 @@ body:has(#her-modal.active) {
 .her-entry-sheet textarea:focus,
 .notes-entry-sheet input:focus,
 .notes-entry-sheet textarea:focus {
-    background: rgba(255, 255, 255, 0.92) !important;
-    border-color: rgba(52, 66, 55, 0.5) !important;
-    box-shadow: 0 0 0 3.5px rgba(52, 66, 55, 0.12), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    background: #ffffff !important;
+    border-color: #0095f6 !important;
+    box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+    outline: none !important;
 }
 
-/* 7. Action Buttons (Nút bấm kiểu iOS Glass Pill) */
+/* ── 9. PHÍM HÀNH ĐỘNG MODAL ĐỒNG BỘ 100% (Instagram Action Buttons) ── */
+
+/* Nút Chính (Thêm / Lưu / Hoàn thành): Instagram Blue #0095f6 */
 .modal-sheet .btn-primary,
 .modal-sheet .btn-submit,
 .support-entry-form-sheet .btn-primary,
 .handbook-entry-sheet .btn-primary,
 .her-entry-sheet .btn-primary,
-.notes-entry-sheet .btn-primary {
-    border-radius: 16px !important;
-    background: linear-gradient(145deg, #38493b 0%, #29362c 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    box-shadow: 
-        0 8px 24px -4px rgba(35, 44, 37, 0.32),
-        inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
-    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+.notes-entry-sheet .btn-primary,
+.notes-modal-save {
+    background: #0095f6 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 11px 18px !important;
+    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.modal-sheet .btn-primary:hover,
+.modal-sheet .btn-submit:hover,
+.support-entry-form-sheet .btn-primary:hover,
+.handbook-entry-sheet .btn-primary:hover,
+.her-entry-sheet .btn-primary:hover,
+.notes-entry-sheet .btn-primary:hover,
+.notes-modal-save:hover {
+    background: #1877f2 !important;
 }
 
 .modal-sheet .btn-primary:active,
@@ -15210,71 +15609,124 @@ body:has(#her-modal.active) {
 .support-entry-form-sheet .btn-primary:active,
 .handbook-entry-sheet .btn-primary:active,
 .her-entry-sheet .btn-primary:active,
-.notes-entry-sheet .btn-primary:active {
-    transform: scale(0.97) !important;
-    box-shadow: 0 3px 10px rgba(35, 44, 37, 0.22) !important;
+.notes-entry-sheet .btn-primary:active,
+.notes-modal-save:active {
+    background: #0074cc !important;
+    transform: scale(0.98) !important;
 }
 
+/* Nút Phụ / Hủy (Cancel / Back): Instagram Neutral Gray #efefef */
 .modal-sheet .btn-secondary,
 .modal-sheet .btn-cancel,
 .support-entry-form-sheet .btn-secondary,
 .support-entry-form-sheet .btn-cancel,
 .handbook-entry-sheet .btn-secondary,
 .her-entry-sheet .btn-secondary,
-.notes-entry-sheet .btn-secondary {
-    border-radius: 16px !important;
-    background: rgba(142, 142, 147, 0.14) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.55) !important;
-    color: #48484a !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.75) !important;
-    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+.notes-entry-sheet .btn-secondary,
+.notes-modal-cancel {
+    background: #efefef !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #262626 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 11px 18px !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
+}
+
+.modal-sheet .btn-secondary:hover,
+.modal-sheet .btn-cancel:hover,
+.notes-modal-cancel:hover {
+    background: #dbdbdb !important;
 }
 
 .modal-sheet .btn-secondary:active,
-.modal-sheet .btn-cancel:active {
-    transform: scale(0.97) !important;
-    background: rgba(142, 142, 147, 0.22) !important;
+.modal-sheet .btn-cancel:active,
+.notes-modal-cancel:active {
+    background: #cfcfcf !important;
+    transform: scale(0.98) !important;
 }
 
-/* 8. Lịch chi tiêu Modal (Calendar Sheet) Liquid Glass Card */
-.calendar-modal-sheet {
-    border-radius: 28px !important;
-    padding: 18px 20px 22px !important;
+/* Nút Xóa / Nguy hiểm (Delete): Instagram Red #ed4956 */
+.modal-sheet .btn-danger,
+.modal-sheet .btn-delete-expense,
+.modal-sheet .btn-delete {
+    background: #ed4956 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    padding: 11px 18px !important;
+    box-shadow: 0 4px 12px rgba(237, 73, 86, 0.22) !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, transform 0.15s ease !important;
 }
 
-.calendar-modal-sheet .calendar-header-row {
-    background: rgba(255, 255, 255, 0.55) !important;
-    border-radius: 16px !important;
+.modal-sheet .btn-danger:hover,
+.modal-sheet .btn-delete-expense:hover {
+    background: #c62828 !important;
+}
+
+.modal-sheet .btn-danger:active,
+.modal-sheet .btn-delete-expense:active {
+    transform: scale(0.98) !important;
+}
+
+/* Viên thuốc chỉnh nhanh số tiền: Instagram Pill Capsule */
+.btn-quick-adjust {
+    background: #f0f2f5 !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #262626 !important;
+    box-shadow: none !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer !important;
     padding: 6px 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.7) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
 }
 
-/* 9. Modal Lọc tháng / năm (History Month Modal) Liquid Glass */
-.history-month-modal-sheet {
-    border-radius: 28px !important;
-    padding: 22px 20px 20px !important;
+.btn-quick-adjust:hover {
+    background: #e4e6eb !important;
+    border-color: #0095f6 !important;
+    color: #0095f6 !important;
 }
 
-.history-modal-months-grid {
-    background: rgba(255, 255, 255, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.7) !important;
-    border-radius: 20px !important;
-    padding: 10px !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
+.btn-quick-adjust.plus {
+    color: #0095f6 !important;
 }
 
-.history-modal-all-time-btn,
-.history-year-selector-pill {
-    background: rgba(255, 255, 255, 0.65) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    border-radius: 16px !important;
+.btn-quick-adjust.minus {
+    color: #ed4956 !important;
 }
+
+.btn-quick-adjust:active {
+    transform: scale(0.94) !important;
+}
+
+/* Segmented Control / Tabs chuyển đổi Instagram */
+.her-segmented-control,
+.modal-segmented-control {
+    background: #efefef !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 12px !important;
+    padding: 3px !important;
+    box-shadow: none !important;
+}
+
+.her-segmented-btn.active,
+.modal-segmented-btn.active {
+    background: #ffffff !important;
+    border: 1px solid #dbdbdb !important;
+    border-radius: 9px !important;
+    color: #0095f6 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+
 
 
