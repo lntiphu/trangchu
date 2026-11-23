@@ -1393,251 +1393,388 @@ body::-webkit-scrollbar,
 }
 
 /* ==========================================================================
-   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (CKKN TOÀN BỘ)
-   Nâng cấp toàn diện giao diện Chu Kỳ & Quan Hệ theo phong cách Instagram của Meta:
-   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
-   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
-   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
-   - Phím hủy / phụ: Instagram Neutral Gray #efefef
-   - HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM
+   APPLE / LINEAR PRECISION MINIMALIST DESIGN SYSTEM & UNIFIED MODAL SYSTEM
+   (PHÂN HỆ SỨC KHỎE CÁ NHÂN - CHU KỲ & QUAN HỆ)
    ========================================================================== */
 
-body {
-  background: #fafafa !important;
-  color: #262626 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+:root {
+  --al-canvas: #F6F7F9;
+  --al-surface: #FFFFFF;
+  --al-subtle: #F1F4F8;
+  --al-elevated: #F8FAFC;
+  --al-ink: #0F172A;
+  --al-ink-2: #475569;
+  --al-ink-3: #94A3B8;
+  --al-border: rgba(15, 23, 42, 0.08);
+  --al-border-strong: rgba(15, 23, 42, 0.14);
+  --al-primary: #111827;
+  --al-primary-hover: #1E293B;
+  --al-accent: #4F46E5;
+  --al-accent-ring: rgba(79, 70, 229, 0.16);
+  --al-danger: #E11D48;
+  --al-font: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --al-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+  --al-shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --al-shadow-dialog: 0 24px 64px -12px rgba(15, 23, 42, 0.24), 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
+  --al-shadow-sheet: 0 -16px 48px rgba(15, 23, 42, 0.18), 0 -1px 0 rgba(15, 23, 42, 0.06);
+}
+
+html, body {
+  background: var(--al-canvas) !important;
+  color: var(--al-ink) !important;
+  font-family: var(--al-font) !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
 .ckkn-header-wrap {
-  background: #ffffff !important;
-  border-bottom: 1px solid #dbdbdb !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: 1px solid var(--al-border) !important;
+  box-shadow: none !important;
 }
 
-.ckkn-back-btn,
-.ckkn-header-add-btn {
-  background: #ffffff !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 10px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-  color: #262626 !important;
-  transition: all 0.15s ease !important;
+.ckkn-back-btn {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 11px !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border-strong) !important;
+  color: var(--al-ink) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.16s ease !important;
 }
 
-.ckkn-header-add-btn {
-  background: #0095f6 !important;
-  color: #ffffff !important;
-  border: none !important;
-  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
-  font-weight: 700 !important;
-}
-
-.ckkn-header-add-btn:hover {
-  background: #1877f2 !important;
-}
-
-.ckkn-header-add-btn:active {
-  transform: scale(0.96) !important;
-  background: #0074cc !important;
+.ckkn-back-btn:hover {
+  background: var(--al-subtle) !important;
 }
 
 .ckkn-back-btn:active {
   transform: scale(0.92) !important;
 }
 
-.summary-card,
-.cycle-card,
-.relation-card,
-.relation-safety-card,
-.item-card {
-  background: #ffffff !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 16px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+.ckkn-badge-icon {
+  background: #FDF2F8 !important;
+  border: 1px solid rgba(190, 24, 93, 0.14) !important;
+  border-radius: 12px !important;
 }
 
-.summary-card:hover,
-.cycle-card:hover,
-.relation-card:hover {
-  border-color: #b0b0b0 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+.ckkn-title-wrap h1 {
+  color: var(--al-ink) !important;
+  letter-spacing: -0.025em !important;
 }
 
+.ckkn-header-add-btn {
+  background: var(--al-primary) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 11px !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  font-weight: 700 !important;
+  transition: all 0.18s ease !important;
+}
+
+.ckkn-header-add-btn:hover {
+  background: var(--al-primary-hover) !important;
+  transform: translateY(-1px) !important;
+}
+
+.ckkn-header-add-btn:active {
+  transform: scale(0.96) !important;
+}
+
+/* Segmented Tabs chuẩn Apple / Linear */
+.ckkn-segmented-tabs,
 .segmented-control {
-  background: #efefef !important;
-  border: 1px solid #dbdbdb !important;
+  background: var(--al-subtle) !important;
+  border: 1px solid var(--al-border) !important;
   border-radius: 12px !important;
   padding: 3px !important;
   box-shadow: none !important;
 }
 
+.ckkn-segmented-tabs .tab-btn.active,
 .segmented-btn.active {
-  background: #ffffff !important;
-  border: 1px solid #dbdbdb !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
   border-radius: 9px !important;
-  color: #0095f6 !important;
+  color: var(--al-ink) !important;
   font-weight: 700 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+}
+
+.stat-card,
+.card,
+.predict-banner,
+.summary-card,
+.cycle-card,
+.relation-card,
+.relation-safety-card,
+.item-card,
+.history-item {
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--al-shadow-sm) !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.search-row input,
+.search-row select {
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border-strong) !important;
+  border-radius: 11px !important;
+  color: var(--al-ink) !important;
+}
+
+.search-row input:focus,
+.search-row select:focus {
+  border-color: var(--al-accent) !important;
+  box-shadow: 0 0 0 3px var(--al-accent-ring) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   UNIFIED MODAL SYSTEM — CHUẨN APP HIỆN ĐẠI (APPLE / LINEAR)
    ══════════════════════════════════════════════════════════════════════════ */
 .ckkn-modal-overlay,
 .overlay {
-  background: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: rgba(15, 23, 42, 0.46) !important;
+  backdrop-filter: blur(10px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.ckkn-modal-sheet,
-#del-modal .modal {
-  background: #ffffff !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
-  border-top-left-radius: 20px !important;
-  border-top-right-radius: 20px !important;
-  border-bottom-left-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
-}
+@media (max-width: 639px) {
+  .ckkn-modal-overlay {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+  }
 
-#del-modal .modal {
-  border-radius: 16px !important;
-  border: 1px solid #dbdbdb !important;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
-  padding: 24px !important;
-}
-
-@media (min-width: 580px) {
   .ckkn-modal-sheet {
-    border-radius: 16px !important;
-    border: 1px solid #dbdbdb !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90dvh !important;
+    margin: 0 !important;
+    background: #FFFFFF !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: var(--al-shadow-sheet) !important;
+    padding: 12px 20px max(22px, env(safe-area-inset-bottom)) 20px !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .ckkn-modal-overlay.open .ckkn-modal-sheet {
+    transform: translateY(0) !important;
+  }
+
+  .ckkn-drag-handle {
+    display: block !important;
+    width: 36px !important;
+    height: 4px !important;
+    background: #CBD5E1 !important;
+    border-radius: 999px !important;
+    margin: 2px auto 14px !important;
   }
 }
 
-.ckkn-drag-handle {
-  width: 36px !important;
-  height: 4px !important;
-  background: #dbdbdb !important;
-  border-radius: 999px !important;
-  margin: 8px auto 12px !important;
-  box-shadow: none !important;
-  border: none !important;
-  align-self: center !important;
+@media (min-width: 640px) {
+  .ckkn-modal-overlay {
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 24px !important;
+  }
+
+  .ckkn-modal-sheet {
+    width: min(92vw, 480px) !important;
+    max-width: 480px !important;
+    max-height: min(86vh, 760px) !important;
+    margin: auto !important;
+    background: #FFFFFF !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    box-shadow: var(--al-shadow-dialog) !important;
+    padding: 24px 26px !important;
+    transform: translateY(10px) scale(0.97) !important;
+    opacity: 0 !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease !important;
+  }
+
+  .ckkn-modal-overlay.open .ckkn-modal-sheet {
+    transform: translateY(0) scale(1) !important;
+    opacity: 1 !important;
+  }
+
+  .ckkn-drag-handle {
+    display: none !important;
+  }
+}
+
+/* Hộp thoại xác nhận xóa luôn căn giữa thanh lịch */
+#del-modal .modal {
+  background: #FFFFFF !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: var(--al-shadow-dialog) !important;
+  padding: 24px !important;
+  max-width: 360px !important;
+}
+
+.ckkn-modal-header,
+.ckkn-modal-sheet .modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid var(--al-border) !important;
+  padding-bottom: 14px !important;
+  margin-bottom: 18px !important;
+}
+
+.ckkn-modal-sheet h2,
+.ckkn-modal-sheet h3,
+#del-modal .modal h3 {
+  font-family: var(--al-font) !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: var(--al-ink) !important;
+  letter-spacing: -0.025em !important;
 }
 
 .ckkn-modal-close-btn {
   width: 32px !important;
   height: 32px !important;
-  border-radius: 50% !important;
-  background: transparent !important;
+  min-width: 32px !important;
+  border-radius: 10px !important;
+  background: var(--al-subtle) !important;
   border: none !important;
-  box-shadow: none !important;
-  color: #262626 !important;
+  color: var(--al-ink-2) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
+  font-size: 14px !important;
+  transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
 }
 
 .ckkn-modal-close-btn:hover {
-  background: #f2f2f2 !important;
-  color: #000000 !important;
+  background: #E2E8F0 !important;
+  color: var(--al-ink) !important;
 }
 
 .ckkn-modal-close-btn:active {
   transform: scale(0.92) !important;
 }
 
-.ckkn-modal-sheet .modal-header,
-.ckkn-modal-sheet-header {
-  border-bottom: 1px solid #efefef !important;
-  padding-bottom: 12px !important;
-  margin-bottom: 16px !important;
+.health-picker-option {
+  background: var(--al-elevated) !important;
+  border: 1px solid var(--al-border-strong) !important;
+  border-radius: 14px !important;
+  transition: all 0.18s ease !important;
 }
 
-.ckkn-modal-sheet h2,
-.ckkn-modal-sheet h3 {
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  color: #262626 !important;
-  letter-spacing: -0.2px !important;
+.health-picker-option:hover {
+  background: #FFFFFF !important;
+  border-color: var(--al-accent) !important;
+  box-shadow: var(--al-shadow-md) !important;
+  transform: translateY(-1px) !important;
 }
 
 .ckkn-modal-sheet input,
 .ckkn-modal-sheet select,
 .ckkn-modal-sheet textarea {
-  background: #fafafa !important;
-  border: 1px solid #dbdbdb !important;
-  border-radius: 10px !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--al-border-strong) !important;
+  border-radius: 11px !important;
   padding: 10px 14px !important;
-  font-size: 14px !important;
-  color: #262626 !important;
-  box-shadow: none !important;
-  transition: border-color 0.15s ease, background-color 0.15s ease !important;
+  font-size: 14.5px !important;
+  font-weight: 500 !important;
+  color: var(--al-ink) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  font-family: var(--al-font) !important;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
 }
 
 .ckkn-modal-sheet input:focus,
 .ckkn-modal-sheet select:focus,
 .ckkn-modal-sheet textarea:focus {
-  background: #ffffff !important;
-  border-color: #0095f6 !important;
-  box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+  background: #FFFFFF !important;
+  border-color: var(--al-accent) !important;
+  box-shadow: 0 0 0 3.5px var(--al-accent-ring) !important;
   outline: none !important;
 }
 
-.ckkn-modal-sheet .btn-primary {
-  background: #0095f6 !important;
-  border: none !important;
-  border-radius: 10px !important;
-  color: #ffffff !important;
+.ckkn-modal-sheet .btn-row,
+#del-modal .modal-actions {
+  border-top: 1px solid var(--al-border) !important;
+  padding-top: 16px !important;
+  margin-top: 18px !important;
+  gap: 10px !important;
+}
+
+/* Đồng bộ nút Lưu chính (kể cả .btn-pink và .btn-rose trong modal CKKN) */
+.ckkn-modal-sheet .btn-primary,
+.ckkn-modal-sheet .btn-pink,
+.ckkn-modal-sheet .btn-rose {
+  background: var(--al-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  color: #FFFFFF !important;
+  font-family: var(--al-font) !important;
   font-weight: 700 !important;
   font-size: 14px !important;
-  padding: 11px 18px !important;
-  box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+  min-height: 44px !important;
+  padding: 10px 18px !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
   cursor: pointer !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
+  transition: background-color 0.16s ease, transform 0.16s ease !important;
 }
 
-.ckkn-modal-sheet .btn-primary:hover {
-  background: #1877f2 !important;
+.ckkn-modal-sheet .btn-primary:hover,
+.ckkn-modal-sheet .btn-pink:hover,
+.ckkn-modal-sheet .btn-rose:hover {
+  background: var(--al-primary-hover) !important;
+  transform: translateY(-1px) !important;
 }
 
-.ckkn-modal-sheet .btn-primary:active {
-  background: #0074cc !important;
-  transform: scale(0.98) !important;
-}
-
-.ckkn-modal-sheet .btn-secondary {
-  background: #efefef !important;
-  border: none !important;
-  border-radius: 10px !important;
-  color: #262626 !important;
+.ckkn-modal-sheet .btn-secondary,
+#del-modal .btn-secondary {
+  background: var(--al-subtle) !important;
+  border: 1px solid var(--al-border) !important;
+  border-radius: 12px !important;
+  color: var(--al-ink-2) !important;
+  font-family: var(--al-font) !important;
   font-weight: 600 !important;
   font-size: 14px !important;
-  padding: 11px 18px !important;
+  min-height: 44px !important;
+  padding: 10px 18px !important;
   box-shadow: none !important;
   cursor: pointer !important;
-  transition: background-color 0.15s ease, transform 0.15s ease !important;
+  transition: background-color 0.16s ease, color 0.16s ease !important;
 }
 
-.ckkn-modal-sheet .btn-secondary:hover {
-  background: #dbdbdb !important;
+.ckkn-modal-sheet .btn-secondary:hover,
+#del-modal .btn-secondary:hover {
+  background: #E2E8F0 !important;
+  color: var(--al-ink) !important;
 }
 
-.ckkn-modal-sheet .btn-secondary:active {
-  background: #cfcfcf !important;
-  transform: scale(0.98) !important;
+#del-modal .btn-danger {
+  background: var(--al-danger) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  color: #FFFFFF !important;
+  font-family: var(--al-font) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  min-height: 44px !important;
+  padding: 10px 18px !important;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.24) !important;
 }
+
 
 
 
