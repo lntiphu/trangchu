@@ -936,239 +936,377 @@ body::before {
 }
 
 /* ==========================================================================
-   META INSTAGRAM DESIGN SYSTEM & UNIFIED MODAL SYSTEM (TIẾT KIỆM TOÀN BỘ)
-   Nâng cấp toàn diện giao diện Tiết Kiệm theo phong cách Instagram của Meta:
-   - Scaffold / Nền: #fafafa hiện đại, tối giản, thanh lịch
-   - Thẻ & Bề mặt: #ffffff sắc nét, viền hairline 1px solid #dbdbdb
-   - Điểm nhấn Story Gradient: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)
-   - Phím hành động chính: Instagram Blue #0095f6 (Hover #1877f2, Active #0074cc)
-   - Phím hủy / phụ: Instagram Neutral Gray #efefef
-   - HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM
+   APPLE / LINEAR PRECISION MINIMALIST DESIGN SYSTEM & UNIFIED MODAL SYSTEM
+   (PHÂN HỆ TIẾT KIỆM - SAVER)
    ========================================================================== */
 
-body, .app-container {
-    background: #fafafa !important;
-    color: #262626 !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+:root {
+    --al-canvas: #F6F7F9;
+    --al-surface: #FFFFFF;
+    --al-subtle: #F1F4F8;
+    --al-elevated: #F8FAFC;
+    --al-ink: #0F172A;
+    --al-ink-2: #475569;
+    --al-ink-3: #94A3B8;
+    --al-border: rgba(15, 23, 42, 0.08);
+    --al-border-strong: rgba(15, 23, 42, 0.14);
+    --al-primary: #111827;
+    --al-primary-hover: #1E293B;
+    --al-accent: #4F46E5;
+    --al-accent-soft: rgba(79, 70, 229, 0.1);
+    --al-accent-ring: rgba(79, 70, 229, 0.16);
+    --al-danger: #E11D48;
+    --al-danger-soft: rgba(225, 29, 72, 0.1);
+    --al-success: #059669;
+    --al-font: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --al-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+    --al-shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    --al-shadow-dialog: 0 24px 64px -12px rgba(15, 23, 42, 0.24), 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    --al-shadow-sheet: 0 -16px 48px rgba(15, 23, 42, 0.18), 0 -1px 0 rgba(15, 23, 42, 0.06);
+
+    --bg-cream: #F6F7F9;
+    --accent-olive: #0F172A;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
 }
 
-.saver-header,
-.saver-top-bar {
-    background: #ffffff !important;
-    border-bottom: 1px solid #dbdbdb !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+html, body, .saver-container {
+    background: var(--al-canvas) !important;
+    color: var(--al-ink) !important;
+    font-family: var(--al-font) !important;
+    -webkit-font-smoothing: antialiased !important;
 }
 
-.saver-card,
-.saver-item-card {
-    background: #ffffff !important;
-    border: 1px solid #dbdbdb !important;
-    border-radius: 16px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+.saver-header-row {
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border-bottom: 1px solid var(--al-border) !important;
+    box-shadow: none !important;
 }
 
-.saver-card:hover,
-.saver-item-card:hover {
-    border-color: #b0b0b0 !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+.saver-back-btn,
+.saver-action-icon-btn {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 11px !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border-strong) !important;
+    color: var(--al-ink) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    transition: all 0.16s ease !important;
 }
 
-.saver-card:active,
-.saver-item-card:active {
-    transform: scale(0.985) !important;
+.saver-back-btn:hover,
+.saver-action-icon-btn:hover {
+    background: var(--al-subtle) !important;
+}
+
+.saver-badge-icon {
+    background: #ECFDF5 !important;
+    border: 1px solid rgba(5, 150, 105, 0.15) !important;
+    color: #047857 !important;
+    border-radius: 12px !important;
+}
+
+.saver-title-info h2 {
+    color: var(--al-ink) !important;
+    letter-spacing: -0.025em !important;
+}
+
+.saver-title-info p {
+    color: var(--al-ink-2) !important;
 }
 
 .btn-add-saver {
-    border-radius: 10px !important;
-    background: #0095f6 !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
-    color: #ffffff !important;
+    border-radius: 11px !important;
+    background: var(--al-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    color: #FFFFFF !important;
     font-weight: 700 !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: all 0.18s ease !important;
 }
 
 .btn-add-saver:hover {
-    background: #1877f2 !important;
+    background: var(--al-primary-hover) !important;
+    transform: translateY(-1px) !important;
 }
 
 .btn-add-saver:active {
     transform: scale(0.97) !important;
-    background: #0074cc !important;
+}
+
+.saver-sum-card,
+.saver-card,
+.saver-item-card {
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--al-shadow-sm) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.saver-card:hover,
+.saver-item-card:hover {
+    border-color: rgba(15, 23, 42, 0.16) !important;
+    box-shadow: var(--al-shadow-md) !important;
+}
+
+.saver-search-bar input {
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border-strong) !important;
+    border-radius: 12px !important;
+}
+
+.saver-search-bar input:focus {
+    border-color: var(--al-accent) !important;
+    box-shadow: 0 0 0 3px var(--al-accent-ring) !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   HỆ THỐNG MODAL ĐỒNG BỘ 100% THEO CHUẨN INSTAGRAM (Unified Meta Modal System)
+   UNIFIED MODAL SYSTEM — CHUẨN APP HIỆN ĐẠI (APPLE / LINEAR)
    ══════════════════════════════════════════════════════════════════════════ */
 .modal-overlay {
-    background: rgba(0, 0, 0, 0.65) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
-    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    background: rgba(15, 23, 42, 0.46) !important;
+    backdrop-filter: blur(10px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(150%) !important;
+    transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.modal-sheet,
-.add-saver-sheet,
-.adjust-amount-sheet {
-    background: #ffffff !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-bottom: none !important;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16) !important;
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease !important;
-}
+@media (max-width: 639px) {
+    .modal-overlay {
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
 
-@media (min-width: 580px) {
     .modal-sheet,
     .add-saver-sheet,
     .adjust-amount-sheet {
-        border-radius: 16px !important;
-        border: 1px solid #dbdbdb !important;
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 90dvh !important;
+        margin: 0 !important;
+        background: #FFFFFF !important;
+        border-radius: 24px 24px 0 0 !important;
+        border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        box-shadow: var(--al-shadow-sheet) !important;
+        padding: 12px 20px max(20px, env(safe-area-inset-bottom)) 20px !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .modal-overlay.active .modal-sheet,
+    .modal-overlay.active .add-saver-sheet,
+    .modal-overlay.active .adjust-amount-sheet {
+        transform: translateY(0) !important;
+    }
+
+    .modal-drag-indicator {
+        display: block !important;
+        width: 36px !important;
+        height: 4px !important;
+        background: #CBD5E1 !important;
+        border-radius: 999px !important;
+        margin: 2px auto 14px !important;
+        box-shadow: none !important;
+        border: none !important;
     }
 }
 
-.modal-drag-indicator {
-    width: 36px !important;
-    height: 4px !important;
-    background: #dbdbdb !important;
-    border-radius: 999px !important;
-    margin: 8px auto 12px !important;
-    box-shadow: none !important;
-    border: none !important;
-    align-self: center !important;
+@media (min-width: 640px) {
+    .modal-overlay {
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 24px !important;
+    }
+
+    .modal-sheet,
+    .add-saver-sheet,
+    .adjust-amount-sheet {
+        width: min(92vw, 460px) !important;
+        max-width: 460px !important;
+        max-height: min(86vh, 760px) !important;
+        margin: auto !important;
+        background: #FFFFFF !important;
+        border-radius: 22px !important;
+        border: 1px solid rgba(15, 23, 42, 0.1) !important;
+        box-shadow: var(--al-shadow-dialog) !important;
+        padding: 24px 26px !important;
+        transform: translateY(10px) scale(0.97) !important;
+        opacity: 0 !important;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease !important;
+    }
+
+    .modal-overlay.active .modal-sheet,
+    .modal-overlay.active .add-saver-sheet,
+    .modal-overlay.active .adjust-amount-sheet {
+        transform: translateY(0) scale(1) !important;
+        opacity: 1 !important;
+    }
+
+    .modal-drag-indicator {
+        display: none !important;
+    }
+}
+
+.modal-sheet .modal-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    border-bottom: 1px solid var(--al-border) !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 18px !important;
+}
+
+.modal-sheet h2,
+.modal-sheet h3 {
+    font-family: var(--al-font) !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    color: var(--al-ink) !important;
+    letter-spacing: -0.025em !important;
 }
 
 .modal-close-btn {
     width: 32px !important;
     height: 32px !important;
-    border-radius: 50% !important;
-    background: transparent !important;
+    min-width: 32px !important;
+    border-radius: 10px !important;
+    background: var(--al-subtle) !important;
     border: none !important;
-    box-shadow: none !important;
-    color: #262626 !important;
+    color: var(--al-ink-2) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
 }
 
 .modal-close-btn:hover {
-    background: #f2f2f2 !important;
-    color: #000000 !important;
+    background: #E2E8F0 !important;
+    color: var(--al-ink) !important;
 }
 
 .modal-close-btn:active {
     transform: scale(0.92) !important;
 }
 
-.modal-sheet .modal-header {
-    border-bottom: 1px solid #efefef !important;
-    padding-bottom: 12px !important;
-    margin-bottom: 16px !important;
+.adjust-current-box {
+    background: var(--al-elevated) !important;
+    border: 1px solid var(--al-border) !important;
+    border-radius: 14px !important;
 }
 
-.modal-sheet h2,
-.modal-sheet h3 {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    color: #262626 !important;
-    letter-spacing: -0.2px !important;
-}
-
-.modal-sheet input,
+.modal-sheet .input-wrapper input,
 .modal-sheet select {
-    background: #fafafa !important;
-    border: 1px solid #dbdbdb !important;
-    border-radius: 10px !important;
-    padding: 10px 14px !important;
-    font-size: 14px !important;
-    color: #262626 !important;
-    box-shadow: none !important;
-    transition: border-color 0.15s ease, background-color 0.15s ease !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--al-border-strong) !important;
+    border-radius: 11px !important;
+    padding: 10px 14px 10px 38px !important;
+    font-size: 14.5px !important;
+    font-weight: 500 !important;
+    color: var(--al-ink) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
 }
 
 .modal-sheet input:focus,
 .modal-sheet select:focus {
-    background: #ffffff !important;
-    border-color: #0095f6 !important;
-    box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.15) !important;
+    background: #FFFFFF !important;
+    border-color: var(--al-accent) !important;
+    box-shadow: 0 0 0 3.5px var(--al-accent-ring) !important;
     outline: none !important;
 }
 
+.form-actions-row {
+    border-top: 1px solid var(--al-border) !important;
+    padding-top: 16px !important;
+    margin-top: 18px !important;
+}
+
 .modal-sheet .btn-primary {
-    background: #0095f6 !important;
-    border: none !important;
-    border-radius: 10px !important;
-    color: #ffffff !important;
+    background: var(--al-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    color: #FFFFFF !important;
     font-weight: 700 !important;
     font-size: 14px !important;
-    padding: 11px 18px !important;
-    box-shadow: 0 4px 12px rgba(0, 149, 246, 0.25) !important;
+    min-height: 42px !important;
+    padding: 10px 16px !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
     cursor: pointer !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.16s ease, transform 0.16s ease !important;
 }
 
 .modal-sheet .btn-primary:hover {
-    background: #1877f2 !important;
-}
-
-.modal-sheet .btn-primary:active {
-    background: #0074cc !important;
-    transform: scale(0.98) !important;
+    background: var(--al-primary-hover) !important;
+    transform: translateY(-1px) !important;
 }
 
 .modal-sheet .btn-secondary {
-    background: #efefef !important;
-    border: none !important;
-    border-radius: 10px !important;
-    color: #262626 !important;
+    background: var(--al-subtle) !important;
+    border: 1px solid var(--al-border) !important;
+    border-radius: 12px !important;
+    color: var(--al-ink-2) !important;
     font-weight: 600 !important;
     font-size: 14px !important;
-    padding: 11px 18px !important;
+    min-height: 42px !important;
+    padding: 10px 16px !important;
     box-shadow: none !important;
     cursor: pointer !important;
-    transition: background-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease !important;
 }
 
 .modal-sheet .btn-secondary:hover {
-    background: #dbdbdb !important;
+    background: #E2E8F0 !important;
+    color: var(--al-ink) !important;
 }
 
-.modal-sheet .btn-secondary:active {
-    background: #cfcfcf !important;
-    transform: scale(0.98) !important;
+.modal-sheet .btn-danger {
+    background: var(--al-danger-soft) !important;
+    border: 1px solid rgba(225, 29, 72, 0.22) !important;
+    border-radius: 12px !important;
+    color: var(--al-danger) !important;
+    font-weight: 700 !important;
+    min-height: 42px !important;
+}
+
+.modal-sheet .btn-danger:hover {
+    background: var(--al-danger) !important;
+    color: #FFFFFF !important;
 }
 
 .btn-quick-adjust {
-    background: #f0f2f5 !important;
-    border: 1px solid #dbdbdb !important;
-    border-radius: 999px !important;
-    font-size: 12px !important;
+    border-radius: 10px !important;
+    font-size: 12.5px !important;
     font-weight: 700 !important;
-    color: #262626 !important;
-    box-shadow: none !important;
+    padding: 7px 10px !important;
     transition: all 0.15s ease !important;
-    cursor: pointer !important;
-    padding: 6px 12px !important;
+}
+
+.btn-quick-adjust.plus {
+    background: #ECFDF5 !important;
+    border: 1px solid rgba(5, 150, 105, 0.2) !important;
+    color: var(--al-success) !important;
+}
+
+.btn-quick-adjust.minus {
+    background: #FFF1F2 !important;
+    border: 1px solid rgba(225, 29, 72, 0.2) !important;
+    color: var(--al-danger) !important;
 }
 
 .btn-quick-adjust:hover {
-    background: #e4e6eb !important;
-    border-color: #0095f6 !important;
-    color: #0095f6 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06) !important;
 }
 
-.btn-quick-adjust:active {
-    transform: scale(0.94) !important;
-}
 
 
 
